@@ -143,10 +143,12 @@ public partial class CampingNeretvaRs2Context : DbContext
 
             entity.HasOne(d => d.Parcel).WithMany(p => p.Reservations)
                 .HasForeignKey(d => d.ParcelId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Reservati__Parce__3C69FB99");
 
             entity.HasOne(d => d.User).WithMany(p => p.Reservations)
                 .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Reservati__UserI__3B75D760");
 
             entity.HasMany(d => d.Activities).WithMany(p => p.Reservations)
@@ -235,10 +237,12 @@ public partial class CampingNeretvaRs2Context : DbContext
 
             entity.HasOne(d => d.User).WithMany(p => p.Reviews)
                 .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Reviews__UserId__4AB81AF0");
 
             entity.HasOne(d => d.Worker).WithMany(p => p.Reviews)
                 .HasForeignKey(d => d.WorkerId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Reviews__WorkerI__4D94879B");
         });
 

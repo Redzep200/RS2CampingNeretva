@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CampingNeretva.Model.SearchObjects;
 
 namespace CampingNeretva.Service
 {
@@ -20,11 +21,33 @@ namespace CampingNeretva.Service
             Mapper = mapper;
         }
 
-        public virtual List<UserModel> GetList()
+        public virtual List<UserModel> GetList(UserSearchObject searchObject)
         {
             List<UserModel> result = new List<UserModel>();
 
-            var list = _context.Users.ToList();
+            var query = _context.Users.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchObject?.FirstNameGTE))
+            {
+                query = query.Where(x => x.FirstName.StartsWith(searchObject.FirstNameGTE));
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchObject?.LastNameGTE))
+            {
+                query = query.Where(x => x.LastName.StartsWith(searchObject.LastNameGTE));
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchObject?.UserNameGTE))
+            {
+                query = query.Where(x => x.UserName == searchObject.UserNameGTE);
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchObject?.EmailGTE))
+            {
+                query = query.Where(x => x.Email == searchObject.EmailGTE);
+            }
+
+            var list = query.ToList();
             result = Mapper.Map(list, result);
             return result;
         }

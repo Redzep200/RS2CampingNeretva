@@ -7,9 +7,9 @@ public partial class Vehicle
 {
     public int VehicleId { get; set; }
 
-    public string? Type { get; set; }
+    public string Type { get; set; } = null!;
 
-    public decimal? PricePerNight { get; set; }
+    public decimal PricePerNight { get; set; }
 
     public virtual ICollection<ReservationVehicle> ReservationVehicles { get; set; } = new List<ReservationVehicle>();
 }

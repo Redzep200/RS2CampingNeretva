@@ -7,19 +7,19 @@ public partial class Reservation
 {
     public int ReservationId { get; set; }
 
-    public int? UserId { get; set; }
+    public int UserId { get; set; }
 
-    public int? ParcelId { get; set; }
+    public int ParcelId { get; set; }
 
-    public DateTime? CheckInDate { get; set; }
+    public DateTime CheckInDate { get; set; }
 
-    public DateTime? CheckOutDate { get; set; }
+    public DateTime CheckOutDate { get; set; }
 
-    public decimal? TotalPrice { get; set; }
+    public decimal TotalPrice { get; set; }
 
-    public string? PaymentStatus { get; set; }
+    public string PaymentStatus { get; set; } = null!;
 
-    public virtual Parcel? Parcel { get; set; }
+    public virtual Parcel Parcel { get; set; } = null!;
 
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
 
@@ -31,7 +31,7 @@ public partial class Reservation
 
     public virtual ICollection<ReservationVehicle> ReservationVehicles { get; set; } = new List<ReservationVehicle>();
 
-    public virtual User? User { get; set; }
+    public virtual User User { get; set; } = null!;
 
     public virtual ICollection<Activity> Activities { get; set; } = new List<Activity>();
 }

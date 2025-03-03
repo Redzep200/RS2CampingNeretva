@@ -9,7 +9,7 @@ public partial class ReservationPerson
 
     public int PersonId { get; set; }
 
-    public int? Quantity { get; set; }
+    public int Quantity { get; set; }
 
     public virtual Person Person { get; set; } = null!;
 

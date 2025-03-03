@@ -9,7 +9,7 @@ public partial class ReservationRentable
 
     public int ItemId { get; set; }
 
-    public int? Quantity { get; set; }
+    public int Quantity { get; set; }
 
     public virtual RentableItem Item { get; set; } = null!;
 

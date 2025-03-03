@@ -9,6 +9,6 @@ namespace CampingNeretva.Model
         public int FacilityId { get; set; }
 
         public string FacilityType { get; set; }
-        public string Description { get; set; }
+        public string? Description { get; set; }
     }
 }
