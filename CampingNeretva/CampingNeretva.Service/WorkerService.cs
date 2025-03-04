@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using CampingNeretva.Model.SearchObjects;
 
 namespace CampingNeretva.Service
 {
@@ -21,17 +23,29 @@ namespace CampingNeretva.Service
             Mapper = mapper;
         }
 
-        public List<WorkerModel> GetList()
+        public virtual List<WorkerModel> GetList(WorkerSearchObject searchObject)
         {
             List<WorkerModel> result = new List<WorkerModel>();
-            var list = _context.Workers
-                .Include(a => a.Roles)
-                .ToList();
-            result = Mapper.Map(list, result);
-            for (int i = 0; i < result.Count; i++)
+
+            var query = _context.Workers.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchObject?.FirstNameGTE))
             {
-                result[i].Roles = string.Join(", ", list[i].Roles.Select(r => r.RoleName));
+                query = query.Where(x => x.FirstName.StartsWith(searchObject.FirstNameGTE));
             }
+
+            if (!string.IsNullOrWhiteSpace(searchObject?.LastNameGTE))
+            {
+                query = query.Where(x => x.LastName.StartsWith(searchObject.LastNameGTE));
+            }
+
+            if (searchObject.IsWorkerRoleIncluded == true)
+            {
+                query = query.Include(x=>x.Roles);
+            }
+
+            var list = query.ToList();
+            result = Mapper.Map(list, result);
             return result;
         }
     }

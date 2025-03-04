@@ -1,4 +1,5 @@
 ﻿using CampingNeretva.Model;
+using CampingNeretva.Model.SearchObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,6 @@ namespace CampingNeretva.Service
 {
     public interface IWorkerService
     {
-        List<WorkerModel> GetList();
+        List<WorkerModel> GetList(WorkerSearchObject searchObject);
     }
 }

@@ -6,8 +6,8 @@ namespace CampingNeretva.Model.SearchObjects
 {
     public class WorkerSearchObject
     {
-        public string? FirstName { get; set; }
-
-        public string? LastName { get; set; }
+        public string? FirstNameGTE { get; set; }
+        public string? LastNameGTE { get; set; }
+        public bool? IsWorkerRoleIncluded { get; set; }
     }
 }
