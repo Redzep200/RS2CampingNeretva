@@ -1,4 +1,5 @@
 ﻿using CampingNeretva.Model;
+using CampingNeretva.Model.SearchObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,6 @@ namespace CampingNeretva.Service
 {
     public interface IParcelService
     {
-        List<ParcelModel> GetList();
+        List<ParcelModel> GetList(ParcelSearchObject searchObject);
     }
 }

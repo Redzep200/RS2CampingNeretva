@@ -6,9 +6,9 @@ namespace CampingNeretva.Model.SearchObjects
 {
     public class ParcelSearchObject
     {
-        public int? ParcelNumberGTE { get; set; }
-        public bool? ShadeGTE { get; set; }
-        public bool? ElectricityGTE { get; set; }
-        public bool? AvailabilityStatusGTE { get; set; }
+        public int? ParcelNumber { get; set; }
+        public bool? Shade { get; set; }
+        public bool? Electricity { get; set; }
+        public bool? AvailabilityStatus { get; set; }
     }
 }

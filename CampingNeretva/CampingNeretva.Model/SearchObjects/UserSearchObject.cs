@@ -8,7 +8,7 @@ namespace CampingNeretva.Model.SearchObjects
     {
         public string? FirstNameGTE { get; set; }
         public string? LastNameGTE { get; set; }
-        public string? UserNameGTE { get; set; }
-        public string? EmailGTE { get; set; }
+        public string? UserName { get; set; }
+        public string? Email { get; set; }
     }
 }

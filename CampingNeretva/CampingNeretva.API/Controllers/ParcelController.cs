@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using CampingNeretva.Model;
 using CampingNeretva.Service;
+using CampingNeretva.Model.SearchObjects;
 
 namespace CampingNeretva.API.Controllers
 {
@@ -16,9 +17,9 @@ namespace CampingNeretva.API.Controllers
         }
 
         [HttpGet]
-       public List<ParcelModel> getList()
+       public List<ParcelModel> getList([FromQuery] ParcelSearchObject searchObject)
         {
-            return _service.GetList();
+            return _service.GetList(searchObject);
         }
     }
 }

@@ -37,14 +37,14 @@ namespace CampingNeretva.Service
                 query = query.Where(x => x.LastName.StartsWith(searchObject.LastNameGTE));
             }
 
-            if (!string.IsNullOrWhiteSpace(searchObject?.UserNameGTE))
+            if (!string.IsNullOrWhiteSpace(searchObject?.UserName))
             {
-                query = query.Where(x => x.UserName == searchObject.UserNameGTE);
+                query = query.Where(x => x.UserName == searchObject.UserName);
             }
 
-            if (!string.IsNullOrWhiteSpace(searchObject?.EmailGTE))
+            if (!string.IsNullOrWhiteSpace(searchObject?.Email))
             {
-                query = query.Where(x => x.Email == searchObject.EmailGTE);
+                query = query.Where(x => x.Email == searchObject.Email);
             }
 
             var list = query.ToList();
