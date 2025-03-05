@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CampingNeretva.Model.SearchObjects;
 
 namespace CampingNeretva.Service
 {
@@ -21,20 +22,35 @@ namespace CampingNeretva.Service
             Mapper = mapper;
         }
 
-        public List<ActivityModel> GetList()
+        public virtual List<ActivityModel> GetList(ActivitySearchObject searchObject)
         {
             List<ActivityModel> result = new List<ActivityModel>();
 
-            var list = _context.Activities
-                .Include(a => a.Facility)
-                .ToList();
+            var query = _context.Activities.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchObject?.NameGTE))
+            {
+                query = query.Where(x => x.Name.StartsWith(searchObject.NameGTE));
+            }
+
+            if (searchObject?.Price.HasValue == true)
+            {
+                query = query.Where(x => x.Price == searchObject.Price);
+            }
+
+            if (searchObject.IsFacilityTypeIncluded == true)
+            {
+                query = query.Include(x => x.Facility);
+            }
+
+            if (searchObject?.Page.HasValue == true && searchObject?.PageSize.HasValue == true)
+            {
+                query = query.Take(searchObject.PageSize.Value).Skip(searchObject.Page.Value * searchObject.PageSize.Value);
+            }
+
+            var list = query.ToList();
 
             result = Mapper.Map(list, result);
-
-            for (int i = 0; i < result.Count; i++)
-            {
-                result[i].FacilityType = list[i].Facility?.FacilityType;
-            }
 
             return result;
         }

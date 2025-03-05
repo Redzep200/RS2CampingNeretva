@@ -28,22 +28,22 @@ namespace CampingNeretva.Service
 
             var query = _context.Parcels.AsQueryable();
 
-            if (searchObject?.ParcelNumber != null)
+            if (searchObject?.ParcelNumber.HasValue == true)
             {
                 query = query.Where(x => x.ParcelNumber == searchObject.ParcelNumber);
             }
 
-            if (searchObject?.Electricity == true || searchObject?.Electricity == false)
+            if (searchObject?.Electricity.HasValue == true)
             {
                 query = query.Where(x => x.Electricity == searchObject.Electricity);
             }
 
-            if (searchObject?.Shade == true || searchObject?.Shade == false)
+            if (searchObject?.Shade.HasValue == true)
             {
                 query = query.Where(x => x.Shade == searchObject.Shade);
             }
 
-            if (searchObject?.AvailabilityStatus == true || searchObject?.AvailabilityStatus == false)
+            if (searchObject?.AvailabilityStatus.HasValue == true)
             {
                 query = query.Where(x => x.AvailabilityStatus == searchObject.AvailabilityStatus);
             }

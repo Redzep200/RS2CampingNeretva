@@ -44,6 +44,11 @@ namespace CampingNeretva.Service
                 query = query.Include(x=>x.Roles);
             }
 
+            if(searchObject?.Page.HasValue == true && searchObject?.PageSize.HasValue == true) 
+            {
+                query = query.Take(searchObject.PageSize.Value).Skip(searchObject.Page.Value * searchObject.PageSize.Value);
+            }
+
             var list = query.ToList();
             result = Mapper.Map(list, result);
             return result;
