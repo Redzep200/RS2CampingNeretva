@@ -7,18 +7,9 @@ namespace CampingNeretva.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class ActivityController : ControllerBase
+    public class ActivityController : BaseController<ActivityModel, ActivitySearchObject>
     {
-        protected IActivityService _service;
         public ActivityController(IActivityService service)
-        {
-            _service = service;
-        }
-
-        [HttpGet]
-        public List<ActivityModel> GetList([FromQuery]ActivitySearchObject searchObject)
-        {
-            return _service.GetList(searchObject);
-        }
+        :base(service) { }
     }
 }
