@@ -16,5 +16,17 @@ namespace CampingNeretva.Service
         public RoleService(CampingNeretvaRs2Context context, IMapper mapper)
         :base(context, mapper){
         }
+
+        public override IQueryable<Role> AddFilter(RoleSearchObject search, IQueryable<Role> query)
+        {
+            var filteredQuery = base.AddFilter(search, query);
+
+            if (!string.IsNullOrWhiteSpace(search.RoleNameGTE))
+            {
+                filteredQuery = filteredQuery.Where(x => x.RoleName.StartsWith(search.RoleNameGTE));
+            }
+
+            return filteredQuery;
+        }
     }
 }

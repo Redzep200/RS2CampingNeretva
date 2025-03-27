@@ -17,5 +17,22 @@ namespace CampingNeretva.Service
         :base(context, mapper){
         }
 
+        public override IQueryable<Person> AddFilter(PersonSearchObject search, IQueryable<Person> query)
+        {
+            var filteredQuery = base.AddFilter(search, query);
+
+            if (!string.IsNullOrWhiteSpace(search.TypeGTE))
+            {
+                filteredQuery = filteredQuery.Where(x => x.Type.StartsWith(search.TypeGTE));
+            }
+
+            if (search?.PricePerNightGTE.HasValue == true)
+            {
+                filteredQuery = filteredQuery.Where(x => x.PricePerNight == search.PricePerNightGTE);
+            }
+
+            return filteredQuery;
+        }
+
     }
 }

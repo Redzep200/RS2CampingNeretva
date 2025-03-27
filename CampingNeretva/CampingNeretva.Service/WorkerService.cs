@@ -18,5 +18,29 @@ namespace CampingNeretva.Service
         public WorkerService(CampingNeretvaRs2Context context, IMapper mapper)
         :base(context, mapper){
         }
+
+        public override IQueryable<Worker> AddFilter(WorkerSearchObject search, IQueryable<Worker> query)
+        {
+            var filteredQuery = base.AddFilter(search, query);
+
+            if (!string.IsNullOrWhiteSpace(search.FirstNameGTE))
+            {
+                filteredQuery = filteredQuery.Where(x => x.FirstName.StartsWith(search.FirstNameGTE));
+            }
+
+            if (!string.IsNullOrWhiteSpace(search.LastNameGTE))
+            {
+                filteredQuery = filteredQuery.Where(x => x.LastName.StartsWith(search.LastNameGTE));
+            }
+
+            if (search?.IsWorkerRoleIncluded == true)
+            {
+                filteredQuery = filteredQuery.Include(x => x.Roles);
+            }
+
+            return filteredQuery;
+
+        }
+
     }
 }

@@ -15,5 +15,18 @@ namespace CampingNeretva.Service
         public UserTypeService(CampingNeretvaRs2Context context, IMapper mapper)
         :base(context, mapper){
         }
+
+        public override IQueryable<UserType> AddFilter(UserTypeSearchObject search, IQueryable<UserType> query)
+        {
+            var filteredQuery = base.AddFilter(search, query);
+
+            if (!string.IsNullOrWhiteSpace(search.TypeNameGTE))
+            {
+                filteredQuery = filteredQuery.Where(x => x.TypeName.StartsWith(search.TypeNameGTE));
+            }
+            
+            return filteredQuery;
+        }
+
     }
 }

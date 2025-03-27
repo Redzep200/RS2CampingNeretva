@@ -47,7 +47,7 @@ namespace CampingNeretva.Service
             return pagedResult;
         }
 
-        public IQueryable<TDbEntity> AddFilter(TSearch search, IQueryable<TDbEntity> query)
+        public virtual IQueryable<TDbEntity> AddFilter(TSearch search, IQueryable<TDbEntity> query)
         {
             return query;
         }

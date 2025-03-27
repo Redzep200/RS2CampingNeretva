@@ -16,5 +16,18 @@ namespace CampingNeretva.Service
         public FacilityService(CampingNeretvaRs2Context context, IMapper mapper)
         :base(context, mapper){
         }
+
+        public override IQueryable<Facility> AddFilter(FacilitySearchObject search, IQueryable<Facility> query)
+        {
+            var filteredQuery = base.AddFilter(search, query);
+
+            if (!string.IsNullOrWhiteSpace(search.FacilityTypeGTE))
+            {
+                filteredQuery = filteredQuery.Where(x => x.FacilityType.StartsWith(search.FacilityTypeGTE));
+            }
+
+            return filteredQuery;
+        }
+
     }
 }
