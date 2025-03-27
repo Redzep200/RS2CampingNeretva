@@ -6,27 +6,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CampingNeretva.Model.SearchObjects;
 
 namespace CampingNeretva.Service
 {
-    public class UserTypeService : IUserTypeService
+    public class UserTypeService : BaseService<UserTypeModel, UserTypeSearchObject, UserType>, IUserTypeService
     {
-        public CampingNeretvaRs2Context _context { get; set; }
-        public IMapper Mapper { get; set; }
-
         public UserTypeService(CampingNeretvaRs2Context context, IMapper mapper)
-        {
-            _context = context;
-            Mapper = mapper;
-        }
-
-        public virtual List<UserTypeModel> GetList()
-        {
-            List<UserTypeModel> result = new List<UserTypeModel>();
-
-            var list = _context.UserTypes.ToList();
-            result = Mapper.Map(list, result);
-            return result;
+        :base(context, mapper){
         }
     }
 }

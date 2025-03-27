@@ -7,8 +7,7 @@ using System.Threading.Tasks;
 
 namespace CampingNeretva.Service
 {
-    public interface IPaymentService
+    public interface IPaymentService 
     {
-        List<PaymentModel> GetList();
     }
 }

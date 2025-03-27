@@ -12,46 +12,11 @@ using CampingNeretva.Model.SearchObjects;
 
 namespace CampingNeretva.Service
 {
-    public class WorkerService : IWorkerService
+    public class WorkerService : BaseService<WorkerModel, WorkerSearchObject, Worker>, IWorkerService
     {
-        public CampingNeretvaRs2Context _context { get; set; }
-        public IMapper Mapper { get; set; }
 
         public WorkerService(CampingNeretvaRs2Context context, IMapper mapper)
-        {
-            _context = context;
-            Mapper = mapper;
-        }
-
-        public virtual List<WorkerModel> GetList(WorkerSearchObject searchObject)
-        {
-            List<WorkerModel> result = new List<WorkerModel>();
-
-            var query = _context.Workers.AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(searchObject?.FirstNameGTE))
-            {
-                query = query.Where(x => x.FirstName.StartsWith(searchObject.FirstNameGTE));
-            }
-
-            if (!string.IsNullOrWhiteSpace(searchObject?.LastNameGTE))
-            {
-                query = query.Where(x => x.LastName.StartsWith(searchObject.LastNameGTE));
-            }
-
-            if (searchObject.IsWorkerRoleIncluded == true)
-            {
-                query = query.Include(x=>x.Roles);
-            }
-
-            if(searchObject?.Page.HasValue == true && searchObject?.PageSize.HasValue == true) 
-            {
-                query = query.Skip(searchObject.Page.Value * searchObject.PageSize.Value).Take(searchObject.PageSize.Value);
-            }
-
-            var list = query.ToList();
-            result = Mapper.Map(list, result);
-            return result;
+        :base(context, mapper){
         }
     }
 }

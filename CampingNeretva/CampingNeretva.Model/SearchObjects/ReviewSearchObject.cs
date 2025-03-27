@@ -4,7 +4,7 @@ using System.Text;
 
 namespace CampingNeretva.Model.SearchObjects
 {
-    public class ReviewSearchObject
+    public class ReviewSearchObject : BaseSearchObject
     {
         public int? WorkerIdGTE { get; set; }
         public DateTime? DatePostedGTE { get; set; }

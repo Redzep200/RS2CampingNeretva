@@ -8,8 +8,7 @@ using System.Threading.Tasks;
 
 namespace CampingNeretva.Service
 {
-    public interface IWorkerService
+    public interface IWorkerService : IService<WorkerModel, WorkerSearchObject>
     {
-        List<WorkerModel> GetList(WorkerSearchObject searchObject);
     }
 }

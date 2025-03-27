@@ -4,7 +4,7 @@ using System.Text;
 
 namespace CampingNeretva.Model.SearchObjects
 {
-    public class AccommodationSearchObject
+    public class AccommodationSearchObject : BaseSearchObject
     {
         public string? TypeGTE { get; set; }
         public decimal? PricePerNightGTE { get; set; }

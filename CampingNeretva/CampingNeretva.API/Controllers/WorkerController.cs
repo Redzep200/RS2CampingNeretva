@@ -7,18 +7,10 @@ namespace CampingNeretva.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class WorkerController : ControllerBase
+    public class WorkerController : BaseController<WorkerModel, WorkerSearchObject>
     {
-        protected IWorkerService _service;
         public WorkerController(IWorkerService service)
-        {
-            _service = service;
-        }
-
-        [HttpGet]
-        public List<WorkerModel> GetList([FromQuery]WorkerSearchObject searchObject)
-        {
-            return _service.GetList(searchObject);
+        :base(service){
         }
     }
 }

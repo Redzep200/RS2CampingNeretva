@@ -6,27 +6,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CampingNeretva.Model.SearchObjects;
 
 namespace CampingNeretva.Service
 {
-    public class RoleService : IRoleService
+    public class RoleService : BaseService<RoleModel, RoleSearchObject, Role>, IRoleService
     {
-        public CampingNeretvaRs2Context _context { get; set; }
-        public IMapper Mapper { get; set; }
 
         public RoleService(CampingNeretvaRs2Context context, IMapper mapper)
-        {
-            _context = context;
-            Mapper = mapper;
-        }
-
-        public virtual List<RoleModel> GetList()
-        {
-            List<RoleModel> result = new List<RoleModel>();
-
-            var list = _context.Roles.ToList();
-            result = Mapper.Map(list, result);
-            return result;
+        :base(context, mapper){
         }
     }
 }

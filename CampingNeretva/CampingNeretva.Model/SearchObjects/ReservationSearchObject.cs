@@ -4,8 +4,7 @@ using System.Text;
 
 namespace CampingNeretva.Model.SearchObjects
 {
-    public class UserTypeSearchObject : BaseSearchObject
+    public class ReservationSearchObject : BaseSearchObject
     {
-        public string? TypeNameGTE { get; set; }
     }
 }

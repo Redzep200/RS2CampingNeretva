@@ -1,24 +1,18 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using CampingNeretva.Model;
 using CampingNeretva.Service;
+using CampingNeretva.Model.SearchObjects;
 
 namespace CampingNeretva.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class ReviewController : ControllerBase
+    public class ReviewController : BaseController<ReviewModel, ReviewSearchObject>
     {
-        protected IReviewService _service;
 
         public ReviewController(IReviewService service)
-        {
-            _service = service;
+        :base(service){
         }
 
-        [HttpGet]
-        public List<ReviewModel> GetList()
-        {
-            return _service.GetList();
-        }
     }
 }

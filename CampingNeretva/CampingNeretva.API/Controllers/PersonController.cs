@@ -1,24 +1,16 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using CampingNeretva.Model;
 using CampingNeretva.Service;
+using CampingNeretva.Model.SearchObjects;
 
 namespace CampingNeretva.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class PersonController : ControllerBase
+    public class PersonController : BaseController<PersonModel, PersonSearchObject>
     {
-        protected IPersonService _service;
-
         public PersonController(IPersonService service)
-        {
-            _service = service;
-        }
-
-        [HttpGet]
-        public List<PersonModel> GetList()
-        {
-            return _service.GetList();
+        :base(service){ 
         }
     }
 }

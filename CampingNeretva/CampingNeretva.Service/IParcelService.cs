@@ -9,8 +9,7 @@ using System.Threading.Tasks;
 
 namespace CampingNeretva.Service
 {
-    public interface IParcelService
+    public interface IParcelService : IService<ParcelModel, ParcelSearchObject>
     {
-        List<ParcelModel> GetList(ParcelSearchObject searchObject);
     }
 }

@@ -7,19 +7,11 @@ namespace CampingNeretva.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class FacilityController : ControllerBase
+    public class FacilityController : BaseController<FacilityModel, FacilitySearchObject>
     {
-        protected IFacilityService _service;
-
         public FacilityController(IFacilityService service)
-        {
-            _service = service;
+        :base(service){
         }
 
-        [HttpGet]
-        public List<FacilityModel> getList([FromQuery] FacilitySearchObject searchObject)
-        {
-            return _service.GetList(searchObject);
-        }
     }
 }

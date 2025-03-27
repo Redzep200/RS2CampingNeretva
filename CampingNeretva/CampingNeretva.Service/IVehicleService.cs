@@ -1,4 +1,5 @@
 ﻿using CampingNeretva.Model;
+using CampingNeretva.Model.SearchObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,8 +8,7 @@ using System.Threading.Tasks;
 
 namespace CampingNeretva.Service
 {
-    public interface IVehicleService
+    public interface IVehicleService : IService<VehicleModel, VehicleSearchObject>
     {
-        List<VehicleModel> GetList();
     }
 }

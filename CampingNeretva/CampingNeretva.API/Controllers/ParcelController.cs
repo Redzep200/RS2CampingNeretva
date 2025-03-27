@@ -7,19 +7,12 @@ namespace CampingNeretva.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class ParcelController : ControllerBase
+    public class ParcelController : BaseController<ParcelModel, ParcelSearchObject>
     {
-        protected IParcelService _service;
 
         public ParcelController(IParcelService service)
-        {
-            _service = service;
+        :base(service){
         }
 
-        [HttpGet]
-       public List<ParcelModel> getList([FromQuery] ParcelSearchObject searchObject)
-        {
-            return _service.GetList(searchObject);
-        }
     }
 }

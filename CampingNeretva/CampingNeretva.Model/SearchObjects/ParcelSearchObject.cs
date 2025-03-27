@@ -4,7 +4,7 @@ using System.Text;
 
 namespace CampingNeretva.Model.SearchObjects
 {
-    public class ParcelSearchObject
+    public class ParcelSearchObject : BaseSearchObject
     {
         public int? ParcelNumber { get; set; }
         public bool? Shade { get; set; }

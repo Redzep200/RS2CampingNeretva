@@ -4,7 +4,7 @@ using System.Text;
 
 namespace CampingNeretva.Model.SearchObjects
 {
-    public class RoleSearchObject
+    public class RoleSearchObject : BaseSearchObject
     {
         public string? RoleNameGTE { get; set; }
     }
