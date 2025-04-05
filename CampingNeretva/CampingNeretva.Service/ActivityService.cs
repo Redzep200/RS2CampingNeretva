@@ -9,10 +9,11 @@ using System.Text;
 using System.Threading.Tasks;
 using CampingNeretva.Model.SearchObjects;
 using System.Reflection.Metadata.Ecma335;
+using CampingNeretva.Model.Requests;
 
 namespace CampingNeretva.Service
 {
-    public class ActivityService : BaseService<ActivityModel, ActivitySearchObject, Activity>, IActivityService
+    public class ActivityService : BaseCRUDService<ActivityModel, ActivitySearchObject, Activity, ActivityInsertRequest, ActivityUpdateRequest>, IActivityService
     {
         public ActivityService(CampingNeretvaRs2Context context, IMapper mapper)
             :base(context, mapper){     

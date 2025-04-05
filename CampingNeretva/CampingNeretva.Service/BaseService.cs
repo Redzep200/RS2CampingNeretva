@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace CampingNeretva.Service
 {
-    public class BaseService<TModel, TSearch, TDbEntity> : IService<TModel, TSearch> where TSearch : BaseSearchObject where TDbEntity : class where TModel : class
+    public abstract class BaseService<TModel, TSearch, TDbEntity> : IService<TModel, TSearch> where TSearch : BaseSearchObject where TDbEntity : class where TModel : class
     {
         public CampingNeretvaRs2Context _context { get; set; }
         public IMapper Mapper { get; set; }
