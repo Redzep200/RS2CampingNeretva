@@ -6,8 +6,6 @@ namespace CampingNeretva.Model
 {
     public class ActivityModel
     {
-        private FacilityModel facilityModel;
-
         public int ActivityId { get; set; }
         public string Name { get; set; }
         public string? Description { get; set; }

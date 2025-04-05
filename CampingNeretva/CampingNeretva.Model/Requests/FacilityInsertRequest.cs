@@ -4,10 +4,9 @@ using System.Text;
 
 namespace CampingNeretva.Model.Requests
 {
-    public class ActivityUpdateRequest
+    public class FacilityInsertRequest
     {
-        public DateTime Date { get; set; }
-        public decimal Price { get; set; }
+        public string FacilityType { get; set; }
         public string? Description { get; set; }
     }
 }

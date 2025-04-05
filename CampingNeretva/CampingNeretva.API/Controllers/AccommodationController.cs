@@ -2,12 +2,13 @@
 using CampingNeretva.Model;
 using CampingNeretva.Service;
 using CampingNeretva.Model.SearchObjects;
+using CampingNeretva.Model.Requests;
 
 namespace CampingNeretva.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class AccommodationController : BaseController<AccommodationModel, AccommodationSearchObject>
+    public class AccommodationController : BaseCRUDController<AccommodationModel, AccommodationSearchObject, AcommodationInsertRequest, AcommodationUpdateRequest>
     {
         public AccommodationController(IAccommodationService service)
         :base(service){

@@ -1,4 +1,5 @@
 ﻿using CampingNeretva.Model;
+using CampingNeretva.Model.Requests;
 using CampingNeretva.Model.SearchObjects;
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace CampingNeretva.Service
 {
-    public interface IParcelService : IService<ParcelModel, ParcelSearchObject>
+    public interface IParcelService : ICRUDService<ParcelModel, ParcelSearchObject, ParcelInsertRequest, ParcelUpdateRequest>
     {
     }
 }

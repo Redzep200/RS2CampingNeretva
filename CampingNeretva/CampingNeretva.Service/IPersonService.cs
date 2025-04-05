@@ -1,4 +1,5 @@
 ﻿using CampingNeretva.Model;
+using CampingNeretva.Model.Requests;
 using CampingNeretva.Model.SearchObjects;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace CampingNeretva.Service
 {
-    public interface IPersonService : IService<PersonModel, PersonSearchObject>
+    public interface IPersonService : ICRUDService<PersonModel, PersonSearchObject, PersonInsertRequest, PersonUpdateRequest>
     {
     }
 }

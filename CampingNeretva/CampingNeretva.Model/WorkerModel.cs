@@ -6,7 +6,6 @@ namespace CampingNeretva.Model
 {
     public class WorkerModel
     {
-        private RoleModel roleModel;
         public int WorkerId { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }

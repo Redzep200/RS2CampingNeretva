@@ -25,7 +25,7 @@ namespace CampingNeretva.Service
             return Mapper.Map<TModel>(entity);
         }
 
-        public void beforeInsert(TInsert request, TDbEntity entity) { }
+        public virtual void beforeInsert(TInsert request, TDbEntity entity) { }
                 
         public TModel Update(int id, TUpdate request)
         {

@@ -8,10 +8,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CampingNeretva.Model.SearchObjects;
+using CampingNeretva.Model.Requests;
 
 namespace CampingNeretva.Service
 {
-    public class ParcelService : BaseService<ParcelModel, ParcelSearchObject, Parcel> ,IParcelService
+    public class ParcelService : BaseCRUDService<ParcelModel, ParcelSearchObject, Parcel, ParcelInsertRequest, ParcelUpdateRequest> ,IParcelService
     {
         public ParcelService(CampingNeretvaRs2Context context, IMapper mapper) 
         :base(context, mapper){   
@@ -42,6 +43,11 @@ namespace CampingNeretva.Service
             }
 
             return filteredQuery;
+        }
+
+        public override void beforeInsert(ParcelInsertRequest request, Parcel entity)
+        {
+            entity.AvailabilityStatus = true;
         }
 
     }

@@ -7,10 +7,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CampingNeretva.Model.Requests;
 
 namespace CampingNeretva.Service
 {
-    public class FacilityService : BaseService<FacilityModel, FacilitySearchObject, Facility>,IFacilityService
+    public class FacilityService : BaseCRUDService<FacilityModel, FacilitySearchObject, Facility, FacilityInsertRequest, FacilityUpdateRequest>,IFacilityService
     {
 
         public FacilityService(CampingNeretvaRs2Context context, IMapper mapper)

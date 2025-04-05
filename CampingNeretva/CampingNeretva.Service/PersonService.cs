@@ -7,10 +7,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CampingNeretva.Model.SearchObjects;
+using CampingNeretva.Model.Requests;
 
 namespace CampingNeretva.Service
 {
-    public class PersonService : BaseService<PersonModel, PersonSearchObject, Person>, IPersonService
+    public class PersonService : BaseCRUDService<PersonModel, PersonSearchObject, Person, PersonInsertRequest, PersonUpdateRequest>, IPersonService
     {
 
         public PersonService(CampingNeretvaRs2Context context, IMapper mapper)

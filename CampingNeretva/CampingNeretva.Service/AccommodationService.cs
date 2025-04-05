@@ -7,10 +7,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CampingNeretva.Model.SearchObjects;
+using CampingNeretva.Model.Requests;
 
 namespace CampingNeretva.Service
 {
-    public class AccommodationService : BaseService<AccommodationModel, AccommodationSearchObject, Accommodation>, IAccommodationService
+    public class AccommodationService : BaseCRUDService<AccommodationModel, AccommodationSearchObject, Accommodation, AcommodationInsertRequest, AcommodationUpdateRequest>, IAccommodationService
     {
 
         public AccommodationService(CampingNeretvaRs2Context context, IMapper mapper)
