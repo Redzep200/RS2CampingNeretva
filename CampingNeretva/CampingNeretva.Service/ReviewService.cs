@@ -48,13 +48,13 @@ namespace CampingNeretva.Service
         public override void beforeInsert(ReviewInsertRequest request, Review entity)
         {
             entity.DatePosted = DateTime.Now;
-            var user = _context.Users.FirstOrDefault(x=>x.UserId == entity.UserId);
+            var user = _context.Users.FirstOrDefault(x=>x.UserId == request.UserId);
             if (user != null)
             {
                 entity.User = user;
             }
 
-            var worker = _context.Workers.FirstOrDefault(x=>x.WorkerId == entity.WorkerId);
+            var worker = _context.Workers.FirstOrDefault(x=>x.WorkerId == request.WorkerId);
             if(worker != null)
             {
                 entity.Worker = worker;

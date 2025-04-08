@@ -7,10 +7,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CampingNeretva.Model.SearchObjects;
+using CampingNeretva.Model.Requests;
 
 namespace CampingNeretva.Service
 {
-    public class UserTypeService : BaseService<UserTypeModel, UserTypeSearchObject, UserType>, IUserTypeService
+    public class UserTypeService : BaseCRUDService<UserTypeModel, UserTypeSearchObject, UserType, UserTypeUpsertRequest, UserTypeUpsertRequest>, IUserTypeService
     {
         public UserTypeService(CampingNeretvaRs2Context context, IMapper mapper)
         :base(context, mapper){

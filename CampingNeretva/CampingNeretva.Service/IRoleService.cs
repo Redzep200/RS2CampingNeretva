@@ -1,4 +1,5 @@
 ﻿using CampingNeretva.Model;
+using CampingNeretva.Model.Requests;
 using CampingNeretva.Model.SearchObjects;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace CampingNeretva.Service
 {
-    public interface IRoleService : IService<RoleModel, RoleSearchObject>
+    public interface IRoleService : ICRUDService<RoleModel, RoleSearchObject, RoleUpsertRequest, RoleUpsertRequest>
     {
     }
 }

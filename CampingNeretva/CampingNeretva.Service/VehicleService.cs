@@ -7,10 +7,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CampingNeretva.Model.SearchObjects;
+using CampingNeretva.Model.Requests;
 
 namespace CampingNeretva.Service
 {
-    public class VehicleService : BaseService<VehicleModel, VehicleSearchObject, Vehicle>, IVehicleService
+    public class VehicleService : BaseCRUDService<VehicleModel, VehicleSearchObject, Vehicle, VehicleInsertRequest, VehicleUpdateRequest>, IVehicleService
     {
 
         public VehicleService(CampingNeretvaRs2Context context, IMapper mapper)

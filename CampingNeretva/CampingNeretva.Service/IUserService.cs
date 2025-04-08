@@ -1,4 +1,5 @@
 ﻿using CampingNeretva.Model;
+using CampingNeretva.Model.Requests;
 using CampingNeretva.Model.SearchObjects;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,8 @@ using System.Threading.Tasks;
 
 namespace CampingNeretva.Service
 {
-    public interface IUserService : IService<UserModel, UserSearchObject>
+    public interface IUserService : ICRUDService<UserModel, UserSearchObject, UserInsertRequest, UserInsertRequest>
     {
+
     }
 }

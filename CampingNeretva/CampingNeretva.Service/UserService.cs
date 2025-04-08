@@ -7,10 +7,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CampingNeretva.Model.SearchObjects;
+using CampingNeretva.Model.Requests;
+using System.Security.Cryptography;
+using Microsoft.EntityFrameworkCore;
 
 namespace CampingNeretva.Service
 {
-    public class UserService : BaseService<UserModel, UserSearchObject, User>, IUserService
+    public class UserService : BaseCRUDService<UserModel, UserSearchObject, User, UserInsertRequest, UserInsertRequest>, IUserService
     {
 
         public UserService(CampingNeretvaRs2Context context, IMapper mapper)
@@ -41,7 +44,58 @@ namespace CampingNeretva.Service
                 filteredQuery = filteredQuery.Where(x => x.Email.Equals(search.Email));
             }
 
+            if (search?.IsUserTypeIncluded == true)
+            {
+                filteredQuery = filteredQuery.Include(x => x.UserType);
+            }
+
             return filteredQuery;
         }
+
+        public override void beforeInsert(UserInsertRequest request, User entity)
+        {
+            var userType = _context.UserTypes.FirstOrDefault(x => x.TypeName == "Guest");
+            if(userType != null)
+            {
+                entity.UserType = userType;
+            }
+            else
+            {
+                throw new Exception("Role *Guest* has been removed");
+            }
+
+            if(request.Password != request.PasswordConfirmation)
+            {
+                throw new Exception("Password and PasswordConfirmation are different");
+            }
+            else
+            {
+                entity.PasswordSalt = GenerateSalt();
+                entity.PasswordHash = GenerateHash(entity.PasswordSalt, request.Password);
+            }
+
+        }
+
+        public static string GenerateSalt()
+        {
+            var byteArray = RNGCryptoServiceProvider.GetBytes(16);
+
+            return Convert.ToBase64String(byteArray);
+        }
+
+        public static string GenerateHash(string salt, string password)
+        {
+            byte[] src = Convert.FromBase64String(salt);
+            byte[] bytes = Encoding.Unicode.GetBytes(password);
+            byte[] dst = new byte[src.Length + bytes.Length];
+
+            System.Buffer.BlockCopy(src, 0, dst, 0, src.Length);
+            System.Buffer.BlockCopy(bytes, 0, dst, src.Length, bytes.Length);
+
+            HashAlgorithm algorithm = HashAlgorithm.Create("SHA1");
+            byte[] inArray = algorithm.ComputeHash(dst);
+            return Convert.ToBase64String(inArray);
+        }
+
     }
 }

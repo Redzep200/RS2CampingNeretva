@@ -7,10 +7,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CampingNeretva.Model.SearchObjects;
+using CampingNeretva.Model.Requests;
 
 namespace CampingNeretva.Service
 {
-    public class RoleService : BaseService<RoleModel, RoleSearchObject, Role>, IRoleService
+    public class RoleService : BaseCRUDService<RoleModel, RoleSearchObject, Role, RoleUpsertRequest, RoleUpsertRequest>, IRoleService
     {
 
         public RoleService(CampingNeretvaRs2Context context, IMapper mapper)
