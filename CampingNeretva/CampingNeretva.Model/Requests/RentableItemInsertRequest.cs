@@ -2,15 +2,13 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace CampingNeretva.Model
+namespace CampingNeretva.Model.Requests
 {
-    public class RentableItemModel
+    public class RentableItemInsertRequest
     {
-        public int ItemId { get; set; }
         public int TotalQuantity { get; set; }
         public string Name { get; set; }
         public string? Description { get; set; }
         public decimal PricePerDay { get; set; }
-        public int AvailableQuantity { get; set; }
     }
 }

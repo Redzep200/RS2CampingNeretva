@@ -2,12 +2,13 @@
 using CampingNeretva.Model;
 using CampingNeretva.Service;
 using CampingNeretva.Model.SearchObjects;
+using CampingNeretva.Model.Requests;
 
 namespace CampingNeretva.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class ReviewController : BaseController<ReviewModel, ReviewSearchObject>
+    public class ReviewController : BaseCRUDController<ReviewModel, ReviewSearchObject, ReviewInsertRequest, ReviewUpdateRequest>
     {
 
         public ReviewController(IReviewService service)

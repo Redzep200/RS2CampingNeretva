@@ -8,10 +8,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CampingNeretva.Model.SearchObjects;
+using CampingNeretva.Model.Requests;
 
 namespace CampingNeretva.Service
 {
-    public class RentableItemService : BaseService<RentableItemModel, RentableItemSearchObject,RentableItem>, IRentableItemService
+    public class RentableItemService : BaseCRUDService<RentableItemModel, RentableItemSearchObject, RentableItem, RentableItemInsertRequest, RentableItemsUpdateRequest>, IRentableItemService
     {
         public RentableItemService(CampingNeretvaRs2Context context, IMapper mapper)
         :base(context, mapper){
@@ -32,6 +33,11 @@ namespace CampingNeretva.Service
             }
 
             return filteredQuery;
+        }
+
+        public override void beforeInsert(RentableItemInsertRequest request, RentableItem entity)
+        {
+            entity.AvailableQuantity = entity.TotalQuantity;
         }
 
     }

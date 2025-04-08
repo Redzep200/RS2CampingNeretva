@@ -18,10 +18,10 @@ namespace CampingNeretva.Service
         {
             TDbEntity entity = Mapper.Map<TDbEntity>(request);
 
+            beforeInsert(request, entity);
             _context.Add(entity);
             _context.SaveChanges();
 
-            beforeInsert(request, entity);
             return Mapper.Map<TModel>(entity);
         }
 
@@ -41,7 +41,7 @@ namespace CampingNeretva.Service
             return Mapper.Map<TModel>(entity);
         }
 
-        public void beforeUpdate(TUpdate request, TDbEntity entity) { }
+        public virtual void beforeUpdate(TUpdate request, TDbEntity entity) { }
     }
 
 }

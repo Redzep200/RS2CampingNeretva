@@ -15,7 +15,7 @@ public partial class RentableItem
 
     public decimal PricePerDay { get; set; }
 
-    public bool AvailabilityStatus { get; set; }
+    public int? AvailableQuantity { get; set; }
 
     public virtual ICollection<ReservationRentable> ReservationRentables { get; set; } = new List<ReservationRentable>();
 }

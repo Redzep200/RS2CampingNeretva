@@ -13,7 +13,7 @@ public partial class Worker
 
     public string PhoneNumber { get; set; } = null!;
 
-    public string? Email { get; set; }
+    public string Email { get; set; } = null!;
 
     public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
 
