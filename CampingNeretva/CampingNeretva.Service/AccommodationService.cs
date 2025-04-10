@@ -14,7 +14,7 @@ namespace CampingNeretva.Service
     public class AccommodationService : BaseCRUDService<AccommodationModel, AccommodationSearchObject, Accommodation, AcommodationInsertRequest, AcommodationUpdateRequest>, IAccommodationService
     {
 
-        public AccommodationService(CampingNeretvaRs2Context context, IMapper mapper)
+        public AccommodationService(_200012Context context, IMapper mapper)
         : base(context, mapper)
         {
         }

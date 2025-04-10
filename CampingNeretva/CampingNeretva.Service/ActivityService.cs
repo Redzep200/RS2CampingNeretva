@@ -15,7 +15,7 @@ namespace CampingNeretva.Service
 {
     public class ActivityService : BaseCRUDService<ActivityModel, ActivitySearchObject, Activity, ActivityInsertRequest, ActivityUpdateRequest>, IActivityService
     {
-        public ActivityService(CampingNeretvaRs2Context context, IMapper mapper)
+        public ActivityService(_200012Context context, IMapper mapper)
             :base(context, mapper){     
         }
 

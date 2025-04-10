@@ -14,7 +14,7 @@ namespace CampingNeretva.Service
     public class RoleService : BaseCRUDService<RoleModel, RoleSearchObject, Role, RoleUpsertRequest, RoleUpsertRequest>, IRoleService
     {
 
-        public RoleService(CampingNeretvaRs2Context context, IMapper mapper)
+        public RoleService(_200012Context context, IMapper mapper)
         :base(context, mapper){
         }
 

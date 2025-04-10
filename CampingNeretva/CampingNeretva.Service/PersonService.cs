@@ -14,7 +14,7 @@ namespace CampingNeretva.Service
     public class PersonService : BaseCRUDService<PersonModel, PersonSearchObject, Person, PersonInsertRequest, PersonUpdateRequest>, IPersonService
     {
 
-        public PersonService(CampingNeretvaRs2Context context, IMapper mapper)
+        public PersonService(_200012Context context, IMapper mapper)
         :base(context, mapper){
         }
 

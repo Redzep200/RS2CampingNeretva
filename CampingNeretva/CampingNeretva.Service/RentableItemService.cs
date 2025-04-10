@@ -14,7 +14,7 @@ namespace CampingNeretva.Service
 {
     public class RentableItemService : BaseCRUDService<RentableItemModel, RentableItemSearchObject, RentableItem, RentableItemInsertRequest, RentableItemsUpdateRequest>, IRentableItemService
     {
-        public RentableItemService(CampingNeretvaRs2Context context, IMapper mapper)
+        public RentableItemService(_200012Context context, IMapper mapper)
         :base(context, mapper){
         }
 

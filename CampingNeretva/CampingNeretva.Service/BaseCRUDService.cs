@@ -12,7 +12,7 @@ namespace CampingNeretva.Service
 {
     public abstract class BaseCRUDService<TModel, TSearch, TDbEntity, TInsert, TUpdate> : BaseService<TModel, TSearch, TDbEntity> where TModel : class where TSearch : BaseSearchObject where TDbEntity : class
     {
-        public BaseCRUDService(CampingNeretvaRs2Context context, IMapper mapper) : base(context, mapper) { }
+        public BaseCRUDService(_200012Context context, IMapper mapper) : base(context, mapper) { }
 
         public TModel Insert(TInsert request)
         {

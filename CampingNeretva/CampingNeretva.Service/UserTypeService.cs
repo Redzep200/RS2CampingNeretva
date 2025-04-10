@@ -13,7 +13,7 @@ namespace CampingNeretva.Service
 {
     public class UserTypeService : BaseCRUDService<UserTypeModel, UserTypeSearchObject, UserType, UserTypeUpsertRequest, UserTypeUpsertRequest>, IUserTypeService
     {
-        public UserTypeService(CampingNeretvaRs2Context context, IMapper mapper)
+        public UserTypeService(_200012Context context, IMapper mapper)
         :base(context, mapper){
         }
 

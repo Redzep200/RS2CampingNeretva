@@ -4,13 +4,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CampingNeretva.Service.Database;
 
-public partial class CampingNeretvaRs2Context : DbContext
+public partial class _200012Context : DbContext
 {
-    public CampingNeretvaRs2Context()
+    public _200012Context()
     {
     }
 
-    public CampingNeretvaRs2Context(DbContextOptions<CampingNeretvaRs2Context> options)
+    public _200012Context(DbContextOptions<_200012Context> options)
         : base(options)
     {
     }
@@ -53,7 +53,7 @@ public partial class CampingNeretvaRs2Context : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Data Source=DESKTOP-1MUH4I3;Initial Catalog=CampingNeretva_RS2;Integrated Security=True;TrustServerCertificate=True");
+        => optionsBuilder.UseSqlServer("Data Source=DESKTOP-1MUH4I3;Initial Catalog=200012;Integrated Security=True;TrustServerCertificate=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

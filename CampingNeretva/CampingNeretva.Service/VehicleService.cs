@@ -14,7 +14,7 @@ namespace CampingNeretva.Service
     public class VehicleService : BaseCRUDService<VehicleModel, VehicleSearchObject, Vehicle, VehicleInsertRequest, VehicleUpdateRequest>, IVehicleService
     {
 
-        public VehicleService(CampingNeretvaRs2Context context, IMapper mapper)
+        public VehicleService(_200012Context context, IMapper mapper)
         :base(context, mapper){
         }
 

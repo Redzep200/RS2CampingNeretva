@@ -13,10 +13,10 @@ namespace CampingNeretva.Service
 {
     public abstract class BaseService<TModel, TSearch, TDbEntity> : IService<TModel, TSearch> where TSearch : BaseSearchObject where TDbEntity : class where TModel : class
     {
-        public CampingNeretvaRs2Context _context { get; set; }
+        public _200012Context _context { get; set; }
         public IMapper Mapper { get; set; }
 
-        public BaseService(CampingNeretvaRs2Context context, IMapper mapper)
+        public BaseService(_200012Context context, IMapper mapper)
         {
             _context = context;
             Mapper = mapper;

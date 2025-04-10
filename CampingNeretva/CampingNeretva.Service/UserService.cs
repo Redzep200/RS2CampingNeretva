@@ -16,7 +16,7 @@ namespace CampingNeretva.Service
     public class UserService : BaseCRUDService<UserModel, UserSearchObject, User, UserInsertRequest, UserInsertRequest>, IUserService
     {
 
-        public UserService(CampingNeretvaRs2Context context, IMapper mapper)
+        public UserService(_200012Context context, IMapper mapper)
         :base(context, mapper){
         }
 

@@ -14,7 +14,7 @@ namespace CampingNeretva.Service
     public class FacilityService : BaseCRUDService<FacilityModel, FacilitySearchObject, Facility, FacilityInsertRequest, FacilityUpdateRequest>,IFacilityService
     {
 
-        public FacilityService(CampingNeretvaRs2Context context, IMapper mapper)
+        public FacilityService(_200012Context context, IMapper mapper)
         :base(context, mapper){
         }
 

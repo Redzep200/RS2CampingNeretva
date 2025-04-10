@@ -16,7 +16,7 @@ namespace CampingNeretva.Service
     public class WorkerService : BaseCRUDService<WorkerModel, WorkerSearchObject, Worker, WorkerInsertRequest, WorkerUpdateRequest>, IWorkerService
     {
 
-        public WorkerService(CampingNeretvaRs2Context context, IMapper mapper)
+        public WorkerService(_200012Context context, IMapper mapper)
         :base(context, mapper){
         }
 

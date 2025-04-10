@@ -14,7 +14,7 @@ namespace CampingNeretva.Service
 {
     public class ReviewService : BaseCRUDService<ReviewModel, ReviewSearchObject, Review, ReviewInsertRequest, ReviewUpdateRequest>, IReviewService
     {
-        public ReviewService(CampingNeretvaRs2Context context, IMapper mapper)
+        public ReviewService(_200012Context context, IMapper mapper)
         :base(context, mapper){
         }
 

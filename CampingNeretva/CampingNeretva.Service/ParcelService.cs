@@ -14,7 +14,7 @@ namespace CampingNeretva.Service
 {
     public class ParcelService : BaseCRUDService<ParcelModel, ParcelSearchObject, Parcel, ParcelInsertRequest, ParcelUpdateRequest> ,IParcelService
     {
-        public ParcelService(CampingNeretvaRs2Context context, IMapper mapper) 
+        public ParcelService(_200012Context context, IMapper mapper) 
         :base(context, mapper){   
         }
 

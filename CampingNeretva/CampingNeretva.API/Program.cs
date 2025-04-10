@@ -25,7 +25,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var connectionString = builder.Configuration.GetConnectionString("CampingNeretvaConnection");
-builder.Services.AddDbContext<CampingNeretvaRs2Context>(options => options.UseSqlServer(connectionString));
+builder.Services.AddDbContext<_200012Context>(options => options.UseSqlServer(connectionString));
 
 builder.Services.AddMapster();
 
