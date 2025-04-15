@@ -9,8 +9,8 @@ using System.Threading.Tasks;
 
 namespace CampingNeretva.Service
 {
-    public interface IUserService : ICRUDService<UserModel, UserSearchObject, UserInsertRequest, UserInsertRequest>
+    public interface IUserService : ICRUDService<UserModel, UserSearchObject, UserInsertRequest, UserUpdateRequest>
     {
-
+        UserModel Login(string username, string password);
     }
 }

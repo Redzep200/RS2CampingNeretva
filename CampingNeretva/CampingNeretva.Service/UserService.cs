@@ -10,10 +10,11 @@ using CampingNeretva.Model.SearchObjects;
 using CampingNeretva.Model.Requests;
 using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
+using Mapster;
 
 namespace CampingNeretva.Service
 {
-    public class UserService : BaseCRUDService<UserModel, UserSearchObject, User, UserInsertRequest, UserInsertRequest>, IUserService
+    public class UserService : BaseCRUDService<UserModel, UserSearchObject, User, UserInsertRequest, UserUpdateRequest>, IUserService
     {
 
         public UserService(_200012Context context, IMapper mapper)
@@ -97,5 +98,23 @@ namespace CampingNeretva.Service
             return Convert.ToBase64String(inArray);
         }
 
+        public UserModel Login(string username, string password)
+        {
+            var entity = _context.Users.Include(x=> x.UserType).FirstOrDefault(x => x.UserName == username);
+
+            if(entity == null)
+            {
+                return null;
+            }
+
+            var hash = GenerateHash(entity.PasswordSalt, password);
+
+            if(hash != entity.PasswordHash)
+            {
+                return null;
+            }
+
+            return this.Mapper.Map<UserModel>(entity);
+        }
     }
 }
