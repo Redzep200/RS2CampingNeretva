@@ -12,5 +12,7 @@ namespace CampingNeretva.Model
         public List<RoleModel> Roles { get; set; }
         public string PhoneNumber { get; set; }
         public string Email { get; set; }
+
+        //aaaaa testiram jesam li dobro kloniro
     }
 }
