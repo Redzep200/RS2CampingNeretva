@@ -17,5 +17,7 @@ public partial class Parcel
 
     public bool AvailabilityStatus { get; set; }
 
+    public virtual ICollection<ParcelImage> ParcelImages { get; set; } = new List<ParcelImage>();
+
     public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
 }

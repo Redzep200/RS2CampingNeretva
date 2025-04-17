@@ -22,7 +22,7 @@ namespace CampingNeretva.Service
             Mapper = mapper;
         }
 
-        public PagedResult<TModel> GetPaged(TSearch search)
+        public virtual PagedResult<TModel> GetPaged(TSearch search)
         {
             List<TModel> result = new List<TModel>();
 
@@ -52,7 +52,7 @@ namespace CampingNeretva.Service
             return query;
         }
 
-        public TModel GetById(int id)
+        public virtual TModel GetById(int id)
         {
             var entity = _context.Set<TDbEntity>().Find(id);
 

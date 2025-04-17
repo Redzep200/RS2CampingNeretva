@@ -14,8 +14,12 @@ namespace CampingNeretva.Service
 {
     public class ParcelService : BaseCRUDService<ParcelModel, ParcelSearchObject, Parcel, ParcelInsertRequest, ParcelUpdateRequest> ,IParcelService
     {
-        public ParcelService(_200012Context context, IMapper mapper) 
-        :base(context, mapper){   
+
+        private readonly IImageService _imageService;
+
+        public ParcelService(_200012Context context, IMapper mapper, IImageService imageService = null) 
+        :base(context, mapper){
+            _imageService = imageService;
         }
 
         public override IQueryable<Parcel> AddFilter(ParcelSearchObject search, IQueryable<Parcel> query)
@@ -50,5 +54,35 @@ namespace CampingNeretva.Service
             entity.AvailabilityStatus = true;
         }
 
+        public override PagedResult<ParcelModel> GetPaged(ParcelSearchObject search)
+        {
+            // Get the base paged result
+            var result = base.GetPaged(search);
+
+            // If we have the image service, add images to each parcel
+            if (_imageService != null)
+            {
+                foreach (var parcel in result.ResultList)
+                {
+                    parcel.Images = _imageService.GetByParcelId(parcel.ParcelId);
+                }
+            }
+
+            return result;
+        }
+
+        public override ParcelModel GetById(int id)
+        {
+            var result = base.GetById(id);
+
+            if (result != null && _imageService != null)
+            {
+                result.Images = _imageService.GetByParcelId(id);
+            }
+
+            return result;
+        }
     }
+
 }
+

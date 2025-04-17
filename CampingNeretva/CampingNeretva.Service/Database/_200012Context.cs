@@ -21,7 +21,11 @@ public partial class _200012Context : DbContext
 
     public virtual DbSet<Facility> Facilities { get; set; }
 
+    public virtual DbSet<Image> Images { get; set; }
+
     public virtual DbSet<Parcel> Parcels { get; set; }
+
+    public virtual DbSet<ParcelImage> ParcelImages { get; set; }
 
     public virtual DbSet<Payment> Payments { get; set; }
 
@@ -98,9 +102,31 @@ public partial class _200012Context : DbContext
             entity.HasKey(e => e.FacilityId).HasName("PK__Faciliti__5FB08A74FF9A6D7B");
         });
 
+        modelBuilder.Entity<Image>(entity =>
+        {
+            entity.HasKey(e => e.ImageId).HasName("PK__Image__7516F70CAAD18A26");
+
+            entity.Property(e => e.DateCreated).HasDefaultValueSql("(getdate())");
+        });
+
         modelBuilder.Entity<Parcel>(entity =>
         {
             entity.HasKey(e => e.ParcelId).HasName("PK__Parcels__B5F2167B0DA861B2");
+        });
+
+        modelBuilder.Entity<ParcelImage>(entity =>
+        {
+            entity.HasKey(e => e.ParcelImageId).HasName("PK__ParcelIm__19D83D7B1D281425");
+
+            entity.HasOne(d => d.Image).WithMany(p => p.ParcelImages)
+                .HasForeignKey(d => d.ImageId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ParcelImage_Image");
+
+            entity.HasOne(d => d.Parcel).WithMany(p => p.ParcelImages)
+                .HasForeignKey(d => d.ParcelId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ParcelImage_Parcel");
         });
 
         modelBuilder.Entity<Payment>(entity =>

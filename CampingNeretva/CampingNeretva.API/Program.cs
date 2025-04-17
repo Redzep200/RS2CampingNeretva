@@ -3,6 +3,7 @@ using CampingNeretva.Model.SearchObjects;
 using CampingNeretva.Service;
 using CampingNeretva.Service.Database;
 using Mapster;
+using MapsterMapper;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -10,7 +11,13 @@ using Microsoft.OpenApi.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddTransient<IParcelService, ParcelService>();
+builder.Services.AddTransient<IParcelService>(provider =>
+    new ParcelService(
+        provider.GetRequiredService<_200012Context>(),
+        provider.GetRequiredService<IMapper>(),
+        provider.GetRequiredService<IImageService>()
+    )
+);
 builder.Services.AddTransient<IActivityService, ActivityService>();
 builder.Services.AddTransient<IAccommodationService, AccommodationService>();
 builder.Services.AddTransient<IPersonService, PersonService>();
@@ -22,6 +29,7 @@ builder.Services.AddTransient<IWorkerService, WorkerService>();
 builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IUserTypeService, UserTypeService>();
 builder.Services.AddTransient<IFacilityService, FacilityService>();
+builder.Services.AddTransient<IImageService, ImageService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -66,5 +74,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseStaticFiles();
 
 app.Run();

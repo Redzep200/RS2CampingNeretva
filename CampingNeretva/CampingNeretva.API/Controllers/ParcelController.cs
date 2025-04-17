@@ -12,20 +12,46 @@ namespace CampingNeretva.API.Controllers
     public class ParcelController : BaseCRUDController<ParcelModel, ParcelSearchObject, ParcelInsertRequest, ParcelUpdateRequest>
     {
 
-        public ParcelController(IParcelService service)
-        :base(service){
+        private readonly IImageService _imageService;
+
+        public ParcelController(IParcelService service, IImageService imageService)
+        : base(service)
+        {
+            _imageService = imageService;
         }
 
         [AllowAnonymous]
         public override PagedResult<ParcelModel> GetList([FromQuery] ParcelSearchObject searchObject)
         {
-            return base.GetList(searchObject);
+            var result = base.GetList(searchObject);
+
+            // If images aren't already loaded by the service, add them here
+            if (result?.ResultList != null)
+            {
+                foreach (var parcel in result.ResultList)
+                {
+                    if (parcel.Images == null || parcel.Images.Count == 0)
+                    {
+                        parcel.Images = _imageService.GetByParcelId(parcel.ParcelId);
+                    }
+                }
+            }
+
+            return result;
         }
 
         [Authorize(Roles = "Admin")]
         public override ParcelModel GetById(int id)
         {
-            return base.GetById(id);
+            var parcel = base.GetById(id);
+
+            // If images aren't already loaded by the service, add them here
+            if (parcel != null && (parcel.Images == null || parcel.Images.Count == 0))
+            {
+                parcel.Images = _imageService.GetByParcelId(id);
+            }
+
+            return parcel;
         }
 
         [Authorize(Roles = "Admin")]
