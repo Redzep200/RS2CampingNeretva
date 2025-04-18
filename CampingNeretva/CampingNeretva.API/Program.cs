@@ -32,6 +32,12 @@ builder.Services.AddTransient<IFacilityService, FacilityService>();
 builder.Services.AddTransient<IImageService, ImageService>();
 
 builder.Services.AddControllers();
+
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.ListenAnyIP(5205); // Allows connections from emulator
+});
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
