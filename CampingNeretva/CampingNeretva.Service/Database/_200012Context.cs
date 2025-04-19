@@ -17,9 +17,15 @@ public partial class _200012Context : DbContext
 
     public virtual DbSet<Accommodation> Accommodations { get; set; }
 
+    public virtual DbSet<AccommodationImage> AccommodationImages { get; set; }
+
     public virtual DbSet<Activity> Activities { get; set; }
 
+    public virtual DbSet<ActivityImage> ActivityImages { get; set; }
+
     public virtual DbSet<Facility> Facilities { get; set; }
+
+    public virtual DbSet<FacilityImage> FacilityImages { get; set; }
 
     public virtual DbSet<Image> Images { get; set; }
 
@@ -31,7 +37,11 @@ public partial class _200012Context : DbContext
 
     public virtual DbSet<Person> Persons { get; set; }
 
+    public virtual DbSet<PersonImage> PersonImages { get; set; }
+
     public virtual DbSet<RentableItem> RentableItems { get; set; }
+
+    public virtual DbSet<RentableItemImage> RentableItemImages { get; set; }
 
     public virtual DbSet<Reservation> Reservations { get; set; }
 
@@ -53,6 +63,8 @@ public partial class _200012Context : DbContext
 
     public virtual DbSet<Vehicle> Vehicles { get; set; }
 
+    public virtual DbSet<VehicleImage> VehicleImages { get; set; }
+
     public virtual DbSet<Worker> Workers { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -66,6 +78,21 @@ public partial class _200012Context : DbContext
             entity.HasKey(e => e.AccommodationId).HasName("PK__Accommod__DBB30A518EBF438C");
 
             entity.Property(e => e.PricePerNight).HasColumnType("decimal(18, 2)");
+        });
+
+        modelBuilder.Entity<AccommodationImage>(entity =>
+        {
+            entity.HasKey(e => e.AccommodationImageId).HasName("PK__Accommod__C93E544944E1227E");
+
+            entity.HasOne(d => d.Accommodation).WithMany(p => p.AccommodationImages)
+                .HasForeignKey(d => d.AccommodationId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_AccommodationImages_Accommodations");
+
+            entity.HasOne(d => d.Image).WithMany(p => p.AccommodationImages)
+                .HasForeignKey(d => d.ImageId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_AccommodationImages_Images");
         });
 
         modelBuilder.Entity<Activity>(entity =>
@@ -97,9 +124,39 @@ public partial class _200012Context : DbContext
                     });
         });
 
+        modelBuilder.Entity<ActivityImage>(entity =>
+        {
+            entity.HasKey(e => e.ActivityImageId).HasName("PK__Activity__F511D3C54A24A2BD");
+
+            entity.HasOne(d => d.Activity).WithMany(p => p.ActivityImages)
+                .HasForeignKey(d => d.ActivityId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ActivityImages_Vehicles");
+
+            entity.HasOne(d => d.Image).WithMany(p => p.ActivityImages)
+                .HasForeignKey(d => d.ImageId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ActivityImages_Images");
+        });
+
         modelBuilder.Entity<Facility>(entity =>
         {
             entity.HasKey(e => e.FacilityId).HasName("PK__Faciliti__5FB08A74FF9A6D7B");
+        });
+
+        modelBuilder.Entity<FacilityImage>(entity =>
+        {
+            entity.HasKey(e => e.FacilityImageId).HasName("PK__Facility__60B5120291DCFC9F");
+
+            entity.HasOne(d => d.Facility).WithMany(p => p.FacilityImages)
+                .HasForeignKey(d => d.FacilityId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_FacilityImages_Facilities");
+
+            entity.HasOne(d => d.Image).WithMany(p => p.FacilityImages)
+                .HasForeignKey(d => d.ImageId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_FacilityImages_Images");
         });
 
         modelBuilder.Entity<Image>(entity =>
@@ -154,11 +211,41 @@ public partial class _200012Context : DbContext
             entity.Property(e => e.PricePerNight).HasColumnType("decimal(18, 2)");
         });
 
+        modelBuilder.Entity<PersonImage>(entity =>
+        {
+            entity.HasKey(e => e.PersonImageId).HasName("PK__PersonIm__262987ED5BDF96AD");
+
+            entity.HasOne(d => d.Image).WithMany(p => p.PersonImages)
+                .HasForeignKey(d => d.ImageId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PersonImages_Images");
+
+            entity.HasOne(d => d.Person).WithMany(p => p.PersonImages)
+                .HasForeignKey(d => d.PersonId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PersonImages_Persons");
+        });
+
         modelBuilder.Entity<RentableItem>(entity =>
         {
             entity.HasKey(e => e.ItemId).HasName("PK__Rentable__727E838B778586B3");
 
             entity.Property(e => e.PricePerDay).HasColumnType("decimal(18, 2)");
+        });
+
+        modelBuilder.Entity<RentableItemImage>(entity =>
+        {
+            entity.HasKey(e => e.RentableItemImageId).HasName("PK__Rentable__47D86384B5D52FCC");
+
+            entity.HasOne(d => d.Image).WithMany(p => p.RentableItemImages)
+                .HasForeignKey(d => d.ImageId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_RentableItemImages_Images");
+
+            entity.HasOne(d => d.RentableItem).WithMany(p => p.RentableItemImages)
+                .HasForeignKey(d => d.RentableItemId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_RentableItemImages_RentableItems");
         });
 
         modelBuilder.Entity<Reservation>(entity =>
@@ -303,6 +390,21 @@ public partial class _200012Context : DbContext
             entity.HasKey(e => e.VehicleId).HasName("PK__Vehicles__476B54927D223A98");
 
             entity.Property(e => e.PricePerNight).HasColumnType("decimal(18, 2)");
+        });
+
+        modelBuilder.Entity<VehicleImage>(entity =>
+        {
+            entity.HasKey(e => e.VehicleImageId).HasName("PK__VehicleI__BDB4646AC8521541");
+
+            entity.HasOne(d => d.Image).WithMany(p => p.VehicleImages)
+                .HasForeignKey(d => d.ImageId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_VehicleImages_Images");
+
+            entity.HasOne(d => d.Vehicle).WithMany(p => p.VehicleImages)
+                .HasForeignKey(d => d.VehicleId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_VehicleImages_Vehicles");
         });
 
         modelBuilder.Entity<Worker>(entity =>

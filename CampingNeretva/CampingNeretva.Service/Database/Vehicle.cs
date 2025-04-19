@@ -12,4 +12,6 @@ public partial class Vehicle
     public decimal PricePerNight { get; set; }
 
     public virtual ICollection<ReservationVehicle> ReservationVehicles { get; set; } = new List<ReservationVehicle>();
+
+    public virtual ICollection<VehicleImage> VehicleImages { get; set; } = new List<VehicleImage>();
 }

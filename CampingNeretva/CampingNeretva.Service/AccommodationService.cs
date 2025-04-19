@@ -8,15 +8,18 @@ using System.Text;
 using System.Threading.Tasks;
 using CampingNeretva.Model.SearchObjects;
 using CampingNeretva.Model.Requests;
+using Microsoft.EntityFrameworkCore;
+using CampingNeretva.Service.ImageServices;
 
 namespace CampingNeretva.Service
 {
     public class AccommodationService : BaseCRUDService<AccommodationModel, AccommodationSearchObject, Accommodation, AcommodationInsertRequest, AcommodationUpdateRequest>, IAccommodationService
     {
-
-        public AccommodationService(_200012Context context, IMapper mapper)
+        private readonly AccommodationImageService _accommodationImageService;
+        public AccommodationService(_200012Context context, IMapper mapper, AccommodationImageService accommodationImageService)
         : base(context, mapper)
         {
+            _accommodationImageService = accommodationImageService;
         }
 
         public override IQueryable<Accommodation> AddFilter(AccommodationSearchObject search, IQueryable<Accommodation> query)
@@ -34,6 +37,30 @@ namespace CampingNeretva.Service
             }
 
             return filteredQuery;
+        }
+
+        public override AccommodationModel GetById(int id)
+        {
+            var model = base.GetById(id);
+
+            if (model != null)
+            {
+                model.Images = _accommodationImageService.GetImages(id).GetAwaiter().GetResult();
+            }
+
+            return model;
+        }
+
+        public override PagedResult<AccommodationModel> GetPaged(AccommodationSearchObject search)
+        {
+            var result = base.GetPaged(search);
+
+            foreach (var accommodation in result.ResultList)
+            {
+                accommodation.Images = _accommodationImageService.GetImages(accommodation.AccommodationId).GetAwaiter().GetResult();
+            }
+
+            return result;
         }
 
     }

@@ -2,6 +2,7 @@ using CampingNeretva.API;
 using CampingNeretva.Model.SearchObjects;
 using CampingNeretva.Service;
 using CampingNeretva.Service.Database;
+using CampingNeretva.Service.ImageServices;
 using Mapster;
 using MapsterMapper;
 using Microsoft.AspNetCore.Authentication;
@@ -30,6 +31,9 @@ builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IUserTypeService, UserTypeService>();
 builder.Services.AddTransient<IFacilityService, FacilityService>();
 builder.Services.AddTransient<IImageService, ImageService>();
+builder.Services.AddTransient<AccommodationImageService>();
+builder.Services.AddTransient<PersonImageService>();
+builder.Services.AddTransient<VehicleImageService>();
 
 builder.Services.AddControllers();
 

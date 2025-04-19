@@ -11,5 +11,7 @@ public partial class Accommodation
 
     public decimal PricePerNight { get; set; }
 
+    public virtual ICollection<AccommodationImage> AccommodationImages { get; set; } = new List<AccommodationImage>();
+
     public virtual ICollection<ReservationAccommodation> ReservationAccommodations { get; set; } = new List<ReservationAccommodation>();
 }

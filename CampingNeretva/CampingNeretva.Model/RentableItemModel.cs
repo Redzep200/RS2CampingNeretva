@@ -12,5 +12,6 @@ namespace CampingNeretva.Model
         public string? Description { get; set; }
         public decimal PricePerDay { get; set; }
         public int AvailableQuantity { get; set; }
+        public List<ImageModel> Images { get; set; } = new List<ImageModel>();
     }
 }

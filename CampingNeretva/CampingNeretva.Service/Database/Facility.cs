@@ -12,4 +12,6 @@ public partial class Facility
     public string FacilityType { get; set; } = null!;
 
     public virtual ICollection<Activity> Activities { get; set; } = new List<Activity>();
+
+    public virtual ICollection<FacilityImage> FacilityImages { get; set; } = new List<FacilityImage>();
 }

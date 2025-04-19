@@ -10,5 +10,6 @@ namespace CampingNeretva.Model
 
         public string FacilityType { get; set; }
         public string? Description { get; set; }
+        public List<ImageModel> Images { get; set; } = new List<ImageModel>();
     }
 }

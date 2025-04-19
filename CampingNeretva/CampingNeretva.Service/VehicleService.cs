@@ -8,14 +8,17 @@ using System.Text;
 using System.Threading.Tasks;
 using CampingNeretva.Model.SearchObjects;
 using CampingNeretva.Model.Requests;
+using CampingNeretva.Service.ImageServices;
 
 namespace CampingNeretva.Service
 {
     public class VehicleService : BaseCRUDService<VehicleModel, VehicleSearchObject, Vehicle, VehicleInsertRequest, VehicleUpdateRequest>, IVehicleService
     {
+        private readonly VehicleImageService _vehicleImageService;
 
-        public VehicleService(_200012Context context, IMapper mapper)
+        public VehicleService(_200012Context context, IMapper mapper, VehicleImageService vehicleImageService)
         :base(context, mapper){
+            _vehicleImageService = vehicleImageService;
         }
 
         public override IQueryable<Vehicle> AddFilter(VehicleSearchObject search, IQueryable<Vehicle> query)
@@ -33,6 +36,30 @@ namespace CampingNeretva.Service
             }
 
             return filteredQuery;
+        }
+
+        public override VehicleModel GetById(int id)
+        {
+            var model = base.GetById(id);
+
+            if (model != null)
+            {
+                model.Images = _vehicleImageService.GetImages(id).GetAwaiter().GetResult();
+            }
+
+            return model;
+        }
+
+        public override PagedResult<VehicleModel> GetPaged(VehicleSearchObject search)
+        {
+            var result = base.GetPaged(search);
+
+            foreach (var vehicle in result.ResultList)
+            {
+                vehicle.Images = _vehicleImageService.GetImages(vehicle.VehicleId).GetAwaiter().GetResult();
+            }
+
+            return result;
         }
 
     }

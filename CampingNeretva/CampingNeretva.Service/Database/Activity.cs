@@ -17,6 +17,8 @@ public partial class Activity
 
     public int? FacilityId { get; set; }
 
+    public virtual ICollection<ActivityImage> ActivityImages { get; set; } = new List<ActivityImage>();
+
     public virtual Facility? Facility { get; set; }
 
     public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();

@@ -17,5 +17,7 @@ public partial class RentableItem
 
     public int? AvailableQuantity { get; set; }
 
+    public virtual ICollection<RentableItemImage> RentableItemImages { get; set; } = new List<RentableItemImage>();
+
     public virtual ICollection<ReservationRentable> ReservationRentables { get; set; } = new List<ReservationRentable>();
 }
