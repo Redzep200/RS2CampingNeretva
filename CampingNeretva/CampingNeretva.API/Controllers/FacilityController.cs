@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using CampingNeretva.Model.Requests;
 using Microsoft.AspNetCore.Authorization;
 using System.Dynamic;
+using CampingNeretva.Service.ImageServices;
 
 namespace CampingNeretva.API.Controllers
 {
@@ -12,8 +13,11 @@ namespace CampingNeretva.API.Controllers
     [Route("[controller]")]
     public class FacilityController : BaseCRUDController<FacilityModel, FacilitySearchObject, FacilityInsertRequest, FacilityUpdateRequest>
     {
-        public FacilityController(IFacilityService service)
+        private readonly FacilityImageService _imageService;
+
+        public FacilityController(IFacilityService service, FacilityImageService imageService)
         :base(service){
+            _imageService = imageService;
         }
 
         [AllowAnonymous]
@@ -38,6 +42,22 @@ namespace CampingNeretva.API.Controllers
         public override FacilityModel Update(int id, FacilityUpdateRequest request)
         {
             return base.Update(id, request);
+        }
+
+        [HttpPost("{facilityId}/images/{imageId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> AddImage(int facilityId, int imageId)
+        {
+            await _imageService.AddImage(facilityId, imageId);
+            return Ok();
+        }
+
+        [HttpDelete("{facilityId}/images/{imageId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> RemoveImage(int facilityId, int imageId)
+        {
+            await _imageService.RemoveImage(facilityId, imageId);
+            return Ok();
         }
     }
 }

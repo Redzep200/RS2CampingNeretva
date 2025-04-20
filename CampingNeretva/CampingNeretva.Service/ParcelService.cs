@@ -9,17 +9,18 @@ using System.Text;
 using System.Threading.Tasks;
 using CampingNeretva.Model.SearchObjects;
 using CampingNeretva.Model.Requests;
+using CampingNeretva.Service.ImageServices;
 
 namespace CampingNeretva.Service
 {
     public class ParcelService : BaseCRUDService<ParcelModel, ParcelSearchObject, Parcel, ParcelInsertRequest, ParcelUpdateRequest> ,IParcelService
     {
 
-        private readonly IImageService _imageService;
+        private readonly ParcelImageService _parcelImageService;
 
-        public ParcelService(_200012Context context, IMapper mapper, IImageService imageService = null) 
+        public ParcelService(_200012Context context, IMapper mapper, ParcelImageService parcelImageService) 
         :base(context, mapper){
-            _imageService = imageService;
+            _parcelImageService = parcelImageService;
         }
 
         public override IQueryable<Parcel> AddFilter(ParcelSearchObject search, IQueryable<Parcel> query)
@@ -56,16 +57,11 @@ namespace CampingNeretva.Service
 
         public override PagedResult<ParcelModel> GetPaged(ParcelSearchObject search)
         {
-            // Get the base paged result
             var result = base.GetPaged(search);
 
-            // If we have the image service, add images to each parcel
-            if (_imageService != null)
+            foreach (var parcel in result.ResultList)
             {
-                foreach (var parcel in result.ResultList)
-                {
-                    parcel.Images = _imageService.GetByParcelId(parcel.ParcelId);
-                }
+                parcel.Images = _parcelImageService.GetImages(parcel.ParcelId).GetAwaiter().GetResult();
             }
 
             return result;
@@ -73,14 +69,14 @@ namespace CampingNeretva.Service
 
         public override ParcelModel GetById(int id)
         {
-            var result = base.GetById(id);
+            var model = base.GetById(id);
 
-            if (result != null && _imageService != null)
+            if (model != null)
             {
-                result.Images = _imageService.GetByParcelId(id);
+                model.Images = _parcelImageService.GetImages(id).GetAwaiter().GetResult();
             }
 
-            return result;
+            return model;
         }
     }
 

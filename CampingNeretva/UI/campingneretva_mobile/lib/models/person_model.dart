@@ -16,7 +16,10 @@ class PersonType {
       id: json['id'],
       label: json['type'],
       price: json['pricePerNight'].toDouble(),
-      imageUrl: json['imageUrl'] ?? 'assets/default_person.png',
+      imageUrl:
+          (json['images'] as List).isNotEmpty
+              ? json['images'][0]['path']
+              : 'assets/default_xxx.png',
     );
   }
 }

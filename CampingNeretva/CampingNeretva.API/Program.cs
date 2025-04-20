@@ -11,14 +11,7 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddTransient<IParcelService>(provider =>
-    new ParcelService(
-        provider.GetRequiredService<_200012Context>(),
-        provider.GetRequiredService<IMapper>(),
-        provider.GetRequiredService<IImageService>()
-    )
-);
+builder.Services.AddTransient<IParcelService, ParcelService>();
 builder.Services.AddTransient<IActivityService, ActivityService>();
 builder.Services.AddTransient<IAccommodationService, AccommodationService>();
 builder.Services.AddTransient<IPersonService, PersonService>();
@@ -34,6 +27,9 @@ builder.Services.AddTransient<IImageService, ImageService>();
 builder.Services.AddTransient<AccommodationImageService>();
 builder.Services.AddTransient<PersonImageService>();
 builder.Services.AddTransient<VehicleImageService>();
+builder.Services.AddTransient<FacilityImageService>();
+builder.Services.AddTransient<ActivityImageService>();
+builder.Services.AddTransient<ParcelImageService>();
 
 builder.Services.AddControllers();
 
@@ -69,6 +65,15 @@ builder.Services.AddDbContext<_200012Context>(options => options.UseSqlServer(co
 
 builder.Services.AddMapster();
 builder.Services.AddAuthentication("BasicAuthentication").AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuthentication", null);
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
 
 var app = builder.Build();
 
@@ -80,6 +85,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowAll");
 
 app.UseAuthorization();
 

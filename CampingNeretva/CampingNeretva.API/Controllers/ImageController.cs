@@ -42,26 +42,11 @@ namespace CampingNeretva.API.Controllers
             }
         }
 
-        [HttpGet("parcel/{parcelId}")]
-        [AllowAnonymous]
-        public IActionResult GetByParcelId(int parcelId)
-        {
-            return Ok(_imageService.GetByParcelId(parcelId));
-        }
-
-        [HttpPost("parcel/{parcelId}/image/{imageId}")]
+        [HttpDelete("image/{imageId}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> AddImageToParcel(int parcelId, int imageId)
+        public async Task<IActionResult> RemoveImage(int imageId)
         {
-            await _imageService.AddImageToParcel(parcelId, imageId);
-            return Ok();
-        }
-
-        [HttpDelete("parcel/{parcelId}/image/{imageId}")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> RemoveImageFromParcel(int parcelId, int imageId)
-        {
-            await _imageService.RemoveImageFromParcel(parcelId, imageId);
+            await _imageService.RemoveImage(imageId);
             return Ok();
         }
     }

@@ -16,7 +16,10 @@ class Vehicle {
       id: json['id'],
       type: json['type'],
       price: json['pricePerNight'].toDouble(),
-      imageUrl: json['imageUrl'] ?? 'assets/default_vehicle.png',
+      imageUrl:
+          (json['images'] as List).isNotEmpty
+              ? json['images'][0]['path']
+              : 'assets/default_xxx.png',
     );
   }
 }

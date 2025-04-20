@@ -59,7 +59,6 @@ namespace CampingNeretva.Service.ImageServices
 
         public async Task RemoveImage(int entityId, int imageId)
         {
-            // Load all entities and filter in memory
             var allLinks = await Query.ToListAsync();
             var link = allLinks.FirstOrDefault(j => GetEntityId(j) == entityId && GetImageId(j) == imageId);
 

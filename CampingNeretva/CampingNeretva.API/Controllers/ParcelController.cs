@@ -4,6 +4,7 @@ using CampingNeretva.Service;
 using CampingNeretva.Model.SearchObjects;
 using CampingNeretva.Model.Requests;
 using Microsoft.AspNetCore.Authorization;
+using CampingNeretva.Service.ImageServices;
 
 namespace CampingNeretva.API.Controllers
 {
@@ -11,10 +12,9 @@ namespace CampingNeretva.API.Controllers
     [Route("[controller]")]
     public class ParcelController : BaseCRUDController<ParcelModel, ParcelSearchObject, ParcelInsertRequest, ParcelUpdateRequest>
     {
+        private readonly ParcelImageService _imageService;
 
-        private readonly IImageService _imageService;
-
-        public ParcelController(IParcelService service, IImageService imageService)
+        public ParcelController(IParcelService service, ParcelImageService imageService)
         : base(service)
         {
             _imageService = imageService;
@@ -25,18 +25,6 @@ namespace CampingNeretva.API.Controllers
         {
             var result = base.GetList(searchObject);
 
-            // If images aren't already loaded by the service, add them here
-            if (result?.ResultList != null)
-            {
-                foreach (var parcel in result.ResultList)
-                {
-                    if (parcel.Images == null || parcel.Images.Count == 0)
-                    {
-                        parcel.Images = _imageService.GetByParcelId(parcel.ParcelId);
-                    }
-                }
-            }
-
             return result;
         }
 
@@ -44,12 +32,6 @@ namespace CampingNeretva.API.Controllers
         public override ParcelModel GetById(int id)
         {
             var parcel = base.GetById(id);
-
-            // If images aren't already loaded by the service, add them here
-            if (parcel != null && (parcel.Images == null || parcel.Images.Count == 0))
-            {
-                parcel.Images = _imageService.GetByParcelId(id);
-            }
 
             return parcel;
         }
@@ -64,6 +46,22 @@ namespace CampingNeretva.API.Controllers
         public override ParcelModel Update(int id, ParcelUpdateRequest request)
         {
             return base.Update(id, request);
+        }
+
+        [HttpPost("{parcelId}/images/{imageId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> AddImage(int parcelId, int imageId)
+        {
+            await _imageService.AddImage(parcelId, imageId);
+            return Ok();
+        }
+
+        [HttpDelete("{parcelId}/images/{imageId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> RemoveImage(int parcelId, int imageId)
+        {
+            await _imageService.RemoveImage(parcelId, imageId);
+            return Ok();
         }
     }
 }

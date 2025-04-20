@@ -16,7 +16,10 @@ class Accommodation {
       id: json['id'],
       name: json['name'],
       price: json['pricePerNight'].toDouble(),
-      imageUrl: json['imageUrl'] ?? 'assets/default_accommodation.png',
+      imageUrl:
+          (json['images'] as List).isNotEmpty
+              ? json['images'][0]['path']
+              : 'assets/default_xxx.png',
     );
   }
 }

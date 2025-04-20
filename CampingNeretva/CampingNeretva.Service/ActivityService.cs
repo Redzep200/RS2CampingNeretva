@@ -10,13 +10,17 @@ using System.Threading.Tasks;
 using CampingNeretva.Model.SearchObjects;
 using System.Reflection.Metadata.Ecma335;
 using CampingNeretva.Model.Requests;
+using CampingNeretva.Service.ImageServices;
 
 namespace CampingNeretva.Service
 {
     public class ActivityService : BaseCRUDService<ActivityModel, ActivitySearchObject, Activity, ActivityInsertRequest, ActivityUpdateRequest>, IActivityService
     {
-        public ActivityService(_200012Context context, IMapper mapper)
+        private readonly ActivityImageService _activityImageService;
+
+        public ActivityService(_200012Context context, IMapper mapper, ActivityImageService activityImageService)
             :base(context, mapper){     
+            _activityImageService = activityImageService;
         }
 
         public override IQueryable<Activity> AddFilter(ActivitySearchObject search, IQueryable<Activity> query)
@@ -39,6 +43,30 @@ namespace CampingNeretva.Service
             }
 
             return filteredQuery;
+        }
+
+        public override ActivityModel GetById(int id)
+        {
+            var model = base.GetById(id);
+
+            if (model != null)
+            {
+                model.Images = _activityImageService.GetImages(id).GetAwaiter().GetResult();
+            }
+
+            return model;
+        }
+
+        public override PagedResult<ActivityModel> GetPaged(ActivitySearchObject search)
+        {
+            var result = base.GetPaged(search);
+
+            foreach (var activity in result.ResultList)
+            {
+                activity.Images = _activityImageService.GetImages(activity.ActivityId).GetAwaiter().GetResult();
+            }
+
+            return result;
         }
     }
 }

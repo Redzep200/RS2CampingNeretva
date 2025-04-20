@@ -63,44 +63,65 @@ namespace CampingNeretva.Service
             }
         }
 
-        public List<ImageModel> GetByParcelId(int parcelId)
+       
+
+        public async Task RemoveImage(int imageId)
         {
-            var images = _context.ParcelImages
-                .Include(pi => pi.Image)
-                .Where(pi => pi.ParcelId == parcelId)
-                .Select(pi => pi.Image)
-                .ToList();
-
-            return Mapper.Map<List<ImageModel>>(images);
-        }
-
-        public async Task AddImageToParcel(int parcelId, int imageId)
-        {
-            // Check if relationship already exists
-            var exists = await _context.ParcelImages
-                .AnyAsync(pi => pi.ParcelId == parcelId && pi.ImageId == imageId);
-
-            if (!exists)
+            // First, remove all references to this image from junction tables
+            var parcelImages = await _context.ParcelImages.Where(x => x.ImageId == imageId).ToListAsync();
+            if (parcelImages.Any())
             {
-                _context.ParcelImages.Add(new ParcelImage
-                {
-                    ParcelId = parcelId,
-                    ImageId = imageId
-                });
-
-                await _context.SaveChangesAsync();
+                _context.ParcelImages.RemoveRange(parcelImages);
             }
-        }
 
-        public async Task RemoveImageFromParcel(int parcelId, int imageId)
-        {
-            var parcelImage = await _context.ParcelImages
-                .FirstOrDefaultAsync(pi => pi.ParcelId == parcelId && pi.ImageId == imageId);
-
-            if (parcelImage != null)
+            var accommodationImages = await _context.AccommodationImages.Where(x => x.ImageId == imageId).ToListAsync();
+            if (accommodationImages.Any())
             {
-                _context.ParcelImages.Remove(parcelImage);
+                _context.AccommodationImages.RemoveRange(accommodationImages);
+            }
+
+            var activityImages = await _context.ActivityImages.Where(x => x.ImageId == imageId).ToListAsync();
+            if (activityImages.Any())
+            {
+                _context.ActivityImages.RemoveRange(activityImages);
+            }
+
+            var facilityImages = await _context.FacilityImages.Where(x => x.ImageId == imageId).ToListAsync();
+            if (facilityImages.Any())
+            {
+                _context.FacilityImages.RemoveRange(facilityImages);
+            }
+
+            var personImages = await _context.PersonImages.Where(x => x.ImageId == imageId).ToListAsync();
+            if (personImages.Any())
+            {
+                _context.PersonImages.RemoveRange(personImages);
+            }
+
+            var vehicleImages = await _context.VehicleImages.Where(x => x.ImageId == imageId).ToListAsync();
+            if (vehicleImages.Any())
+            {
+                _context.VehicleImages.RemoveRange(vehicleImages);
+            }
+
+            // Save changes after removing all references
+            await _context.SaveChangesAsync();
+
+            // Now find and remove the image itself
+            var image = await _context.Images
+                .FirstOrDefaultAsync(x => x.ImageId == imageId);
+
+            if (image != null)
+            {
+                _context.Images.Remove(image);
                 await _context.SaveChangesAsync();
+
+                // Optionally remove the physical file
+                string filePath = Path.Combine(_uploadPath, Path.GetFileName(image.Path));
+                if (File.Exists(filePath))
+                {
+                    File.Delete(filePath);
+                }
             }
         }
 
