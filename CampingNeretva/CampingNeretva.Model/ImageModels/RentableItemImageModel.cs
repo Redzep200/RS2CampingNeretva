@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace CampingNeretva.Model
+namespace CampingNeretva.Model.ImageModels
 {
     public class RentableItemImageModel
     {

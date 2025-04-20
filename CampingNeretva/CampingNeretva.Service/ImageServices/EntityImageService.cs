@@ -1,4 +1,4 @@
-﻿using CampingNeretva.Model;
+﻿using CampingNeretva.Model.ImageModels;
 using CampingNeretva.Service.Database;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;

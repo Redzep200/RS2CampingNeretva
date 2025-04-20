@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace CampingNeretva.Model
+namespace CampingNeretva.Model.ImageModels
 {
-    public class ActivityImageModel
+    public class FacilityImageModel
     {
-        public int ActivityImageId { get; set; }
-        public int ActivityId { get; set; }
+        public int FacilityImageId { get; set; }
+        public int FacilityId { get; set; }
         public int ImageId { get; set; }
         public ImageModel Image { get; set; }
     }

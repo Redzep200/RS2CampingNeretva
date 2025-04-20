@@ -1,4 +1,4 @@
-﻿using CampingNeretva.Model;
+﻿using CampingNeretva.Model.ImageModels;
 using CampingNeretva.Model.Requests;
 using CampingNeretva.Model.SearchObjects;
 using CampingNeretva.Service;
