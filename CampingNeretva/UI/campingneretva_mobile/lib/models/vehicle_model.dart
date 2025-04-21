@@ -13,7 +13,7 @@ class Vehicle {
 
   factory Vehicle.fromJson(Map<String, dynamic> json) {
     return Vehicle(
-      id: json['id'],
+      id: json['vehicleId'],
       type: json['type'],
       price: json['pricePerNight'].toDouble(),
       imageUrl:

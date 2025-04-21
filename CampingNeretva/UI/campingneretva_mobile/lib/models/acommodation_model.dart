@@ -1,20 +1,20 @@
 class Accommodation {
   final int id;
-  final String name;
+  final String type;
   final double price;
   final String imageUrl;
 
   Accommodation({
     required this.id,
-    required this.name,
+    required this.type,
     required this.price,
     required this.imageUrl,
   });
 
   factory Accommodation.fromJson(Map<String, dynamic> json) {
     return Accommodation(
-      id: json['id'],
-      name: json['name'],
+      id: json['accommodationId'],
+      type: json['type'],
       price: json['pricePerNight'].toDouble(),
       imageUrl:
           (json['images'] as List).isNotEmpty

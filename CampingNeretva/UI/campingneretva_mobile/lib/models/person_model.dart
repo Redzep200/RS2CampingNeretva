@@ -1,20 +1,20 @@
 class PersonType {
   final int id;
-  final String label;
+  final String type;
   final double price;
   final String imageUrl;
 
   PersonType({
     required this.id,
-    required this.label,
+    required this.type,
     required this.price,
     required this.imageUrl,
   });
 
   factory PersonType.fromJson(Map<String, dynamic> json) {
     return PersonType(
-      id: json['id'],
-      label: json['type'],
+      id: json['personId'],
+      type: json['type'],
       price: json['pricePerNight'].toDouble(),
       imageUrl:
           (json['images'] as List).isNotEmpty

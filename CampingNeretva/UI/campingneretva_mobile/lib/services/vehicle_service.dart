@@ -3,10 +3,12 @@ import 'package:http/http.dart' as http;
 import '../models/vehicle_model.dart';
 
 class VehicleService {
-  final String baseUrl = 'http://localhost:5205/Vehicle';
+  final String baseUrl = 'http://192.168.0.15:5205/Vehicle';
 
   Future<List<Vehicle>> getVehicles() async {
     final response = await http.get(Uri.parse(baseUrl));
+    print('BODY: ${response.body}');
+    print('STATUS: ${response.statusCode}');
 
     if (response.statusCode == 200) {
       final List data = jsonDecode(response.body)['resultList'];

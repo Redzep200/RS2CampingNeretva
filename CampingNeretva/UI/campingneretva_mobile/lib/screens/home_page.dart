@@ -8,6 +8,7 @@ import '../services/person_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
+  static const String baseUrl = "http://192.168.0.15:5205";
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -75,7 +76,7 @@ class _HomePageState extends State<HomePage> {
     String image = '';
 
     if (item is Accommodation) {
-      title = item.name;
+      title = item.type;
       price = item.price;
       image = item.imageUrl;
     } else if (item is Vehicle) {
@@ -83,10 +84,15 @@ class _HomePageState extends State<HomePage> {
       price = item.price;
       image = item.imageUrl;
     } else if (item is PersonType) {
-      title = item.label;
+      title = item.type;
       price = item.price;
       image = item.imageUrl;
     }
+
+    print("Image path from backend: $image");
+
+    final String fullImageUrl = "${HomePage.baseUrl}$image";
+    print("Full image URL: $fullImageUrl");
 
     return Container(
       width: 140,
@@ -96,7 +102,18 @@ class _HomePageState extends State<HomePage> {
           Expanded(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.asset(image, fit: BoxFit.cover),
+              child: Image.network(
+                fullImageUrl,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return const Center(child: CircularProgressIndicator());
+                },
+                errorBuilder:
+                    (context, error, stackTrace) =>
+                        const Icon(Icons.broken_image, size: 50),
+              ),
             ),
           ),
           const SizedBox(height: 6),
