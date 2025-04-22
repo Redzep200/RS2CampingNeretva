@@ -5,6 +5,7 @@ import '../models/person_model.dart';
 import '../services/acommodation_service.dart';
 import '../services/vehicle_service.dart';
 import '../services/person_service.dart';
+import '../widgets/app_scaffold.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -54,7 +55,12 @@ class _HomePageState extends State<HomePage> {
       children: [
         Text(
           title,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            fontFamily: 'MochiyPop',
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Colors.green,
+          ),
         ),
         const SizedBox(height: 8),
         SizedBox(
@@ -89,53 +95,73 @@ class _HomePageState extends State<HomePage> {
       image = item.imageUrl;
     }
 
-    print("Image path from backend: $image");
-
     final String fullImageUrl = "${HomePage.baseUrl}$image";
-    print("Full image URL: $fullImageUrl");
 
     return Container(
       width: 140,
       margin: const EdgeInsets.only(right: 12),
-      child: Column(
-        children: [
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                fullImageUrl,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return const Center(child: CircularProgressIndicator());
-                },
-                errorBuilder:
-                    (context, error, stackTrace) =>
-                        const Icon(Icons.broken_image, size: 50),
+      child: Card(
+        elevation: 3,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: AspectRatio(
+                aspectRatio: 1.2,
+                child: Image.network(
+                  fullImageUrl,
+                  fit: BoxFit.cover,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return const Center(child: CircularProgressIndicator());
+                  },
+                  errorBuilder:
+                      (context, error, stackTrace) =>
+                          const Icon(Icons.broken_image, size: 50),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 6),
-          Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-          Text(
-            '${price.toStringAsFixed(2)} KM',
-            style: const TextStyle(fontSize: 12),
-          ),
-        ],
+            Container(
+              color: Colors.green.shade100,
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontFamily: 'MochiyPop',
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                  Text(
+                    "${price.toStringAsFixed(2)} KM",
+                    style: const TextStyle(fontSize: 12, color: Colors.black54),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Camping Neretva')),
+    return AppScaffold(
+      title: 'Camping Neretva',
       body:
           isLoading
               ? const Center(child: CircularProgressIndicator())
               : SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

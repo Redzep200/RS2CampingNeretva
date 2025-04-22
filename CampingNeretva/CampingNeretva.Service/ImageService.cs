@@ -20,7 +20,7 @@ namespace CampingNeretva.Service
         public ImageService(_200012Context context, IMapper mapper, string uploadPath = null)
             : base(context, mapper)
         {
-            _uploadPath = uploadPath ?? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "uploads", "images");
+            _uploadPath = uploadPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "images");
 
             // Create directory if it doesn't exist
             if (!Directory.Exists(_uploadPath))
