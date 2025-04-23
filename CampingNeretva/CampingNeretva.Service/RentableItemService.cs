@@ -40,5 +40,31 @@ namespace CampingNeretva.Service
             entity.AvailableQuantity = entity.TotalQuantity;
         }
 
+        public override PagedResult<RentableItemModel> GetPaged(RentableItemSearchObject search)
+        {
+            var result = base.GetPaged(search);
+
+            if (search.DateFrom.HasValue && search.DateTo.HasValue)
+            {
+                foreach (var item in result.ResultList)
+                {
+                    var reserved = _context.ReservationRentables
+                        .Where(rr =>
+                            rr.ItemId == item.ItemId &&
+                            rr.Reservation.CheckInDate < search.DateTo &&
+                            rr.Reservation.CheckOutDate > search.DateFrom)
+                        .Sum(rr => rr.Quantity);
+
+                    item.AvailableQuantity = item.TotalQuantity - reserved;
+                }
+
+                result.ResultList = result.ResultList
+                    .Where(x => x.AvailableQuantity > 0)
+                    .ToList();
+            }
+
+            return result;
+        }
+
     }
 }

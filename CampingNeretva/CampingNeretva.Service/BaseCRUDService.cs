@@ -14,7 +14,7 @@ namespace CampingNeretva.Service
     {
         public BaseCRUDService(_200012Context context, IMapper mapper) : base(context, mapper) { }
 
-        public TModel Insert(TInsert request)
+        public virtual TModel Insert(TInsert request)
         {
             TDbEntity entity = Mapper.Map<TDbEntity>(request);
 

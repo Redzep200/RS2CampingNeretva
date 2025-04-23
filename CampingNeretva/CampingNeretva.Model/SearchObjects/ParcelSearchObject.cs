@@ -10,5 +10,7 @@ namespace CampingNeretva.Model.SearchObjects
         public bool? Shade { get; set; }
         public bool? Electricity { get; set; }
         public bool? AvailabilityStatus { get; set; }
+        public DateTime? DateFrom { get; set; }
+        public DateTime? DateTo { get; set; }
     }
 }

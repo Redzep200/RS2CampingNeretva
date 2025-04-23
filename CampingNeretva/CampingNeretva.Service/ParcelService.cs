@@ -59,6 +59,20 @@ namespace CampingNeretva.Service
         {
             var result = base.GetPaged(search);
 
+            if (search.DateFrom.HasValue && search.DateTo.HasValue)
+            {
+                var reservedParcelIds = _context.Reservations
+                    .Where(r =>
+                        r.CheckInDate < search.DateTo.Value &&
+                        r.CheckOutDate > search.DateFrom.Value)
+                    .Select(r => r.ParcelId)
+                    .ToList();
+
+                result.ResultList = result.ResultList
+                    .Where(p => !reservedParcelIds.Contains(p.ParcelId))
+                    .ToList();
+            }
+
             foreach (var parcel in result.ResultList)
             {
                 parcel.Images = _parcelImageService.GetImages(parcel.ParcelId).GetAwaiter().GetResult();

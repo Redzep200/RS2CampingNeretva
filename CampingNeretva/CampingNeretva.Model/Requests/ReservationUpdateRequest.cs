@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace CampingNeretva.Model.SearchObjects
+namespace CampingNeretva.Model.Requests
 {
-    public class ReservationSearchObject : BaseSearchObject
+    public class ReservationUpdateRequest
     {
-        public int? UserId { get; set; }
-        public int? ParcelId { get; set; }
         public DateTime? CheckInDate { get; set; }
         public DateTime? CheckOutDate { get; set; }
+        public decimal? TotalPrice { get; set; }
+        public string? PaymentStatus { get; set; }
     }
 }
