@@ -67,6 +67,18 @@ namespace CampingNeretva.Service
             decimal totalPrice = 0;
             var days = (request.CheckOutDate - request.CheckInDate).Days;
 
+            var overlappingReservation = _context.Reservations
+                .Where(r => r.ParcelId == request.ParcelId)
+                    .Where(r =>
+                        r.CheckInDate < request.CheckOutDate &&
+                        r.CheckOutDate > request.CheckInDate)
+                            .FirstOrDefault();
+
+            if (overlappingReservation != null)
+            {
+                throw new Exception("Parcel is already reserved for the selected dates.");
+            }
+
             // Rentable items
             if (request.RentableItems != null && request.RentableItems.Any())
             {
@@ -142,12 +154,19 @@ namespace CampingNeretva.Service
             {
                 foreach (var ri in request.RentableItems)
                 {
-                    _context.ReservationRentables.Add(new ReservationRentable
+                    if (ri?.ItemId > 0)  
                     {
-                        ReservationId = entity.ReservationId,
-                        ItemId = ri.ItemId,
-                        Quantity = ri.Quantity
-                    });
+                        var rentableItem = _context.RentableItems.Find(ri.ItemId);
+                        if (rentableItem != null)
+                        {
+                            _context.ReservationRentables.Add(new ReservationRentable
+                            {
+                                ReservationId = entity.ReservationId,
+                                ItemId = ri.ItemId,
+                                Quantity = ri.Quantity
+                            });
+                        }
+                    }
                 }
             }
 
@@ -163,11 +182,16 @@ namespace CampingNeretva.Service
             if (request.Activities != null && request.Activities.Any())
             {
                 foreach (var act in request.Activities)
-                {
-                    _context.Database.ExecuteSqlRaw(
-                        "INSERT INTO ReservationActivities (ReservationId, ActivityId) VALUES ({0}, {1})",
-                        entity.ReservationId, act.ActivityId);
-                }
+                    if (act?.ActivityId > 0) 
+                    {
+                        var existingActivity = _context.Activities.Find(act.ActivityId);
+                        if (existingActivity != null)
+                        {
+                            _context.Database.ExecuteSqlRaw(
+                                "INSERT INTO ReservationActivities (ReservationId, ActivityId) VALUES ({0}, {1})",
+                                entity.ReservationId, act.ActivityId);
+                        }
+                    }
             }
 
             _context.SaveChanges();
