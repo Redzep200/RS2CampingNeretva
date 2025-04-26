@@ -35,6 +35,30 @@ namespace CampingNeretva.Service
             if (search?.CheckOutDate.HasValue == true)
                 filteredQuery = filteredQuery.Where(r => r.CheckOutDate <= search.CheckOutDate);
 
+            if (search?.IsPersonsIncluded == true)
+            {
+                filteredQuery = filteredQuery.Include(x => x.ReservationPeople).ThenInclude(rp=>rp.Person);
+            }
+
+            if (search?.IsVehicleIncluded == true)
+            {
+                filteredQuery = filteredQuery.Include(x => x.ReservationVehicles).ThenInclude(rv=>rv.Vehicle);
+            }
+
+            if (search?.IsAccommodationIncluded == true)
+            {
+                filteredQuery = filteredQuery.Include(x => x.ReservationAccommodations).ThenInclude(ra=>ra.Accommodation);
+            }
+
+            if (search?.IsRentableItemsIncluded == true)
+            {
+                filteredQuery = filteredQuery.Include(x => x.ReservationRentables).ThenInclude(rr=>rr.Item);
+            }
+
+            if (search?.IsActivitiesIncluded == true)
+            {
+                filteredQuery = filteredQuery.Include(x => x.Activities);
+            }
             return filteredQuery;
         }
 
@@ -44,12 +68,15 @@ namespace CampingNeretva.Service
             var days = (request.CheckOutDate - request.CheckInDate).Days;
 
             // Rentable items
-            foreach (var ri in request.RentableItems)
+            if (request.RentableItems != null && request.RentableItems.Any())
             {
-                var item = _context.RentableItems.Find(ri.ItemId);
-                if (item != null)
+                foreach (var ri in request.RentableItems)
                 {
-                    totalPrice += item.PricePerDay * ri.Quantity * days;
+                    var item = _context.RentableItems.Find(ri.ItemId);
+                    if (item != null)
+                    {
+                        totalPrice += item.PricePerDay * ri.Quantity * days;
+                    }
                 }
             }
 
@@ -64,7 +91,7 @@ namespace CampingNeretva.Service
             }
 
             // People
-            foreach (var person in request.People)
+            foreach (var person in request.Persons)
             {
                 var p = _context.Persons.Find(person.PersonId);
                 if (p != null)
@@ -84,12 +111,15 @@ namespace CampingNeretva.Service
             }
 
             // Activities (charged once per activity per reservation)
-            foreach (var activity in request.Activities)
+            if (request.Activities != null && request.Activities.Any())
             {
-                var a = _context.Activities.Find(activity.ActivityId);
-                if (a != null)
+                foreach (var activity in request.Activities)
                 {
-                    totalPrice += a.Price;
+                    var a = _context.Activities.Find(activity.ActivityId);
+                    if (a != null)
+                    {
+                        totalPrice += a.Price;
+                    }
                 }
             }
 
@@ -103,13 +133,25 @@ namespace CampingNeretva.Service
 
             beforeInsert(request, entity);
 
+            entity.Activities = new List<Activity>();
+
             _context.Reservations.Add(entity);
             _context.SaveChanges();
 
-            foreach (var ri in request.RentableItems)
-                _context.ReservationRentables.Add(new ReservationRentable { ReservationId = entity.ReservationId, ItemId = ri.ItemId, Quantity = ri.Quantity });
+            if (request.RentableItems != null && request.RentableItems.Any())
+            {
+                foreach (var ri in request.RentableItems)
+                {
+                    _context.ReservationRentables.Add(new ReservationRentable
+                    {
+                        ReservationId = entity.ReservationId,
+                        ItemId = ri.ItemId,
+                        Quantity = ri.Quantity
+                    });
+                }
+            }
 
-            foreach (var person in request.People)
+            foreach (var person in request.Persons)
                 _context.ReservationPersons.Add(new ReservationPerson { ReservationId = entity.ReservationId, PersonId = person.PersonId, Quantity = person.Quantity });
 
             foreach (var acc in request.Accommodations)
@@ -118,16 +160,13 @@ namespace CampingNeretva.Service
             foreach (var vehicle in request.Vehicles)
                 _context.ReservationVehicles.Add(new ReservationVehicle { ReservationId = entity.ReservationId, VehicleId = vehicle.VehicleId, Quantity = vehicle.Quantity });
 
-            foreach (var act in request.Activities)
+            if (request.Activities != null && request.Activities.Any())
             {
-                var activity = _context.Activities.Local
-                    .FirstOrDefault(a => a.ActivityId == act.ActivityId)
-                    ?? _context.Activities
-                    .FirstOrDefault(a => a.ActivityId == act.ActivityId);
-
-                if (activity != null)
+                foreach (var act in request.Activities)
                 {
-                    entity.Activities.Add(activity);
+                    _context.Database.ExecuteSqlRaw(
+                        "INSERT INTO ReservationActivities (ReservationId, ActivityId) VALUES ({0}, {1})",
+                        entity.ReservationId, act.ActivityId);
                 }
             }
 
@@ -136,6 +175,15 @@ namespace CampingNeretva.Service
             return Mapper.Map<ReservationModel>(entity);
         }
 
+        public override PagedResult<ReservationModel> GetPaged(ReservationSearchObject search)
+        {
+            return base.GetPaged(search);
+        }
+
+        public override ReservationModel GetById(int id)
+        {
+            return base.GetById(id);
+        }
 
     }
 }
