@@ -10,5 +10,7 @@ namespace CampingNeretva.Model.Requests
         public bool Shade { get; set; }
         public bool Electricity { get; set; }
         public string? Description { get; set; }
+        public int ParcelAccommodationId { get; set; }
+        public int ParcelTypeId { get; set; }
     }
 }

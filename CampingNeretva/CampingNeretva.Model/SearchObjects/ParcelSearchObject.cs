@@ -12,5 +12,7 @@ namespace CampingNeretva.Model.SearchObjects
         public bool? AvailabilityStatus { get; set; }
         public DateTime? DateFrom { get; set; }
         public DateTime? DateTo { get; set; }
+        public bool? IsParcelAccommodationIncluded { get; set; }
+        public bool? IsParcelTypeIncluded { get; set; }
     }
 }

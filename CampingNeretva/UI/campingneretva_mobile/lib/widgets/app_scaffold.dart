@@ -38,7 +38,7 @@ class AppScaffold extends StatelessWidget {
               // Buttons list
               Expanded(
                 child: ListView(
-                  children: const [
+                  children: [
                     _DrawerItem(title: "Reservations", icon: Icons.book_online),
                     _DrawerItem(title: "Pitches", icon: Icons.terrain),
                     _DrawerItem(title: "Rate Employees", icon: Icons.star_rate),
@@ -46,7 +46,13 @@ class AppScaffold extends StatelessWidget {
                       title: "Activities and renting",
                       icon: Icons.sports_kabaddi,
                     ),
-                    _DrawerItem(title: "Facilities", icon: Icons.cabin),
+                    _DrawerItem(
+                      title: "Facilities",
+                      icon: Icons.cabin,
+                      onTap: () {
+                        Navigator.pushNamed(context, '/facilities');
+                      },
+                    ),
                     _DrawerItem(
                       title: "Reservation history",
                       icon: Icons.history,
@@ -116,18 +122,16 @@ class AppScaffold extends StatelessWidget {
 class _DrawerItem extends StatelessWidget {
   final String title;
   final IconData icon;
+  final VoidCallback? onTap;
 
-  const _DrawerItem({required this.title, required this.icon});
+  const _DrawerItem({required this.title, required this.icon, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
       leading: Icon(icon, color: Colors.green),
       title: Text(title),
-      onTap: () {
-        // We'll wire these up later
-        Navigator.pop(context);
-      },
+      onTap: onTap ?? () => Navigator.pop(context),
     );
   }
 }

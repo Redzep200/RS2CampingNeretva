@@ -13,6 +13,8 @@ namespace CampingNeretva.Model
         public bool Electricity { get; set; }
         public string? Description { get; set; }
         public bool AvailabilityStatus { get; set; }
+        public ParcelAccommodationModel ParcelAccommodation { get; set; }
+        public ParcelTypeModel ParcelType { get; set; }
         public List<ImageModel> Images { get; set; } = new List<ImageModel>();
     }
 }

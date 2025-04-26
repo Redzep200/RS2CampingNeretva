@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using CampingNeretva.Model.SearchObjects;
 using CampingNeretva.Model.Requests;
 using CampingNeretva.Service.ImageServices;
+using Microsoft.EntityFrameworkCore;
 
 namespace CampingNeretva.Service
 {
@@ -45,6 +46,16 @@ namespace CampingNeretva.Service
             if (search?.AvailabilityStatus.HasValue == true)
             {
                 filteredQuery = filteredQuery.Where(x => x.AvailabilityStatus == search.AvailabilityStatus);
+            }
+
+            if (search?.IsParcelAccommodationIncluded == true)
+            {
+                filteredQuery = filteredQuery.Include(x => x.ParcelAccommodation);
+            }
+
+            if (search?.IsParcelTypeIncluded == true)
+            {
+                filteredQuery = filteredQuery.Include(x => x.ParcelType);
             }
 
             return filteredQuery;
