@@ -58,6 +58,34 @@ namespace CampingNeretva.Service
                 filteredQuery = filteredQuery.Include(x => x.ParcelType);
             }
 
+            if (!string.IsNullOrWhiteSpace(search.ParcelTypeName))
+            {
+                filteredQuery = filteredQuery.Where(x =>
+                    x.ParcelType != null &&
+                    x.ParcelType.ParcelType1.ToLower().Contains(search.ParcelTypeName.ToLower()));
+            }
+
+            if (!string.IsNullOrWhiteSpace(search.ParcelAccommodationName))
+            {
+                filteredQuery = filteredQuery.Where(x =>
+                    x.ParcelAccommodation != null &&
+                    x.ParcelAccommodation.ParcelAccommodation1.ToLower().Contains(search.ParcelAccommodationName.ToLower()));
+            }
+
+            if (search?.DateFrom.HasValue == true && search?.DateTo.HasValue == true)
+            {
+                var reservedParcelIds = _context.Reservations
+                    .Where(r =>
+                        r.CheckInDate < search.DateTo.Value &&
+                        r.CheckOutDate > search.DateFrom.Value)
+                    .Select(r => r.ParcelId)
+                    .ToList();
+
+                filteredQuery = filteredQuery.Where(p => !reservedParcelIds.Contains(p.ParcelId));
+            }
+
+            Console.WriteLine($"ParcelTypeName: {search.ParcelTypeName}");
+            Console.WriteLine($"ParcelAccommodationName: {search.ParcelAccommodationName}");
             return filteredQuery;
         }
 
@@ -69,20 +97,6 @@ namespace CampingNeretva.Service
         public override PagedResult<ParcelModel> GetPaged(ParcelSearchObject search)
         {
             var result = base.GetPaged(search);
-
-            if (search.DateFrom.HasValue && search.DateTo.HasValue)
-            {
-                var reservedParcelIds = _context.Reservations
-                    .Where(r =>
-                        r.CheckInDate < search.DateTo.Value &&
-                        r.CheckOutDate > search.DateFrom.Value)
-                    .Select(r => r.ParcelId)
-                    .ToList();
-
-                result.ResultList = result.ResultList
-                    .Where(p => !reservedParcelIds.Contains(p.ParcelId))
-                    .ToList();
-            }
 
             foreach (var parcel in result.ResultList)
             {

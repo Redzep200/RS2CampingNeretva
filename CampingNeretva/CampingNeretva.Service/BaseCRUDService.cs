@@ -42,6 +42,18 @@ namespace CampingNeretva.Service
         }
 
         public virtual void beforeUpdate(TUpdate request, TDbEntity entity) { }
+
+        public virtual void Delete(int id)
+        {
+            var set = _context.Set<TDbEntity>();
+            var entity = set.Find(id);
+
+            if (entity == null)
+                throw new Exception("Entity not found");
+
+            set.Remove(entity);
+            _context.SaveChanges();
+        }
     }
 
 }

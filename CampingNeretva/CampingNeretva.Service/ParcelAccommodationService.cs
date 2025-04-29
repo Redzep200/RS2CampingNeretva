@@ -15,6 +15,7 @@ namespace CampingNeretva.Service
     {
         public ParcelAccommodationService(_200012Context context, IMapper mapper) : base(context, mapper)
         {
+            
         }
     }
 }

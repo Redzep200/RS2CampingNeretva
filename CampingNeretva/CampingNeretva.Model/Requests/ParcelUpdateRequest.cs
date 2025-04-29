@@ -8,5 +8,7 @@ namespace CampingNeretva.Model.Requests
     {
         public string? Description { get; set; }
         public bool AvailabilityStatus { get; set; }
+        public int ParcelAccommodationId { get; set; }
+        public int ParcelTypeId { get; set; }
     }
 }

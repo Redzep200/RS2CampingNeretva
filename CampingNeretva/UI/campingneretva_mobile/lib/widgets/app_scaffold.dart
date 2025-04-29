@@ -40,7 +40,13 @@ class AppScaffold extends StatelessWidget {
                 child: ListView(
                   children: [
                     _DrawerItem(title: "Reservations", icon: Icons.book_online),
-                    _DrawerItem(title: "Pitches", icon: Icons.terrain),
+                    _DrawerItem(
+                      title: "Parcels",
+                      icon: Icons.terrain,
+                      onTap: () {
+                        Navigator.pushNamed(context, '/parcels');
+                      },
+                    ),
                     _DrawerItem(title: "Rate Employees", icon: Icons.star_rate),
                     _DrawerItem(
                       title: "Activities and renting",

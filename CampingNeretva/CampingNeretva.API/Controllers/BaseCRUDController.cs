@@ -27,5 +27,12 @@ namespace CampingNeretva.API.Controllers
         {
             return _service.Update(id, request);
         }
+
+        [HttpDelete("{id}")]
+        public virtual IActionResult Delete(int id)
+        {
+            _service.Delete(id);
+            return Ok();
+        }
     }
 }
