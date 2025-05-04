@@ -11,5 +11,6 @@ namespace CampingNeretva.Service
 {
     public interface IRentableItemService : ICRUDService<RentableItemModel, RentableItemSearchObject, RentableItemInsertRequest, RentableItemsUpdateRequest>
     {
+        public List<RentableItemModel> GetAvailable(DateTime from, DateTime until);
     }
 }

@@ -51,6 +51,9 @@ class AppScaffold extends StatelessWidget {
                     _DrawerItem(
                       title: "Activities and renting",
                       icon: Icons.sports_kabaddi,
+                      onTap: () {
+                        Navigator.pushNamed(context, '/activities-rentables');
+                      },
                     ),
                     _DrawerItem(
                       title: "Facilities",

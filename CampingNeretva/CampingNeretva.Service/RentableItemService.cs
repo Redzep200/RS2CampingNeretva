@@ -9,13 +9,18 @@ using System.Text;
 using System.Threading.Tasks;
 using CampingNeretva.Model.SearchObjects;
 using CampingNeretva.Model.Requests;
+using CampingNeretva.Service.ImageServices;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CampingNeretva.Service
 {
     public class RentableItemService : BaseCRUDService<RentableItemModel, RentableItemSearchObject, RentableItem, RentableItemInsertRequest, RentableItemsUpdateRequest>, IRentableItemService
     {
-        public RentableItemService(_200012Context context, IMapper mapper)
+        private readonly RentableItemImageService _rentableItemImageService;
+
+        public RentableItemService(_200012Context context, IMapper mapper, RentableItemImageService rentableItemImageService)
         :base(context, mapper){
+            _rentableItemImageService = rentableItemImageService;
         }
 
         public override IQueryable<RentableItem> AddFilter(RentableItemSearchObject search, IQueryable<RentableItem> query)
@@ -58,12 +63,83 @@ namespace CampingNeretva.Service
                     item.AvailableQuantity = item.TotalQuantity - reserved;
                 }
 
+                // Remove fully booked items
                 result.ResultList = result.ResultList
                     .Where(x => x.AvailableQuantity > 0)
                     .ToList();
             }
+            else
+            {
+                foreach (var item in result.ResultList)
+                {
+                    item.AvailableQuantity = item.TotalQuantity;
+                }
+            }
+
+
+            foreach (var item in result.ResultList)
+            {
+                item.Images = _rentableItemImageService.GetImages(item.ItemId).GetAwaiter().GetResult();
+            }
 
             return result;
+        }
+
+
+        public List<RentableItemModel> GetAvailable(DateTime from, DateTime until)
+        {
+            // Get reserved quantities in the selected range
+            var reservedQuantities = _context.ReservationRentables
+                .Where(r =>
+                    r.Reservation.CheckInDate < until &&
+                    r.Reservation.CheckOutDate > from)
+                .GroupBy(r => r.ItemId)
+                .Select(g => new
+                {
+                    RentableItemId = g.Key,
+                    ReservedQuantity = g.Sum(r => r.Quantity)
+                })
+                .ToDictionary(x => x.RentableItemId, x => x.ReservedQuantity);
+
+            // Load all items with images
+            var items = _context.RentableItems
+                .Include(x => x.RentableItemImages)
+                .ToList();
+
+            var models = new List<RentableItemModel>();
+
+            foreach (var item in items)
+            {
+                var reserved = reservedQuantities.TryGetValue(item.ItemId, out var q) ? q : 0;
+                var availableQuantity = item.TotalQuantity - reserved;
+
+                if (availableQuantity > 0)
+                {
+                    var model = Mapper.Map<RentableItemModel>(item);
+                    model.AvailableQuantity = availableQuantity;
+                    model.Images = _rentableItemImageService.GetImages(item.ItemId).GetAwaiter().GetResult();
+                    models.Add(model);
+
+                }
+            }
+
+
+
+            return models;
+        }
+
+
+
+        public override RentableItemModel GetById(int id)
+        {
+            var model = base.GetById(id);
+
+            if (model != null)
+            {
+                model.Images = _rentableItemImageService.GetImages(id).GetAwaiter().GetResult();
+            }
+
+            return model;
         }
 
     }

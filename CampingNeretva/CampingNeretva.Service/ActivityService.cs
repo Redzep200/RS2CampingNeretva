@@ -42,6 +42,13 @@ namespace CampingNeretva.Service
                 filteredQuery = filteredQuery.Include(x => x.Facility);
             }
 
+            if (search?.DateFrom.HasValue == true && search?.DateTo.HasValue == true)
+            {
+                query = query.Where(x =>
+                    x.Date >= search.DateFrom.Value &&
+                    x.Date <= search.DateTo.Value);
+            }
+
             return filteredQuery;
         }
 

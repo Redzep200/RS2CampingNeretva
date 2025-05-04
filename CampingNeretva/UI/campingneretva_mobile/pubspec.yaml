@@ -63,6 +63,7 @@ flutter:
     - family: MochiyPop
       fonts:
         - asset: assets/fonts/MochiyPopPOne-Regular.ttf
+  
 
   # To add assets to your application, add an assets section, like this:
   # assets:

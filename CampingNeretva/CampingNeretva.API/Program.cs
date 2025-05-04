@@ -30,6 +30,7 @@ builder.Services.AddTransient<VehicleImageService>();
 builder.Services.AddTransient<FacilityImageService>();
 builder.Services.AddTransient<ActivityImageService>();
 builder.Services.AddTransient<ParcelImageService>();
+builder.Services.AddTransient<RentableItemImageService>();
 builder.Services.AddTransient<IReservationService, ReservationService>();
 builder.Services.AddTransient<IParcelAccommodationService, ParcelAccommodationService>();
 builder.Services.AddTransient<IParcelTypeService, ParcelTypeService>();

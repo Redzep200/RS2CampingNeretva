@@ -9,5 +9,7 @@ namespace CampingNeretva.Model.SearchObjects
         public string? NameGTE { get; set; }
         public decimal? Price { get; set; }
         public bool? IsFacilityTypeIncluded { get; set; }
+        public DateTime? DateFrom { get; set; }
+        public DateTime? DateTo { get; set; }
     }
 }
