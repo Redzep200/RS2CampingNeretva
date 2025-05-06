@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../services/auth_service.dart';
+import 'package:campingneretva_mobile/screens/login_page.dart';
 
 class AppScaffold extends StatelessWidget {
   final String title;
@@ -19,92 +21,160 @@ class AppScaffold extends StatelessWidget {
     return Scaffold(
       drawer: Drawer(
         child: SafeArea(
-          child: Column(
-            children: [
-              // Profile icon
-              const SizedBox(height: 24),
-              GestureDetector(
-                onTap: () {
-                  Navigator.pushNamed(context, '/profile');
-                },
-                child: const CircleAvatar(
-                  radius: 40,
-                  backgroundColor: Colors.green,
-                  child: Icon(Icons.person, size: 40, color: Colors.white),
-                ),
-              ),
-              const SizedBox(height: 16),
+          child: StatefulBuilder(
+            builder: (context, setState) {
+              final isLoggedIn = AuthService.isLoggedIn();
+              final user = AuthService.currentUser;
 
-              // Buttons list
-              Expanded(
-                child: ListView(
-                  children: [
-                    _DrawerItem(title: "Reservations", icon: Icons.book_online),
-                    _DrawerItem(
-                      title: "Parcels",
-                      icon: Icons.terrain,
-                      onTap: () {
-                        Navigator.pushNamed(context, '/parcels');
-                      },
+              return Column(
+                children: [
+                  const SizedBox(height: 24),
+                  GestureDetector(
+                    onTap: () {
+                      if (isLoggedIn) {
+                        Navigator.pushNamed(context, '/profile');
+                      } else {
+                        showDialog(
+                          context: context,
+                          builder: (_) => const LoginPage(),
+                        ).then((_) => setState(() {})); // Refresh after login
+                      }
+                    },
+                    child: Column(
+                      children: [
+                        const CircleAvatar(
+                          radius: 40,
+                          backgroundColor: Colors.green,
+                          child: Icon(
+                            Icons.person,
+                            size: 40,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          isLoggedIn
+                              ? "${user!.firstName} ${user.lastName}"
+                              : "Login",
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: isLoggedIn ? Colors.black : Colors.blue,
+                            decoration:
+                                isLoggedIn
+                                    ? TextDecoration.none
+                                    : TextDecoration.underline,
+                          ),
+                        ),
+                      ],
                     ),
-                    _DrawerItem(title: "Rate Employees", icon: Icons.star_rate),
-                    _DrawerItem(
-                      title: "Activities and renting",
-                      icon: Icons.sports_kabaddi,
-                      onTap: () {
-                        Navigator.pushNamed(context, '/activities-rentables');
-                      },
-                    ),
-                    _DrawerItem(
-                      title: "Facilities",
-                      icon: Icons.cabin,
-                      onTap: () {
-                        Navigator.pushNamed(context, '/facilities');
-                      },
-                    ),
-                    _DrawerItem(
-                      title: "Reservation history",
-                      icon: Icons.history,
-                    ),
-                  ],
-                ),
-              ),
+                  ),
+                  const SizedBox(height: 16),
 
-              // Bottom social links
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.map),
-                      onPressed: () {
-                        _launchURL(
-                          "https://www.google.com/maps/place/Neretva+Camping+for+tents+and+Motor+Homes/@43.3646723,17.815658,506m/data=!3m2!1e3!4b1!4m6!3m5!1s0x134b4321a14089d3:0x74d66a27338b237!8m2!3d43.3646723!4d17.815658!16s%2Fg%2F11h6nc72l9?entry=ttu&g_ep=EgoyMDI1MDQyMC4wIKXMDSoASAFQAw%3D%3D",
-                        );
-                      },
+                  // Drawer items
+                  Expanded(
+                    child: ListView(
+                      children: [
+                        if (isLoggedIn)
+                          _DrawerItem(
+                            title: "Reservations",
+                            icon: Icons.book_online,
+                          ),
+                        _DrawerItem(
+                          title: "Parcels",
+                          icon: Icons.terrain,
+                          onTap: () {
+                            Navigator.pushNamed(context, '/parcels');
+                          },
+                        ),
+                        if (isLoggedIn)
+                          _DrawerItem(
+                            title: "Rate Employees",
+                            icon: Icons.star_rate,
+                          ),
+                        _DrawerItem(
+                          title: "Activities and renting",
+                          icon: Icons.sports_kabaddi,
+                          onTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              '/activities-rentables',
+                            );
+                          },
+                        ),
+                        _DrawerItem(
+                          title: "Facilities",
+                          icon: Icons.cabin,
+                          onTap: () {
+                            Navigator.pushNamed(context, '/facilities');
+                          },
+                        ),
+                        if (isLoggedIn)
+                          _DrawerItem(
+                            title: "Reservation history",
+                            icon: Icons.history,
+                          ),
+                      ],
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.camera_alt),
-                      onPressed: () {
-                        _launchURL("https://www.instagram.com/campingneretva/");
-                      },
+                  ),
+
+                  if (isLoggedIn)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.logout),
+                        label: const Text("Log Out"),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                        ),
+                        onPressed: () {
+                          AuthService.logout();
+                          setState(() {});
+                          Navigator.pushReplacementNamed(context, '/home');
+                        },
+                      ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.facebook),
-                      onPressed: () {
-                        _launchURL(
-                          "https://www.facebook.com/search/top?q=camping%20neretva",
-                        );
-                      },
+
+                  // Social links
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.map),
+                          onPressed: () {
+                            _launchURL(
+                              "https://www.google.com/maps/place/Neretva+Camping...",
+                            );
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.camera_alt),
+                          onPressed: () {
+                            _launchURL(
+                              "https://www.instagram.com/campingneretva/",
+                            );
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.facebook),
+                          onPressed: () {
+                            _launchURL(
+                              "https://www.facebook.com/search/top?q=camping%20neretva",
+                            );
+                          },
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-            ],
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ),
+
       appBar: AppBar(
         title: Text(title),
         leading: Builder(

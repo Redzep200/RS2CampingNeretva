@@ -17,9 +17,9 @@ namespace CampingNeretva.API.Controllers
 
         [HttpPost("login")]
         [AllowAnonymous]
-        public UserModel Login(string username, string password)
+        public UserModel Login([FromBody] LoginRequest request)
         {
-            return (_service as IUserService).Login(username, password);
+            return (_service as IUserService).Login(request.Username, request.Password);
         }
 
         [Authorize(Roles = "Admin")]
@@ -34,7 +34,7 @@ namespace CampingNeretva.API.Controllers
             return base.GetById(id);
         }
 
-        [Authorize(Roles = "Admin")]
+        [AllowAnonymous]
         public override UserModel Insert(UserInsertRequest request)
         {
             return base.Insert(request);
