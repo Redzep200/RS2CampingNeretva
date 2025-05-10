@@ -90,6 +90,9 @@ class AppScaffold extends StatelessWidget {
                           _DrawerItem(
                             title: "Rate Employees",
                             icon: Icons.star_rate,
+                            onTap: () {
+                              Navigator.pushNamed(context, '/review');
+                            },
                           ),
                         _DrawerItem(
                           title: "Activities and renting",

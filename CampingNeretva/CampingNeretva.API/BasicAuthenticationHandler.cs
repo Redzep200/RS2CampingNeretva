@@ -1,5 +1,7 @@
 ﻿using CampingNeretva.Service;
+using CampingNeretva.Service.Database;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Net.Http.Headers;
 using System.Security.Claims;
@@ -11,10 +13,12 @@ namespace CampingNeretva.API
     public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
         IUserService _userService;
+        private readonly _200012Context _context;
 
-        public BasicAuthenticationHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock, IUserService userService) : base(options, logger, encoder, clock)
+        public BasicAuthenticationHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock, IUserService userService, _200012Context context) : base(options, logger, encoder, clock)
         {
             _userService = userService;
+            _context = context;
         }
 
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
@@ -31,9 +35,16 @@ namespace CampingNeretva.API
             var username = credentials[0];
             var password = credentials[1];
 
-            var user = _userService.Login(username, password);
+            var user = _context.Users
+                .Include(u => u.UserType)
+                .FirstOrDefault(u => u.UserName == username);
 
-            if(user == null)
+            if (user == null || _userService.GenerateHash(user.PasswordSalt, password) != user.PasswordHash)
+            {
+                return AuthenticateResult.Fail("Invalid credentials");
+            }
+
+            if (user == null)
             {
                 return AuthenticateResult.Fail("Auth failed");
             }

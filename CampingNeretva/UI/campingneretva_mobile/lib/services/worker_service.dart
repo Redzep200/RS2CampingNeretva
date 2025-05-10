@@ -2,10 +2,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/worker_model.dart';
 
-class FacilityService {
+class WorkerService {
   static const String baseUrl = "http://192.168.0.15:5205";
 
-  Future<List<Worker>> getWorkers() async {
+  static Future<List<Worker>> getAll() async {
     final response = await http.get(Uri.parse('$baseUrl/Worker'));
 
     if (response.statusCode == 200) {

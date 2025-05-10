@@ -22,4 +22,6 @@ class Worker {
       email: json['email'],
     );
   }
+
+  String get fullName => "$firstName $lastName";
 }

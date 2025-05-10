@@ -22,9 +22,9 @@ namespace CampingNeretva.Service
         {
             var filteredQuery = base.AddFilter(search, query);
 
-            if (search?.WorkerIdGTE.HasValue == true)
+            if (search?.ReviewIdGTE.HasValue == true)
             {
-                filteredQuery = filteredQuery.Where(x => x.WorkerId == search.WorkerIdGTE);
+                filteredQuery = filteredQuery.Where(x => x.ReviewId == search.ReviewIdGTE);
             }
 
             if (search?.DatePostedGTE.HasValue == true)
@@ -34,12 +34,22 @@ namespace CampingNeretva.Service
 
             if (search?.IsUserIncluded == true)
             {
-                filteredQuery = filteredQuery.Include(x => x.User);
+                filteredQuery = filteredQuery.Include(x => x.User).ThenInclude(u => u.UserType);
             }
 
             if (search?.IsWorkerIncluded == true)
             {
                 filteredQuery = filteredQuery.Include(x => x.Worker);
+            }
+
+            if (search?.WorkerId.HasValue == true)
+            {
+                filteredQuery = filteredQuery.Where(x => x.WorkerId == search.WorkerId);
+            }
+
+            if (search?.UserId.HasValue == true)
+            {
+                filteredQuery = filteredQuery.Where(x => x.UserId == search.UserId);
             }
 
             return filteredQuery;

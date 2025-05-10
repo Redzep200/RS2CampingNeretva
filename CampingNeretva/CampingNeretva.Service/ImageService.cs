@@ -22,7 +22,6 @@ namespace CampingNeretva.Service
         {
             _uploadPath = uploadPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "images");
 
-            // Create directory if it doesn't exist
             if (!Directory.Exists(_uploadPath))
                 Directory.CreateDirectory(_uploadPath);
         }
@@ -34,17 +33,14 @@ namespace CampingNeretva.Service
                 if (fileStream == null)
                     throw new ArgumentException("No file stream provided");
 
-                // Create unique filename
                 string uniqueFileName = Guid.NewGuid().ToString() + "_" + fileName;
                 string filePath = Path.Combine(_uploadPath, uniqueFileName);
 
-                // Save the file
                 using (var outputStream = new FileStream(filePath, FileMode.Create))
                 {
                     await fileStream.CopyToAsync(outputStream);
                 }
 
-                // Create database record
                 var image = new Image
                 {
                     Path = "/uploads/images/" + uniqueFileName,
@@ -67,7 +63,6 @@ namespace CampingNeretva.Service
 
         public async Task RemoveImage(int imageId)
         {
-            // First, remove all references to this image from junction tables
             var parcelImages = await _context.ParcelImages.Where(x => x.ImageId == imageId).ToListAsync();
             if (parcelImages.Any())
             {
@@ -104,10 +99,8 @@ namespace CampingNeretva.Service
                 _context.VehicleImages.RemoveRange(vehicleImages);
             }
 
-            // Save changes after removing all references
             await _context.SaveChangesAsync();
 
-            // Now find and remove the image itself
             var image = await _context.Images
                 .FirstOrDefaultAsync(x => x.ImageId == imageId);
 
@@ -116,7 +109,6 @@ namespace CampingNeretva.Service
                 _context.Images.Remove(image);
                 await _context.SaveChangesAsync();
 
-                // Optionally remove the physical file
                 string filePath = Path.Combine(_uploadPath, Path.GetFileName(image.Path));
                 if (File.Exists(filePath))
                 {
@@ -127,7 +119,7 @@ namespace CampingNeretva.Service
 
         public override void beforeInsert(ImageUploadRequest request, Image entity)
         {
-            // This will be handled by the UploadImage method
+            
         }
     }
 }

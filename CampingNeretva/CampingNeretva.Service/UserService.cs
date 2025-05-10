@@ -84,7 +84,7 @@ namespace CampingNeretva.Service
             return Convert.ToBase64String(byteArray);
         }
 
-        public static string GenerateHash(string salt, string password)
+        public string GenerateHash(string salt, string password)
         {
             byte[] src = Convert.FromBase64String(salt);
             byte[] bytes = Encoding.Unicode.GetBytes(password);

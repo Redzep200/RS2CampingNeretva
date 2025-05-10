@@ -12,5 +12,6 @@ namespace CampingNeretva.Service
     public interface IUserService : ICRUDService<UserModel, UserSearchObject, UserInsertRequest, UserUpdateRequest>
     {
         UserModel Login(string username, string password);
+        public string GenerateHash(string salt, string password);
     }
 }
