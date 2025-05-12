@@ -13,6 +13,7 @@ namespace CampingNeretva.Model
         public DateTime CheckOutDate { get; set; }
         public decimal TotalPrice { get; set; }
         public string PaymentStatus { get; set; }
+        public ParcelModel Parcel { get; set; }
         public List<ReservationPersonModel> ReservationPeople { get; set; }
         public List<ReservationVehicleModel> ReservationVehicles { get; set; }
         public List<ReservationAccommodationModel> ReservationAccommodations { get; set; }

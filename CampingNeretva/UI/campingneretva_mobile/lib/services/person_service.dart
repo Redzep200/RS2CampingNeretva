@@ -3,9 +3,9 @@ import 'package:http/http.dart' as http;
 import '../models/person_model.dart';
 
 class PersonService {
-  final String baseUrl = 'http://192.168.0.15:5205/Person';
+  static String baseUrl = 'http://192.168.0.15:5205/Person';
 
-  Future<List<PersonType>> getPersons() async {
+  static Future<List<PersonType>> getPersons() async {
     final response = await http.get(Uri.parse(baseUrl));
     print('BODY: ${response.body}');
     print('STATUS: ${response.statusCode}');

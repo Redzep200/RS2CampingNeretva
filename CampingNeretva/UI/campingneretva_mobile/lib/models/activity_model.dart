@@ -31,4 +31,17 @@ class Activity {
               : 'assets/default_activity.png',
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'activityId': id,
+      'name': name,
+      'description': description,
+      'date': date.toIso8601String(),
+      'price': price,
+      'images': [
+        {'path': imageUrl},
+      ],
+    };
+  }
 }

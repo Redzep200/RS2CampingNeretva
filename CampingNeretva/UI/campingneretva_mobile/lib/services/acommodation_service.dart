@@ -3,9 +3,9 @@ import 'package:http/http.dart' as http;
 import '../models/acommodation_model.dart';
 
 class AccommodationService {
-  final String baseUrl = 'http://192.168.0.15:5205/Accommodation';
+  static String baseUrl = 'http://192.168.0.15:5205/Accommodation';
 
-  Future<List<Accommodation>> getAccommodations() async {
+  static Future<List<Accommodation>> getAccommodations() async {
     final response = await http.get(Uri.parse(baseUrl));
     print('BODY: ${response.body}');
     print('STATUS: ${response.statusCode}');

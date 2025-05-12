@@ -34,9 +34,9 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _loadData() async {
     try {
-      final a = await _accommodationService.getAccommodations();
-      final v = await _vehicleService.getVehicles();
-      final p = await _personService.getPersons();
+      final a = await AccommodationService.getAccommodations();
+      final v = await VehicleService.getVehicles();
+      final p = await PersonService.getPersons();
 
       setState(() {
         accommodations = a;

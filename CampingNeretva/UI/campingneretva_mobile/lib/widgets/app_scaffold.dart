@@ -78,6 +78,9 @@ class AppScaffold extends StatelessWidget {
                           _DrawerItem(
                             title: "Reservations",
                             icon: Icons.book_online,
+                            onTap: () {
+                              Navigator.pushNamed(context, '/reservation');
+                            },
                           ),
                         _DrawerItem(
                           title: "Parcels",
@@ -115,6 +118,12 @@ class AppScaffold extends StatelessWidget {
                           _DrawerItem(
                             title: "Reservation history",
                             icon: Icons.history,
+                            onTap: () {
+                              Navigator.pushNamed(
+                                context,
+                                '/reservation-history',
+                              );
+                            },
                           ),
                       ],
                     ),

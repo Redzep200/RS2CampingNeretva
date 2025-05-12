@@ -15,5 +15,6 @@ namespace CampingNeretva.Model.SearchObjects
         public bool? IsAccommodationIncluded { get; set; }
         public bool? IsRentableItemsIncluded { get; set; }
         public bool? IsActivitiesIncluded { get; set; }
+        public bool? IsParcelIncluded { get; set; }
     }
 }

@@ -5,7 +5,7 @@ import '../models/parcel_model.dart';
 class ParcelService {
   static const String baseUrl = "http://192.168.0.15:5205";
 
-  Future<List<Parcel>> getParcels({
+  static Future<List<Parcel>> getParcels({
     DateTime? from,
     DateTime? to,
     bool? shade,

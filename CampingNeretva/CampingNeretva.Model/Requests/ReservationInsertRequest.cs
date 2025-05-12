@@ -11,7 +11,7 @@ namespace CampingNeretva.Model.Requests
         public DateTime CheckInDate { get; set; }
         public DateTime CheckOutDate { get; set; }
         public decimal TotalPrice { get; set; }
-        public string PaymentStatus { get; set; }
+        public string PaymentStatus { get; set; } = "pending";
         public List<RentableItemSelection> RentableItems { get; set; } = new List<RentableItemSelection>();
         public List<PersonSelection> Persons { get; set; } = new List<PersonSelection>();
         public List<AccommodationSelection> Accommodations { get; set; } = new List<AccommodationSelection>();

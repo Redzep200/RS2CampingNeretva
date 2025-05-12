@@ -22,7 +22,7 @@ namespace CampingNeretva.API.Controllers
             return base.GetList(search);
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Guest")]
         public override ReservationModel Insert([FromBody] ReservationInsertRequest request)
         {
             return base.Insert(request);

@@ -28,4 +28,17 @@ class RentableItem {
               : 'assets/default_rentableitem.png',
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'itemId': id,
+      'name': name,
+      'description': description,
+      'pricePerDay': pricePerDay,
+      'availableQuantity': availableQuantity,
+      'images': [
+        {'path': imageUrl},
+      ],
+    };
+  }
 }

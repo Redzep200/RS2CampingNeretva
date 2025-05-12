@@ -36,7 +36,7 @@ class _ParcelsPageState extends State<ParcelsPage> {
     setState(() => isLoading = true);
 
     try {
-      final data = await _parcelService.getParcels(
+      final data = await ParcelService.getParcels(
         from: _dateFrom,
         to: _dateTo,
         shade: _shade,

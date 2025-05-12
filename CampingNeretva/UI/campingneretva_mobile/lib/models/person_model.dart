@@ -22,4 +22,15 @@ class PersonType {
               : 'assets/default_xxx.png',
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'personId': id,
+      'type': type,
+      'pricePerNight': price,
+      'images': [
+        {'path': imageUrl},
+      ],
+    };
+  }
 }

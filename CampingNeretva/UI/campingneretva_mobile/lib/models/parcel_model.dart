@@ -38,4 +38,20 @@ class Parcel {
               : 'assets/default_parcel.png',
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'parcelId': id,
+      'parcelNumber': number,
+      'shade': shade,
+      'electricity': electricity,
+      'description': description,
+      'availabilityStatus': isAvailable,
+      'parcelAccommodation': {'parcelAccommodation1': parcelAccommodation},
+      'parcelType': {'parcelType1': parcelType},
+      'images': [
+        {'path': imageUrl},
+      ],
+    };
+  }
 }

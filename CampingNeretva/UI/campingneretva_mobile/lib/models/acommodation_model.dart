@@ -22,4 +22,15 @@ class Accommodation {
               : 'assets/default_xxx.png',
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'accommodationId': id,
+      'type': type,
+      'pricePerNight': price,
+      'images': [
+        {'path': imageUrl},
+      ],
+    };
+  }
 }

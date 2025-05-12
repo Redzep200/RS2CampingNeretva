@@ -22,4 +22,15 @@ class Vehicle {
               : 'assets/default_xxx.png',
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'vehicleId': id,
+      'type': type,
+      'pricePerNight': price,
+      'images': [
+        {'path': imageUrl},
+      ],
+    };
+  }
 }

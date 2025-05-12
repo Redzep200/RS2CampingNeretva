@@ -6,6 +6,8 @@ import 'package:campingneretva_mobile/screens/activities_rentables_page.dart';
 import 'package:campingneretva_mobile/screens/login_page.dart';
 import 'package:campingneretva_mobile/screens/register_page.dart';
 import 'package:campingneretva_mobile/screens/review_page.dart';
+import 'package:campingneretva_mobile/screens/reservation_page.dart';
+import 'package:campingneretva_mobile/screens/reservation_history_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -31,6 +33,8 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginPage(),
         '/register': (context) => const RegisterPage(),
         '/review': (context) => const ReviewPage(),
+        '/reservation': (context) => const ReservationPage(),
+        '/reservation-history': (context) => const ReservationHistoryPage(),
       },
     );
   }

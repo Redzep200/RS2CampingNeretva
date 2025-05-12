@@ -59,6 +59,12 @@ namespace CampingNeretva.Service
             {
                 filteredQuery = filteredQuery.Include(x => x.Activities);
             }
+
+            if (search?.IsParcelIncluded == true)
+            {
+                filteredQuery = filteredQuery.Include(x => x.Parcel);
+            }
+
             return filteredQuery;
         }
 

@@ -6,7 +6,7 @@ namespace CampingNeretva.Model
 { 
     public class ReservationRentableItemModel
     {
-        //public int RentableItemId { get; set; }
+        public int RentableItemId { get; set; }
         public int Quantity { get; set; }
         public RentableItemModel Item { get; set; }
     }
