@@ -1,21 +1,20 @@
 import 'package:campingneretva_mobile/models/acommodation_model.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:campingneretva_mobile/models/parcel_accommodation_model.dart';
-import '../models/activity_model.dart';
-import '../models/parcel_model.dart';
-import '../models/person_model.dart';
+import 'package:campingneretva_mobile/models/parcel_model.dart';
+import 'package:campingneretva_mobile/models/person_model.dart';
 import 'package:campingneretva_mobile/models/rentable_item_model.dart';
-import '../models/vehicle_model.dart';
+import 'package:campingneretva_mobile/models/vehicle_model.dart';
+import 'package:campingneretva_mobile/models/activity_model.dart';
 import 'package:campingneretva_mobile/services/acommodation_service.dart';
-import '../services/activity_service.dart';
-import '../services/parcel_service.dart';
-import '../services/person_service.dart';
-import '../services/rentable_item_service.dart';
-import '../services/vehicle_service.dart';
-import '../services/reservation_service.dart';
-import '../services/auth_service.dart';
-import '../widgets/app_scaffold.dart';
+import 'package:campingneretva_mobile/services/activity_service.dart';
+import 'package:campingneretva_mobile/services/parcel_service.dart';
+import 'package:campingneretva_mobile/services/person_service.dart';
+import 'package:campingneretva_mobile/services/rentable_item_service.dart';
+import 'package:campingneretva_mobile/services/vehicle_service.dart';
+import 'package:campingneretva_mobile/services/reservation_service.dart';
+import 'package:campingneretva_mobile/services/auth_service.dart';
+import 'package:campingneretva_mobile/widgets/app_scaffold.dart';
 
 class ReservationPage extends StatefulWidget {
   const ReservationPage({super.key});
@@ -27,6 +26,7 @@ class ReservationPage extends StatefulWidget {
 class _ReservationPageState extends State<ReservationPage> {
   DateTime? startDate;
   DateTime? endDate;
+
   List<Parcel> parcels = [];
   List<Accommodation> accommodations = [];
   List<Activity> activities = [];
@@ -43,33 +43,6 @@ class _ReservationPageState extends State<ReservationPage> {
 
   bool get _datesSelected => startDate != null && endDate != null;
 
-  double get totalPrice {
-    if (!_datesSelected) return 0.0;
-    final nights = endDate!.difference(startDate!).inDays;
-    double total = 0;
-
-    if (selectedAccommodation != null)
-      total += selectedAccommodation!.price * nights;
-    if (selectedVehicle != null) total += selectedVehicle!.price * nights;
-
-    selectedPersons.forEach((id, count) {
-      final p = persons.firstWhere((x) => x.id == id);
-      total += p.price * count * nights;
-    });
-
-    selectedRentItems.forEach((id, count) {
-      final r = rentItems.firstWhere((x) => x.id == id);
-      total += r.pricePerDay * count * nights;
-    });
-
-    selectedActivities.forEach((id) {
-      final a = activities.firstWhere((x) => x.id == id);
-      total += a.price;
-    });
-
-    return total;
-  }
-
   Future<void> _submitReservation() async {
     if (!_datesSelected ||
         selectedParcel == null ||
@@ -81,12 +54,9 @@ class _ReservationPageState extends State<ReservationPage> {
       'CheckInDate': startDate!.toIso8601String(),
       'CheckOutDate': endDate!.toIso8601String(),
       'parcelId': selectedParcel!.id,
-      'accommodations':
-          selectedAccommodation != null
-              ? [
-                {'accommodationId': selectedAccommodation!.id, 'quantity': 1},
-              ]
-              : [],
+      'accommodations': [
+        {'accommodationId': selectedAccommodation!.id, 'quantity': 1},
+      ],
       'vehicles':
           selectedVehicle != null
               ? [
@@ -110,12 +80,11 @@ class _ReservationPageState extends State<ReservationPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Reservation successful!')),
         );
-        // Navigator.pushNamed(context, '/history');
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to make reservation: \$e')),
+          SnackBar(content: Text('Failed to make reservation: $e')),
         );
       }
     }
@@ -187,138 +156,57 @@ class _ReservationPageState extends State<ReservationPage> {
               ),
             ),
             const SizedBox(height: 16),
-            DropdownButton<Parcel>(
+            _buildDropdown<Parcel>(
+              label: 'Select Parcel',
               value: selectedParcel,
-              hint: Text(
-                _datesSelected ? 'Select Parcel' : 'Select dates first',
-              ),
-              isExpanded: true,
-              items:
-                  parcels.map((parcel) {
-                    return DropdownMenuItem(
-                      value: parcel,
-                      child: Text('Parcel ${parcel.number}'),
-                    );
-                  }).toList(),
+              items: parcels,
+              itemBuilder: (p) => 'Parcel ${p.number}',
               onChanged:
                   _datesSelected
-                      ? (value) => setState(() => selectedParcel = value)
+                      ? (p) => setState(() => selectedParcel = p)
                       : null,
             ),
-            DropdownButton<Accommodation>(
+            _buildDropdown<Accommodation>(
+              label: 'Select Accommodation',
               value: selectedAccommodation,
-              hint: Text(
-                _datesSelected ? 'Select Accommodation' : 'Select dates first',
-              ),
-              isExpanded: true,
-              items:
-                  accommodations.map((a) {
-                    return DropdownMenuItem(value: a, child: Text(a.type));
-                  }).toList(),
+              items: accommodations,
+              itemBuilder: (a) => a.type,
               onChanged:
                   _datesSelected
-                      ? (value) => setState(() => selectedAccommodation = value)
+                      ? (a) => setState(() => selectedAccommodation = a)
                       : null,
             ),
-            DropdownButton<Vehicle>(
+            _buildDropdown<Vehicle>(
+              label: 'Select Vehicle',
               value: selectedVehicle,
-              hint: Text(
-                _datesSelected ? 'Select Vehicle' : 'Select dates first',
-              ),
-              isExpanded: true,
-              items:
-                  vehicles.map((v) {
-                    return DropdownMenuItem(value: v, child: Text(v.type));
-                  }).toList(),
+              items: vehicles,
+              itemBuilder: (v) => v.type,
               onChanged:
                   _datesSelected
-                      ? (value) => setState(() => selectedVehicle = value)
+                      ? (v) => setState(() => selectedVehicle = v)
                       : null,
             ),
             const SizedBox(height: 16),
             if (_datesSelected)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Guests:'),
-                  for (var p in persons)
-                    Row(
-                      children: [
-                        Expanded(child: Text(p.type)),
-                        IconButton(
-                          icon: const Icon(Icons.remove),
-                          onPressed:
-                              () => setState(() {
-                                if ((selectedPersons[p.id] ?? 0) > 0) {
-                                  selectedPersons[p.id] =
-                                      (selectedPersons[p.id] ?? 0) - 1;
-                                }
-                              }),
-                        ),
-                        Text('${selectedPersons[p.id] ?? 0}'),
-                        IconButton(
-                          icon: const Icon(Icons.add),
-                          onPressed:
-                              () => setState(() {
-                                selectedPersons[p.id] =
-                                    (selectedPersons[p.id] ?? 0) + 1;
-                              }),
-                        ),
-                      ],
-                    ),
-                ],
+              _buildCounterSection('Guests:', persons, selectedPersons),
+            if (_datesSelected)
+              _buildCounterSection(
+                'Renting:',
+                rentItems,
+                selectedRentItems,
+                isRentItem: true,
               ),
-            const SizedBox(height: 16),
-            if (_datesSelected) ...[
-              const Text('Renting:'),
-              for (var r in rentItems)
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        '${r.name} (Available: ${r.availableQuantity})',
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.remove),
-                      onPressed:
-                          () => setState(() {
-                            if ((selectedRentItems[r.id] ?? 0) > 0) {
-                              selectedRentItems[r.id] =
-                                  (selectedRentItems[r.id] ?? 0) - 1;
-                            }
-                          }),
-                    ),
-                    Text('${selectedRentItems[r.id] ?? 0}'),
-                    IconButton(
-                      icon: const Icon(Icons.add),
-                      onPressed:
-                          () => setState(() {
-                            selectedRentItems[r.id] =
-                                (selectedRentItems[r.id] ?? 0) + 1;
-                          }),
-                    ),
-                  ],
-                ),
-              const SizedBox(height: 16),
-              const Text('Activities:'),
-              for (var a in activities)
-                CheckboxListTile(
-                  title: Text(a.name),
-                  value: selectedActivities.contains(a.id),
-                  onChanged:
-                      (selected) => setState(() {
-                        if (selected == true) {
-                          selectedActivities.add(a.id);
-                        } else {
-                          selectedActivities.remove(a.id);
-                        }
-                      }),
-                ),
-            ],
+            if (_datesSelected) _buildActivitySection(),
             const SizedBox(height: 24),
             if (_datesSelected)
-              Text('Total Price: \$${totalPrice.toStringAsFixed(2)}'),
+              Text(
+                'Estimated Price: ${estimatedTotal.toStringAsFixed(2)} KM',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'MochiyPop',
+                ),
+              ),
             const SizedBox(height: 12),
             ElevatedButton(
               onPressed: _datesSelected ? _submitReservation : null,
@@ -328,5 +216,135 @@ class _ReservationPageState extends State<ReservationPage> {
         ),
       ),
     );
+  }
+
+  Widget _buildDropdown<T>({
+    required String label,
+    required T? value,
+    required List<T> items,
+    required String Function(T) itemBuilder,
+    required void Function(T?)? onChanged,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: DropdownButtonFormField<T>(
+        value: value,
+        isExpanded: true,
+        decoration: InputDecoration(
+          labelText: label,
+          border: const OutlineInputBorder(),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 8,
+          ),
+        ),
+        items:
+            items
+                .map(
+                  (e) =>
+                      DropdownMenuItem(value: e, child: Text(itemBuilder(e))),
+                )
+                .toList(),
+        onChanged: onChanged,
+      ),
+    );
+  }
+
+  Widget _buildCounterSection(
+    String label,
+    List items,
+    Map<int, int> selectedMap, {
+    bool isRentItem = false,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 4),
+        for (var item in items)
+          Row(
+            children: [
+              Expanded(child: Text(isRentItem ? item.name : item.type)),
+              IconButton(
+                icon: const Icon(Icons.remove),
+                onPressed:
+                    () => setState(() {
+                      final id = item.id;
+                      if ((selectedMap[id] ?? 0) > 0) {
+                        selectedMap[id] = (selectedMap[id] ?? 0) - 1;
+                      }
+                    }),
+              ),
+              Text('${selectedMap[item.id] ?? 0}'),
+              IconButton(
+                icon: const Icon(Icons.add),
+                onPressed:
+                    () => setState(() {
+                      final id = item.id;
+                      selectedMap[id] = (selectedMap[id] ?? 0) + 1;
+                    }),
+              ),
+            ],
+          ),
+        const SizedBox(height: 12),
+      ],
+    );
+  }
+
+  Widget _buildActivitySection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Activities:',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 4),
+        for (var a in activities)
+          CheckboxListTile(
+            title: Text(a.name),
+            value: selectedActivities.contains(a.id),
+            onChanged:
+                (selected) => setState(() {
+                  if (selected == true) {
+                    selectedActivities.add(a.id);
+                  } else {
+                    selectedActivities.remove(a.id);
+                  }
+                }),
+          ),
+      ],
+    );
+  }
+
+  double get estimatedTotal {
+    if (!_datesSelected) return 0.0;
+    final nights = endDate!.difference(startDate!).inDays;
+    double total = 0;
+
+    if (selectedAccommodation != null) {
+      total += selectedAccommodation!.price * nights;
+    }
+
+    if (selectedVehicle != null) {
+      total += selectedVehicle!.price * nights;
+    }
+
+    selectedPersons.forEach((id, count) {
+      final p = persons.firstWhere((x) => x.id == id);
+      total += p.price * count * nights;
+    });
+
+    selectedRentItems.forEach((id, count) {
+      final r = rentItems.firstWhere((x) => x.id == id);
+      total += r.pricePerDay * count * nights;
+    });
+
+    selectedActivities.forEach((id) {
+      final a = activities.firstWhere((x) => x.id == id);
+      total += a.price;
+    });
+
+    return total;
   }
 }

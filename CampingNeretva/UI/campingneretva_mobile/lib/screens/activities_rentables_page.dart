@@ -78,7 +78,7 @@ class _ActivitiesRentablesPageState extends State<ActivitiesRentablesPage> {
   Widget _buildImage(String imageUrl, {double width = 50, double height = 50}) {
     if (imageUrl.startsWith('/')) {
       return Image.network(
-        "http://192.168.0.15:5205$imageUrl",
+        "http://10.0.2.2:5205$imageUrl",
         width: width,
         height: height,
         fit: BoxFit.cover,

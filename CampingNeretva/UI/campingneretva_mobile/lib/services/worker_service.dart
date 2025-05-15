@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/worker_model.dart';
 
 class WorkerService {
-  static const String baseUrl = "http://192.168.0.15:5205";
+  static const String baseUrl = "http://10.0.2.2:5205";
 
   static Future<List<Worker>> getAll() async {
     final response = await http.get(Uri.parse('$baseUrl/Worker'));

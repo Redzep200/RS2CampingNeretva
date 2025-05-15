@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:campingneretva_mobile/models/rentable_item_model.dart';
 
 class RentableItemService {
-  static const String baseUrl = "http://192.168.0.15:5205";
+  static const String baseUrl = "http://10.0.2.2:5205";
 
   static Future<List<RentableItem>> getAvailable(
     String? from,

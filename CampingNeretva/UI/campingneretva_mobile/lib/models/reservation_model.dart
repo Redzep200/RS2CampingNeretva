@@ -65,7 +65,7 @@ class Reservation {
       // Handle rentable items
       rentableItems:
           (json['reservationRentables'] as List)
-              .map((e) => RentableItem.fromJson(e['rentableItem']))
+              .map((e) => RentableItem.fromJson(e['item']))
               .toList(),
 
       // Activities may already be flat

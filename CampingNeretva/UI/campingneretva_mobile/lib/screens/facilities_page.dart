@@ -47,7 +47,7 @@ class _FacilitiesPageState extends State<FacilitiesPage> {
                   final facility = facilities[index];
                   final imageUrl =
                       facility.imageUrl.startsWith('/')
-                          ? "http://192.168.0.15:5205${facility.imageUrl}"
+                          ? "http://10.0.2.2:5205${facility.imageUrl}"
                           : facility.imageUrl;
 
                   return Card(

@@ -210,7 +210,7 @@ class _ParcelsPageState extends State<ParcelsPage> {
                     final parcel = parcels[index];
                     final imageUrl =
                         parcel.imageUrl.startsWith('/')
-                            ? "http://192.168.0.15:5205${parcel.imageUrl}"
+                            ? "http://10.0.2.2:5205${parcel.imageUrl}"
                             : parcel.imageUrl;
 
                     return Card(

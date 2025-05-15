@@ -4,7 +4,7 @@ import '../models/reservation_model.dart';
 import '../services/auth_service.dart';
 
 class ReservationService {
-  static const String baseUrl = "http://192.168.0.15:5205";
+  static const String baseUrl = "http://10.0.2.2:5205";
 
   static Future<List<Reservation>> getAll() async {
     final uri = Uri.parse('$baseUrl/Reservation?includeRelated=true');
@@ -43,7 +43,7 @@ class ReservationService {
       'IsAccommodationIncluded': 'true',
       'IsRentableItemsIncluded': 'true',
       'IsActivitiesIncluded': 'true',
-      'IsParcelIncluded': 'true', // ✅ this ensures parcel is included
+      'IsParcelIncluded': 'true',
     });
 
     final response = await http.get(uri, headers: headers);

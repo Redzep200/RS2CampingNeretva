@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/person_model.dart';
 
 class PersonService {
-  static String baseUrl = 'http://192.168.0.15:5205/Person';
+  static String baseUrl = 'http://10.0.2.2:5205/Person';
 
   static Future<List<PersonType>> getPersons() async {
     final response = await http.get(Uri.parse(baseUrl));

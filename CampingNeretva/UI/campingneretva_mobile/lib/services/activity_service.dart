@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:campingneretva_mobile/models/activity_model.dart';
 
 class ActivityService {
-  static const String baseUrl = "http://192.168.0.15:5205";
+  static const String baseUrl = "http://10.0.2.2:5205";
 
   static Future<List<Activity>> getByDateRange(String? from, String? to) async {
     Uri uri;

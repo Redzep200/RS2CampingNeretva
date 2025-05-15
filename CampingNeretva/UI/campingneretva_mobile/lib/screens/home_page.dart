@@ -9,7 +9,7 @@ import '../widgets/app_scaffold.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
-  static const String baseUrl = "http://192.168.0.15:5205";
+  static const String baseUrl = "http://10.0.2.2:5205";
 
   @override
   State<HomePage> createState() => _HomePageState();

@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/user_model.dart';
 
 class UserService {
-  static const String baseUrl = 'http://192.168.0.15:5205';
+  static const String baseUrl = 'http://10.0.2.2:5205';
 
   Future<User> getById(int id) async {
     final response = await http.get(Uri.parse('$baseUrl/User/$id'));

@@ -7,7 +7,7 @@ class AuthService {
   static User? currentUser;
   static String? _password; // Store password temporarily for basic auth
   static const storage = FlutterSecureStorage();
-  static const String baseUrl = 'http://192.168.0.15:5205';
+  static const String baseUrl = 'http://10.0.2.2:5205';
 
   // Login method
   static Future<User?> login(String username, String password) async {
