@@ -52,25 +52,25 @@ namespace CampingNeretva.Service
             return filteredQuery;
         }
 
-        public override ActivityModel GetById(int id)
+        public override async Task<ActivityModel> GetById(int id)
         {
-            var model = base.GetById(id);
+            var model = await base.GetById(id);
 
             if (model != null)
             {
-                model.Images = _activityImageService.GetImages(id).GetAwaiter().GetResult();
+                model.Images = await _activityImageService.GetImages(id);
             }
 
             return model;
         }
 
-        public override PagedResult<ActivityModel> GetPaged(ActivitySearchObject search)
+        public override async Task<PagedResult<ActivityModel>> GetPaged(ActivitySearchObject search)
         {
-            var result = base.GetPaged(search);
+            var result =await base.GetPaged(search);
 
             foreach (var activity in result.ResultList)
             {
-                activity.Images = _activityImageService.GetImages(activity.ActivityId).GetAwaiter().GetResult();
+                activity.Images =await _activityImageService.GetImages(activity.ActivityId);
             }
 
             return result;

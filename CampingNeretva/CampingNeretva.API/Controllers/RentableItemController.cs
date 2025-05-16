@@ -22,49 +22,49 @@ namespace CampingNeretva.API.Controllers
         }
 
         [AllowAnonymous]
-        public override PagedResult<RentableItemModel> GetList([FromQuery] RentableItemSearchObject searchObject)
+        public override async Task<PagedResult<RentableItemModel>> GetList([FromQuery] RentableItemSearchObject searchObject)
         {
-            return base.GetList(searchObject);
+            return await base.GetList(searchObject);
         }
 
         [Authorize(Roles = "Admin")]
-        public override RentableItemModel GetById(int id)
+        public override async Task<RentableItemModel> GetById(int id)
         {
-            return base.GetById(id);
+            return await base.GetById(id);
         }
 
         [Authorize(Roles = "Admin")]
-        public override RentableItemModel Insert(RentableItemInsertRequest request)
+        public override async Task<RentableItemModel> Insert(RentableItemInsertRequest request)
         {
-            return base.Insert(request);
+            return await base.Insert(request);
         }
 
         [Authorize(Roles = "Admin")]
-        public override RentableItemModel Update(int id, RentableItemsUpdateRequest request)
+        public override async Task<RentableItemModel> Update(int id, RentableItemsUpdateRequest request)
         {
-            return base.Update(id, request);
+            return await base.Update(id, request);
         }
 
         [HttpGet("available")]
         [AllowAnonymous]
-        public IActionResult GetAvailable([FromQuery] DateTime? from, [FromQuery] DateTime? to)
+        public async Task<IActionResult> GetAvailable([FromQuery] DateTime? from, [FromQuery] DateTime? to)
         {
             if (from.HasValue && to.HasValue)
             {
-                var result = _rentableItemService.GetAvailable(from.Value, to.Value);
+                var result = await _rentableItemService.GetAvailableAsync(from.Value, to.Value);
                 return Ok(result);
             }
 
             // No filter - return all rentable items with full availability
             var search = new RentableItemSearchObject();
-            var items = _rentableItemService.GetPaged(search).ResultList;
+            var resultPaged = await _rentableItemService.GetPaged(search);
 
-            foreach (var item in items)
+            foreach (var item in resultPaged.ResultList)
             {
                 item.AvailableQuantity = item.TotalQuantity;
             }
 
-            return Ok(items);
+            return Ok(resultPaged.ResultList);
         }
 
 

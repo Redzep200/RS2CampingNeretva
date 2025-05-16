@@ -39,29 +39,63 @@ namespace CampingNeretva.Service
             return filteredQuery;
         }
 
-        public override AccommodationModel GetById(int id)
+        public override async Task<AccommodationModel> GetById(int id)
         {
-            var model = base.GetById(id);
+            var model = await base.GetById(id);
 
             if (model != null)
             {
-                model.Images = _accommodationImageService.GetImages(id).GetAwaiter().GetResult();
+                model.Images = await _accommodationImageService.GetImages(id);
             }
 
             return model;
         }
 
-        public override PagedResult<AccommodationModel> GetPaged(AccommodationSearchObject search)
+        public override async Task<PagedResult<AccommodationModel>> GetPaged(AccommodationSearchObject search)
         {
-            var result = base.GetPaged(search);
+            var result = await base.GetPaged(search);
 
             foreach (var accommodation in result.ResultList)
             {
-                accommodation.Images = _accommodationImageService.GetImages(accommodation.AccommodationId).GetAwaiter().GetResult();
+                accommodation.Images = await _accommodationImageService.GetImages(accommodation.AccommodationId);
             }
 
             return result;
         }
 
+
+        public override async Task Delete(int id)
+        {
+            var accommodation = await _context.Accommodations.FindAsync(id);
+            if (accommodation == null)
+            {
+                throw new Exception("Accommodation not found");
+            }
+            var relatedReservations = await _context.ReservationAccommodations
+                                      .Where(x => x.AccommodationId == id)
+                                      .ToListAsync();
+            _context.ReservationAccommodations.RemoveRange(relatedReservations);
+
+            var accommodationImages = await _context.AccommodationImages.Where(x => x.AccommodationId == id).ToListAsync();
+            _context.AccommodationImages.RemoveRange(accommodationImages);
+
+            _context.Accommodations.Remove(accommodation);
+            _context.SaveChanges();
+        }
+
+        public override async Task<AccommodationModel> Insert(AcommodationInsertRequest request)
+        {
+            var entity = await base.Insert(request);
+            var imageId = request.ImageId;
+
+            _context.AccommodationImages.Add(new AccommodationImage
+            {
+                AccommodationId = entity.AccommodationId,
+                ImageId = imageId
+            });
+
+            await _context.SaveChangesAsync();
+            return await GetById(entity.AccommodationId);
+        }
     }
 }

@@ -45,9 +45,9 @@ namespace CampingNeretva.Service
             entity.AvailableQuantity = entity.TotalQuantity;
         }
 
-        public override PagedResult<RentableItemModel> GetPaged(RentableItemSearchObject search)
+        public override async Task<PagedResult<RentableItemModel>> GetPaged(RentableItemSearchObject search)
         {
-            var result = base.GetPaged(search);
+            var result = await base.GetPaged(search);
 
             if (search.DateFrom.HasValue && search.DateTo.HasValue)
             {
@@ -79,64 +79,61 @@ namespace CampingNeretva.Service
 
             foreach (var item in result.ResultList)
             {
-                item.Images = _rentableItemImageService.GetImages(item.ItemId).GetAwaiter().GetResult();
+                item.Images = await _rentableItemImageService.GetImages(item.ItemId);
             }
 
             return result;
         }
 
 
-        public List<RentableItemModel> GetAvailable(DateTime from, DateTime until)
+       public async Task<List<RentableItemModel>> GetAvailableAsync(DateTime from, DateTime until)
+{
+    // Get reserved quantities in the selected range
+    var reservedQuantities = await _context.ReservationRentables
+        .Where(r =>
+            r.Reservation.CheckInDate < until &&
+            r.Reservation.CheckOutDate > from)
+        .GroupBy(r => r.ItemId)
+        .Select(g => new
         {
-            // Get reserved quantities in the selected range
-            var reservedQuantities = _context.ReservationRentables
-                .Where(r =>
-                    r.Reservation.CheckInDate < until &&
-                    r.Reservation.CheckOutDate > from)
-                .GroupBy(r => r.ItemId)
-                .Select(g => new
-                {
-                    RentableItemId = g.Key,
-                    ReservedQuantity = g.Sum(r => r.Quantity)
-                })
-                .ToDictionary(x => x.RentableItemId, x => x.ReservedQuantity);
+            RentableItemId = g.Key,
+            ReservedQuantity = g.Sum(r => r.Quantity)
+        })
+        .ToDictionaryAsync(x => x.RentableItemId, x => x.ReservedQuantity);
 
-            // Load all items with images
-            var items = _context.RentableItems
-                .Include(x => x.RentableItemImages)
-                .ToList();
+    // Load all items with images
+    var items = await _context.RentableItems
+        .Include(x => x.RentableItemImages)
+        .ToListAsync();
 
-            var models = new List<RentableItemModel>();
+    var models = new List<RentableItemModel>();
 
-            foreach (var item in items)
-            {
-                var reserved = reservedQuantities.TryGetValue(item.ItemId, out var q) ? q : 0;
-                var availableQuantity = item.TotalQuantity - reserved;
+    foreach (var item in items)
+    {
+        var reserved = reservedQuantities.TryGetValue(item.ItemId, out var q) ? q : 0;
+        var availableQuantity = item.TotalQuantity - reserved;
 
-                if (availableQuantity > 0)
-                {
-                    var model = Mapper.Map<RentableItemModel>(item);
-                    model.AvailableQuantity = availableQuantity;
-                    model.Images = _rentableItemImageService.GetImages(item.ItemId).GetAwaiter().GetResult();
-                    models.Add(model);
-
-                }
-            }
-
-
-
-            return models;
+        if (availableQuantity > 0)
+        {
+            var model = Mapper.Map<RentableItemModel>(item);
+            model.AvailableQuantity = availableQuantity;
+            model.Images = await _rentableItemImageService.GetImages(item.ItemId); // async call
+            models.Add(model);
         }
+    }
+
+    return models;
+}
 
 
 
-        public override RentableItemModel GetById(int id)
+        public override async Task<RentableItemModel> GetById(int id)
         {
-            var model = base.GetById(id);
+            var model = await base.GetById(id);
 
             if (model != null)
             {
-                model.Images = _rentableItemImageService.GetImages(id).GetAwaiter().GetResult();
+                model.Images = await _rentableItemImageService.GetImages(id);
             }
 
             return model;

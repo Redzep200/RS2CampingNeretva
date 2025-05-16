@@ -19,27 +19,27 @@ namespace CampingNeretva.API.Controllers
         }
 
         [AllowAnonymous]
-        public override PagedResult<PersonModel> GetList([FromQuery] PersonSearchObject searchObject)
+        public override async Task<PagedResult<PersonModel>> GetList([FromQuery] PersonSearchObject searchObject)
         {
-            return base.GetList(searchObject);
+            return await base.GetList(searchObject);
         }
 
         [Authorize(Roles = "Admin")]
-        public override PersonModel GetById(int id)
+        public override async Task<PersonModel> GetById(int id)
         {
-            return base.GetById(id);
+            return await base.GetById(id);
         }
 
         [Authorize(Roles = "Admin")]
-        public override PersonModel Insert(PersonInsertRequest request)
+        public override async Task<PersonModel> Insert(PersonInsertRequest request)
         {
-            return base.Insert(request);
+            return await base.Insert(request);
         }
 
         [Authorize(Roles = "Admin")]
-        public override PersonModel Update(int id, PersonUpdateRequest request)
+        public override async Task<PersonModel> Update(int id, PersonUpdateRequest request)
         {
-            return base.Update(id, request);
+            return await base.Update(id, request);
         }
 
         [HttpPost("{personId}/images/{imageId}")]

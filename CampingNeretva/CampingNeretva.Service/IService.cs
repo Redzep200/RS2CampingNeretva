@@ -10,8 +10,7 @@ namespace CampingNeretva.Service
 {
     public interface IService<TModel, TSearch> where TSearch : BaseSearchObject
     {
-        public PagedResult<TModel> GetPaged(TSearch search);
-
-        public TModel GetById(int id);
+        Task<PagedResult<TModel>> GetPaged(TSearch search);
+        Task<TModel> GetById(int id);
     }
 }

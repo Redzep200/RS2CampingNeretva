@@ -59,51 +59,29 @@ namespace CampingNeretva.Service
             }
         }
 
-       
+
 
         public async Task RemoveImage(int imageId)
         {
-            var parcelImages = await _context.ParcelImages.Where(x => x.ImageId == imageId).ToListAsync();
-            if (parcelImages.Any())
+            async Task RemoveRelated<TEntity>(DbSet<TEntity> set) where TEntity : class
             {
-                _context.ParcelImages.RemoveRange(parcelImages);
+                var list = await set.Where(x => EF.Property<int>(x, "ImageId") == imageId).ToListAsync();
+                if (list.Any())
+                {
+                    set.RemoveRange(list);
+                }
             }
 
-            var accommodationImages = await _context.AccommodationImages.Where(x => x.ImageId == imageId).ToListAsync();
-            if (accommodationImages.Any())
-            {
-                _context.AccommodationImages.RemoveRange(accommodationImages);
-            }
-
-            var activityImages = await _context.ActivityImages.Where(x => x.ImageId == imageId).ToListAsync();
-            if (activityImages.Any())
-            {
-                _context.ActivityImages.RemoveRange(activityImages);
-            }
-
-            var facilityImages = await _context.FacilityImages.Where(x => x.ImageId == imageId).ToListAsync();
-            if (facilityImages.Any())
-            {
-                _context.FacilityImages.RemoveRange(facilityImages);
-            }
-
-            var personImages = await _context.PersonImages.Where(x => x.ImageId == imageId).ToListAsync();
-            if (personImages.Any())
-            {
-                _context.PersonImages.RemoveRange(personImages);
-            }
-
-            var vehicleImages = await _context.VehicleImages.Where(x => x.ImageId == imageId).ToListAsync();
-            if (vehicleImages.Any())
-            {
-                _context.VehicleImages.RemoveRange(vehicleImages);
-            }
+            await RemoveRelated(_context.ParcelImages);
+            await RemoveRelated(_context.AccommodationImages);
+            await RemoveRelated(_context.ActivityImages);
+            await RemoveRelated(_context.FacilityImages);
+            await RemoveRelated(_context.PersonImages);
+            await RemoveRelated(_context.VehicleImages);
 
             await _context.SaveChangesAsync();
 
-            var image = await _context.Images
-                .FirstOrDefaultAsync(x => x.ImageId == imageId);
-
+            var image = await _context.Images.FirstOrDefaultAsync(x => x.ImageId == imageId);
             if (image != null)
             {
                 _context.Images.Remove(image);

@@ -21,31 +21,31 @@ namespace CampingNeretva.API.Controllers
         }
 
         [AllowAnonymous]
-        public override PagedResult<ParcelModel> GetList([FromQuery] ParcelSearchObject searchObject)
+        public override async Task<PagedResult<ParcelModel>> GetList([FromQuery] ParcelSearchObject searchObject)
         {
-            var result = base.GetList(searchObject);
+            var result = await base.GetList(searchObject);
 
             return result;
         }
 
         [Authorize(Roles = "Admin")]
-        public override ParcelModel GetById(int id)
+        public override async Task<ParcelModel> GetById(int id)
         {
-            var parcel = base.GetById(id);
+            var parcel =await base.GetById(id);
 
             return parcel;
         }
 
         [Authorize(Roles = "Admin")]
-        public override ParcelModel Insert(ParcelInsertRequest request)
+        public override async Task<ParcelModel> Insert(ParcelInsertRequest request)
         {
-            return base.Insert(request);
+            return await base.Insert(request);
         }
 
         [Authorize(Roles = "Admin")]
-        public override ParcelModel Update(int id, ParcelUpdateRequest request)
+        public override async Task<ParcelModel> Update(int id, ParcelUpdateRequest request)
         {
-            return base.Update(id, request);
+            return await base.Update(id, request);
         }
 
         [HttpPost("{parcelId}/images/{imageId}")]

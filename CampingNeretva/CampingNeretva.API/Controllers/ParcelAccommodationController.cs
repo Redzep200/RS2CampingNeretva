@@ -14,9 +14,9 @@ namespace CampingNeretva.API.Controllers
        public ParcelAccommodationController(IParcelAccommodationService service):base(service) { }
 
         [AllowAnonymous]
-        public override PagedResult<ParcelAccommodationModel> GetList([FromQuery] ParcelAccommodationSearchObject searchObject)
+        public override async Task<PagedResult<ParcelAccommodationModel>> GetList([FromQuery] ParcelAccommodationSearchObject searchObject)
         {
-            return base.GetList(searchObject);
+            return await base.GetList(searchObject);
         }
     }
 }

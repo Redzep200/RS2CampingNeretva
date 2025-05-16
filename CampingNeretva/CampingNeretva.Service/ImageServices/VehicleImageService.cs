@@ -27,7 +27,7 @@ namespace CampingNeretva.Service.ImageServices
         protected override async Task<bool> LinkExistsAsync(int entityId, int imageId)
         {
             return await _context.VehicleImages
-                .AnyAsync(x => x.VehicleId == entityId && x.VehicleId == imageId);
+                .AnyAsync(x => x.VehicleId == entityId && x.ImageId == imageId);
         }
 
         protected override async Task<List<VehicleImage>> GetJoinEntitiesForEntityAsync(int entityId)

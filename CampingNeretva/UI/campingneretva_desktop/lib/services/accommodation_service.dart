@@ -2,6 +2,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/accommodation_model.dart';
+import 'package:campingneretva_desktop/services/auth_service.dart';
 
 class AccommodationService {
   static const String baseUrl = 'http://localhost:5205';
@@ -20,9 +21,10 @@ class AccommodationService {
   }
 
   static Future<void> create(Accommodation data) async {
+    final headers = await AuthService.getAuthHeaders();
     final response = await http.post(
       Uri.parse('$baseUrl/Accommodation'),
-      headers: {'Content-Type': 'application/json'},
+      headers: headers,
       body: json.encode(data.toJson()),
     );
     if (response.statusCode != 200 && response.statusCode != 201) {
@@ -31,10 +33,11 @@ class AccommodationService {
   }
 
   static Future<void> update(Accommodation accommodation) async {
+    final headers = await AuthService.getAuthHeaders();
     final url = Uri.parse('$baseUrl/Accommodation/${accommodation.id}');
     final response = await http.put(
       url,
-      headers: {'Content-Type': 'application/json'},
+      headers: headers,
       body: jsonEncode(accommodation.toJson()),
     );
 
@@ -44,7 +47,11 @@ class AccommodationService {
   }
 
   static Future<void> delete(int id) async {
-    final response = await http.delete(Uri.parse('$baseUrl/Accommodation/$id'));
+    final headers = await AuthService.getAuthHeaders();
+    final response = await http.delete(
+      Uri.parse('$baseUrl/Accommodation/$id'),
+      headers: headers,
+    );
     if (response.statusCode != 200) {
       throw Exception('Failed to delete accommodation');
     }

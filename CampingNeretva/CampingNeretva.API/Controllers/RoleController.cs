@@ -16,27 +16,27 @@ namespace CampingNeretva.API.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        public override PagedResult<RoleModel> GetList([FromQuery] RoleSearchObject searchObject)
+        public override async Task<PagedResult<RoleModel>> GetList([FromQuery] RoleSearchObject searchObject)
         {
-            return base.GetList(searchObject);
+            return await base.GetList(searchObject);
         }
 
         [Authorize(Roles = "Admin")]
-        public override RoleModel GetById(int id)
+        public override async Task<RoleModel> GetById(int id)
         {
-            return base.GetById(id);
+            return await base.GetById(id);
         }
 
         [Authorize(Roles = "Admin")]
-        public override RoleModel Insert(RoleUpsertRequest request)
+        public override async Task<RoleModel> Insert(RoleUpsertRequest request)
         {
-            return base.Insert(request);
+            return await base.Insert(request);
         }
 
         [Authorize(Roles = "Admin")]
-        public override RoleModel Update(int id, RoleUpsertRequest request)
+        public override async Task<RoleModel> Update(int id, RoleUpsertRequest request)
         {
-            return base.Update(id, request);
+            return await base.Update(id, request);
         }
     }
 }

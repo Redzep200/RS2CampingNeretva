@@ -3,12 +3,14 @@ class Vehicle {
   final String type;
   double price;
   final String imageUrl;
+  int? imageId;
 
   Vehicle({
     required this.id,
     required this.type,
     required this.price,
     required this.imageUrl,
+    this.imageId,
   });
 
   factory Vehicle.fromJson(Map<String, dynamic> json) {
@@ -20,6 +22,7 @@ class Vehicle {
           (json['images'] as List).isNotEmpty
               ? json['images'][0]['path']
               : 'assets/default_xxx.png',
+      imageId: json['imageId'],
     );
   }
 
@@ -31,6 +34,7 @@ class Vehicle {
       'images': [
         {'path': imageUrl},
       ],
+      'imageId': imageId,
     };
   }
 }

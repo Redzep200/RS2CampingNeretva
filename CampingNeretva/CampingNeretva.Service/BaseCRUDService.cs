@@ -14,45 +14,49 @@ namespace CampingNeretva.Service
     {
         public BaseCRUDService(_200012Context context, IMapper mapper) : base(context, mapper) { }
 
-        public virtual TModel Insert(TInsert request)
+        public virtual async Task<TModel> Insert(TInsert request)
         {
             TDbEntity entity = Mapper.Map<TDbEntity>(request);
 
             beforeInsert(request, entity);
             _context.Add(entity);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return Mapper.Map<TModel>(entity);
         }
 
         public virtual void beforeInsert(TInsert request, TDbEntity entity) { }
-                
-        public TModel Update(int id, TUpdate request)
+
+        public virtual async Task<TModel> Update(int id, TUpdate request)
         {
             var set = _context.Set<TDbEntity>();
 
-            var entity = set.Find(id);
+            var entity = await set.FindAsync(id);
+            if (entity == null)
+            {
+                throw new Exception("Entity not found");
+            }
 
             Mapper.Map(request, entity);
 
             beforeUpdate(request, entity);
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return Mapper.Map<TModel>(entity);
         }
 
         public virtual void beforeUpdate(TUpdate request, TDbEntity entity) { }
 
-        public virtual void Delete(int id)
+        public virtual async Task Delete(int id)
         {
             var set = _context.Set<TDbEntity>();
-            var entity = set.Find(id);
+            var entity = await set.FindAsync(id);
 
             if (entity == null)
                 throw new Exception("Entity not found");
 
             set.Remove(entity);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
     }
 

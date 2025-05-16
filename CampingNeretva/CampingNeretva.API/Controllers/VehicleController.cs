@@ -19,27 +19,27 @@ namespace CampingNeretva.API.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        public override VehicleModel Update(int id, VehicleUpdateRequest request)
+        public override async Task<VehicleModel> Update(int id, VehicleUpdateRequest request)
         {
-            return base.Update(id, request);
+            return await base.Update(id, request);
         }
 
         [AllowAnonymous]
-        public override PagedResult<VehicleModel> GetList([FromQuery] VehicleSearchObject searchObject)
+        public override async Task<PagedResult<VehicleModel>> GetList([FromQuery] VehicleSearchObject searchObject)
         {
-            return base.GetList(searchObject);
+            return await base.GetList(searchObject);
         }
 
         [Authorize(Roles = "Admin")]
-        public override VehicleModel GetById(int id)
+        public override async Task<VehicleModel> GetById(int id)
         {
-            return base.GetById(id);
+            return await base.GetById(id);
         }
 
         [Authorize(Roles = "Admin")]
-        public override VehicleModel Insert(VehicleInsertRequest request)
+        public override async Task<VehicleModel> Insert(VehicleInsertRequest request)
         {
-            return base.Insert(request);
+            return await base.Insert(request);
         }
 
         [HttpPost("{vehicleId}/images/{imageId}")]

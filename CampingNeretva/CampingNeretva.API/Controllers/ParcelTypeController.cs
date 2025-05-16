@@ -12,9 +12,9 @@ namespace CampingNeretva.API.Controllers
         public ParcelTypeController(IParcelTypeService service) : base(service) { }
 
         [AllowAnonymous]
-        public override PagedResult<ParcelTypeModel> GetList([FromQuery] ParcelTypeSearchObject searchObject)
+        public override async Task<PagedResult<ParcelTypeModel>> GetList([FromQuery] ParcelTypeSearchObject searchObject)
         {
-            return base.GetList(searchObject);
+            return await base.GetList(searchObject);
         }
 
 

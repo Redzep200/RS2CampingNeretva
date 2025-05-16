@@ -16,27 +16,27 @@ namespace CampingNeretva.API.Controllers
         }
 
         [AllowAnonymous]
-        public override PagedResult<WorkerModel> GetList([FromQuery] WorkerSearchObject searchObject)
+        public override async Task<PagedResult<WorkerModel>> GetList([FromQuery] WorkerSearchObject searchObject)
         {
-            return base.GetList(searchObject);
+            return await base.GetList(searchObject);
         }
 
         [Authorize(Roles = "Admin")]
-        public override WorkerModel GetById(int id)
+        public override async Task<WorkerModel> GetById(int id)
         {
-            return base.GetById(id);
+            return await base.GetById(id);
         }
 
         [Authorize(Roles = "Admin")]
-        public override WorkerModel Insert(WorkerInsertRequest request)
+        public override async Task<WorkerModel> Insert(WorkerInsertRequest request)
         {
-            return base.Insert(request);
+            return await base.Insert(request);
         }
 
         [Authorize(Roles = "Admin")]
-        public override WorkerModel Update(int id, WorkerUpdateRequest request)
+        public override async Task<WorkerModel> Update(int id, WorkerUpdateRequest request)
         {
-            return base.Update(id, request);
+            return await base.Update(id, request);
         }
     }
 }

@@ -17,27 +17,27 @@ namespace CampingNeretva.API.Controllers
         }
 
         [AllowAnonymous]
-        public override PagedResult<ReservationModel> GetList([FromQuery] ReservationSearchObject search)
+        public override async Task<PagedResult<ReservationModel>> GetList([FromQuery] ReservationSearchObject search)
         {
-            return base.GetList(search);
+            return await base.GetList(search);
         }
 
         [Authorize(Roles = "Guest")]
-        public override ReservationModel Insert([FromBody] ReservationInsertRequest request)
+        public override async Task<ReservationModel> Insert([FromBody] ReservationInsertRequest request)
         {
-            return base.Insert(request);
+            return await base.Insert(request);
         }
 
         [Authorize(Roles = "Admin")]
-        public override ReservationModel Update(int id, [FromBody] ReservationUpdateRequest request)
+        public override async Task<ReservationModel> Update(int id, [FromBody] ReservationUpdateRequest request)
         {
-            return base.Update(id, request);
+            return await base.Update(id, request);
         }
 
         [Authorize(Roles = "Admin")]
-        public override ReservationModel GetById(int id)
+        public override async Task<ReservationModel> GetById(int id)
         {
-            return base.GetById(id);
+            return await base.GetById(id);
         }
     }
 }

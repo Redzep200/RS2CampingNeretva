@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using CampingNeretva.Model.SearchObjects;
 using CampingNeretva.Model.Requests;
 using CampingNeretva.Service.ImageServices;
+using Microsoft.EntityFrameworkCore;
 
 namespace CampingNeretva.Service
 {
@@ -40,29 +41,64 @@ namespace CampingNeretva.Service
             return filteredQuery;
         }
 
-        public override PersonModel GetById(int id)
+        public override async Task<PersonModel> GetById(int id)
         {
-            var model = base.GetById(id);
+            var model = await base.GetById(id);
 
             if (model != null)
             {
-                model.Images = _personImageService.GetImages(id).GetAwaiter().GetResult();
+                model.Images = await _personImageService.GetImages(id);
             }
 
             return model;
         }
 
-        public override PagedResult<PersonModel> GetPaged(PersonSearchObject search)
+        public override async Task<PagedResult<PersonModel>> GetPaged(PersonSearchObject search)
         {
-            var result = base.GetPaged(search);
+            var result = await base.GetPaged(search);
 
             foreach (var person in result.ResultList)
             {
-                person.Images = _personImageService.GetImages(person.PersonId).GetAwaiter().GetResult();
+                person.Images = await _personImageService.GetImages(person.PersonId);
             }
 
             return result;
         }
 
+
+        public override async Task Delete(int id)
+        {
+            var person = await _context.Persons.FindAsync(id);
+            if (person == null)
+            {
+                throw new Exception("Person not found");
+            }
+
+            var relatedReservations = await _context.ReservationPersons
+                                      .Where(x => x.PersonId == id)
+                                      .ToListAsync();
+            _context.ReservationPersons.RemoveRange(relatedReservations);
+
+            var personImages = await _context.PersonImages.Where(x => x.PersonId == id).ToListAsync();
+            _context.PersonImages.RemoveRange(personImages);
+
+            _context.Persons.Remove(person);
+            _context.SaveChanges();
+        }
+
+        public override async Task<PersonModel> Insert(PersonInsertRequest request)
+        {
+            var entity = await base.Insert(request);
+            var imageId = request.ImageId;
+
+            _context.PersonImages.Add(new PersonImage
+            {
+                PersonId = entity.PersonId,
+                ImageId = imageId
+            });
+
+            await _context.SaveChangesAsync();
+            return await GetById(entity.PersonId);
+        }
     }
 }

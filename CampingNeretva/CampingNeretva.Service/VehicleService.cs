@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using CampingNeretva.Model.SearchObjects;
 using CampingNeretva.Model.Requests;
 using CampingNeretva.Service.ImageServices;
+using Microsoft.EntityFrameworkCore;
 
 namespace CampingNeretva.Service
 {
@@ -17,7 +18,8 @@ namespace CampingNeretva.Service
         private readonly VehicleImageService _vehicleImageService;
 
         public VehicleService(_200012Context context, IMapper mapper, VehicleImageService vehicleImageService)
-        :base(context, mapper){
+        : base(context, mapper)
+        {
             _vehicleImageService = vehicleImageService;
         }
 
@@ -38,29 +40,67 @@ namespace CampingNeretva.Service
             return filteredQuery;
         }
 
-        public override VehicleModel GetById(int id)
+        public override async Task<VehicleModel> GetById(int id)
         {
-            var model = base.GetById(id);
+            var model = await base.GetById(id);
 
             if (model != null)
             {
-                model.Images = _vehicleImageService.GetImages(id).GetAwaiter().GetResult();
+                model.Images = await _vehicleImageService.GetImages(id);
             }
 
             return model;
         }
 
-        public override PagedResult<VehicleModel> GetPaged(VehicleSearchObject search)
+        public override async Task<PagedResult<VehicleModel>> GetPaged(VehicleSearchObject search)
         {
-            var result = base.GetPaged(search);
+            var result = await base.GetPaged(search);
 
             foreach (var vehicle in result.ResultList)
             {
-                vehicle.Images = _vehicleImageService.GetImages(vehicle.VehicleId).GetAwaiter().GetResult();
+                vehicle.Images = await _vehicleImageService.GetImages(vehicle.VehicleId);
             }
 
             return result;
         }
 
+
+        public override async Task Delete(int id)
+        {
+            var vehicle = await _context.Vehicles.FindAsync(id);
+            if (vehicle == null)
+            {
+                throw new Exception("Vehicle not found");
+            }
+
+            var relatedReservations = await _context.ReservationVehicles
+                                          .Where(x => x.VehicleId == id)
+                                          .ToListAsync();
+            _context.ReservationVehicles.RemoveRange(relatedReservations);
+
+            var vehicleImages = await _context.VehicleImages
+                                      .Where(x => x.VehicleId == id)
+                                      .ToListAsync();
+            _context.VehicleImages.RemoveRange(vehicleImages);
+
+            _context.Vehicles.Remove(vehicle);
+            await _context.SaveChangesAsync();
+        }
+
+
+        public override async Task<VehicleModel> Insert(VehicleInsertRequest request)
+        {
+            var entity = await base.Insert(request);
+            var imageId = request.ImageId;
+
+            _context.VehicleImages.Add(new VehicleImage
+            {
+                VehicleId = entity.VehicleId,
+                ImageId = imageId
+            });
+
+            await _context.SaveChangesAsync();
+            return await GetById(entity.VehicleId);
+        }
     }
 }

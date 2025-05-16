@@ -1,10 +1,15 @@
+import 'dart:io';
+
+import 'package:campingneretva_desktop/models/accommodation_model.dart';
+import 'package:campingneretva_desktop/models/image_model.dart';
+import 'package:campingneretva_desktop/models/person_model.dart';
+import 'package:campingneretva_desktop/models/vehicle_model.dart';
+import 'package:campingneretva_desktop/services/accommodation_service.dart';
+import 'package:campingneretva_desktop/services/image_service.dart';
+import 'package:campingneretva_desktop/services/person_service.dart';
+import 'package:campingneretva_desktop/services/vehicle_service.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import '../models/accommodation_model.dart';
-import '../models/person_model.dart';
-import '../models/vehicle_model.dart';
-import '../services/accommodation_service.dart';
-import '../services/person_service.dart';
-import '../services/vehicle_service.dart';
 import '../widgets/navbar.dart';
 
 class PricePage extends StatefulWidget {
@@ -17,7 +22,6 @@ class PricePage extends StatefulWidget {
 
 class _PricePageState extends State<PricePage> {
   bool loading = true;
-  static const String _baseUrl = "http://localhost:5205";
   List<Accommodation> accommodations = [];
   List<PersonType> persons = [];
   List<Vehicle> vehicles = [];
@@ -36,11 +40,149 @@ class _PricePageState extends State<PricePage> {
     setState(() => loading = false);
   }
 
-  Widget _buildSectionWithImages<T>({
+  Future<bool> _showConfirmDeleteDialog() async {
+    return await showDialog<bool>(
+          context: context,
+          builder:
+              (context) => AlertDialog(
+                title: const Text('Confirm Deletion'),
+                content: const Text(
+                  'Are you sure you want to delete this item?',
+                ),
+                actions: [
+                  TextButton(
+                    child: const Text('Cancel'),
+                    onPressed: () => Navigator.of(context).pop(false),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                    ),
+                    child: const Text('Delete'),
+                    onPressed: () => Navigator.of(context).pop(true),
+                  ),
+                ],
+              ),
+        ) ??
+        false;
+  }
+
+  Future<void> _showItemDialog<T>({
+    required String title,
+    T? item,
+    required Future<void> Function(T) onSave,
+    required T Function(String, double, String, int?) createItem,
+  }) async {
+    final isEditing = item != null;
+    final typeController = TextEditingController(
+      text: isEditing ? (item as dynamic).type : '',
+    );
+    final priceController = TextEditingController(
+      text: isEditing ? (item as dynamic).price.toString() : '',
+    );
+
+    String? uploadedImageUrl = isEditing ? (item as dynamic).imageUrl : null;
+    int? uploadedImageId = isEditing ? (item as dynamic).imageId : null;
+
+    await showDialog(
+      context: context,
+      builder:
+          (_) => StatefulBuilder(
+            builder:
+                (context, setState) => AlertDialog(
+                  title: Text(isEditing ? 'Edit $title' : 'Add $title'),
+                  content: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        TextField(
+                          controller: typeController,
+                          decoration: const InputDecoration(labelText: 'Type'),
+                        ),
+                        TextField(
+                          controller: priceController,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          decoration: const InputDecoration(
+                            labelText: 'Price (€)',
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        ElevatedButton.icon(
+                          onPressed: () async {
+                            final result = await FilePicker.platform.pickFiles(
+                              type: FileType.image,
+                            );
+                            if (result != null &&
+                                result.files.single.path != null) {
+                              final file = File(result.files.single.path!);
+                              final imageModel = await ImageService.upload(
+                                file,
+                              );
+                              setState(() {
+                                uploadedImageUrl = imageModel.path;
+                                uploadedImageId = imageModel.imageId;
+                              });
+                            }
+                          },
+                          icon: const Icon(Icons.upload_file),
+                          label: const Text("Upload Image"),
+                        ),
+                        if (uploadedImageUrl != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Image.network(
+                              "${PricePage.baseUrl}$uploadedImageUrl",
+                              width: 100,
+                              height: 100,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cancel'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () async {
+                        final type = typeController.text.trim();
+                        final price = double.tryParse(
+                          priceController.text.trim(),
+                        );
+                        if (type.isNotEmpty &&
+                            price != null &&
+                            uploadedImageUrl != null) {
+                          final newItem = createItem(
+                            type,
+                            price,
+                            uploadedImageUrl!,
+                            uploadedImageId,
+                          );
+                          if (isEditing) {
+                            (newItem as dynamic).id = (item as dynamic).id;
+                          }
+                          await onSave(newItem);
+                          Navigator.pop(context);
+                          _loadAll();
+                        }
+                      },
+                      child: const Text('Save'),
+                    ),
+                  ],
+                ),
+          ),
+    );
+  }
+
+  Widget _buildSection<T>({
     required String title,
     required List<T> items,
     required Future<void> Function(T item) onDelete,
-    required Future<void> Function(T item, double newPrice) onEdit,
+    required Future<void> Function(T item) onSave,
+    required T Function(String, double, String, int?) createItem,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -48,9 +190,27 @@ class _PricePageState extends State<PricePage> {
         const SizedBox(height: 24),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Text(
-            title,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.add, color: Colors.green),
+                onPressed:
+                    () => _showItemDialog<T>(
+                      title: title,
+                      onSave: onSave,
+                      createItem: createItem,
+                    ),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 8),
@@ -60,7 +220,7 @@ class _PricePageState extends State<PricePage> {
           itemCount: items.length,
           itemBuilder: (_, index) {
             final item = items[index] as dynamic;
-            final imageUrl = "$_baseUrl${item.imageUrl}";
+            final imageUrl = "${PricePage.baseUrl}${item.imageUrl}";
 
             return Card(
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -81,16 +241,21 @@ class _PricePageState extends State<PricePage> {
                     IconButton(
                       icon: const Icon(Icons.edit, color: Colors.orange),
                       onPressed:
-                          () => _showEditDialog(
-                            item,
-                            onEdit as Future<void> Function(dynamic, double),
+                          () => _showItemDialog<T>(
+                            title: title,
+                            item: item,
+                            onSave: onSave,
+                            createItem: createItem,
                           ),
                     ),
                     IconButton(
                       icon: const Icon(Icons.delete, color: Colors.red),
                       onPressed: () async {
-                        await onDelete(item);
-                        _loadAll();
+                        final confirm = await _showConfirmDeleteDialog();
+                        if (confirm) {
+                          await onDelete(item);
+                          _loadAll();
+                        }
                       },
                     ),
                   ],
@@ -100,44 +265,6 @@ class _PricePageState extends State<PricePage> {
           },
         ),
       ],
-    );
-  }
-
-  Future<void> _showEditDialog(
-    dynamic item,
-    Future<void> Function(dynamic, double) onEdit,
-  ) async {
-    final controller = TextEditingController(text: item.price.toString());
-    await showDialog(
-      context: context,
-      builder:
-          (_) => AlertDialog(
-            title: const Text('Edit Price'),
-            content: TextField(
-              controller: controller,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              decoration: const InputDecoration(labelText: 'New price (€)'),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  final newPrice = double.tryParse(controller.text);
-                  if (newPrice != null) {
-                    Navigator.pop(context);
-                    await onEdit(item, newPrice);
-                    _loadAll();
-                  }
-                },
-                child: const Text('Save'),
-              ),
-            ],
-          ),
     );
   }
 
@@ -151,32 +278,65 @@ class _PricePageState extends State<PricePage> {
               : SingleChildScrollView(
                 child: Column(
                   children: [
-                    _buildSectionWithImages<Vehicle>(
+                    _buildSection<Vehicle>(
                       title: '🚗 Vozila',
                       items: vehicles,
                       onDelete: (v) => VehicleService.delete(v.id),
-                      onEdit: (v, newPrice) async {
-                        v.price = newPrice;
-                        await VehicleService.update(v);
+                      onSave: (v) async {
+                        if (v.id == 0) {
+                          await VehicleService.create(v);
+                        } else {
+                          await VehicleService.update(v);
+                        }
                       },
+                      createItem:
+                          (type, price, imageUrl, imageId) => Vehicle(
+                            id: 0,
+                            type: type,
+                            price: price,
+                            imageUrl: imageUrl,
+                            imageId: imageId,
+                          ),
                     ),
-                    _buildSectionWithImages<PersonType>(
-                      title: '🧍 Osobe',
+                    _buildSection<PersonType>(
+                      title: '🧝 Osobe',
                       items: persons,
                       onDelete: (p) => PersonService.delete(p.id),
-                      onEdit: (p, newPrice) async {
-                        p.price = newPrice;
-                        await PersonService.update(p);
+                      onSave: (p) async {
+                        if (p.id == 0) {
+                          await PersonService.create(p);
+                        } else {
+                          await PersonService.update(p);
+                        }
                       },
+                      createItem:
+                          (type, price, imageUrl, imageId) => PersonType(
+                            id: 0,
+                            type: type,
+                            price: price,
+                            imageUrl: imageUrl,
+                            imageId: imageId,
+                          ),
                     ),
-                    _buildSectionWithImages<Accommodation>(
-                      title: '🏕️ Smještaji',
+                    _buildSection<Accommodation>(
+                      title: '🎕️ Smještaji',
                       items: accommodations,
                       onDelete: (a) => AccommodationService.delete(a.id),
-                      onEdit: (a, newPrice) async {
-                        a.price = newPrice;
-                        await AccommodationService.update(a);
+                      onSave: (a) async {
+                        if (a.id == 0) {
+                          await AccommodationService.create(a);
+                        } else {
+                          await AccommodationService.update(a);
+                        }
                       },
+                      createItem:
+                          (type, price, imageUrl, imageId) => Accommodation(
+                            id: 0,
+                            type: type,
+                            price: price,
+                            imageUrl: imageUrl,
+                            imageId: imageId,
+                          ),
                     ),
                     const SizedBox(height: 32),
                   ],

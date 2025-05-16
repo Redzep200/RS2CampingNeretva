@@ -75,10 +75,10 @@ namespace CampingNeretva.Service
 
             var overlappingReservation = _context.Reservations
                 .Where(r => r.ParcelId == request.ParcelId)
-                    .Where(r =>
-                        r.CheckInDate < request.CheckOutDate &&
-                        r.CheckOutDate > request.CheckInDate)
-                            .FirstOrDefault();
+                .Where(r =>
+                    r.CheckInDate < request.CheckOutDate &&
+                    r.CheckOutDate > request.CheckInDate)
+                .FirstOrDefault();
 
             if (overlappingReservation != null)
             {
@@ -145,7 +145,8 @@ namespace CampingNeretva.Service
             entity.PaymentStatus = "Pending";
         }
 
-        public override ReservationModel Insert(ReservationInsertRequest request)
+
+        public override async Task<ReservationModel> Insert(ReservationInsertRequest request)
         {
             var entity = Mapper.Map<Reservation>(request);
 
@@ -205,14 +206,14 @@ namespace CampingNeretva.Service
             return Mapper.Map<ReservationModel>(entity);
         }
 
-        public override PagedResult<ReservationModel> GetPaged(ReservationSearchObject search)
+        public override async Task<PagedResult<ReservationModel>> GetPaged(ReservationSearchObject search)
         {
-            return base.GetPaged(search);
+            return await base.GetPaged(search);
         }
 
-        public override ReservationModel GetById(int id)
+        public override async Task<ReservationModel> GetById(int id)
         {
-            return base.GetById(id);
+            return await base.GetById(id);
         }
 
     }

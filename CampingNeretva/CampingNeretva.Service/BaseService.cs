@@ -22,39 +22,39 @@ namespace CampingNeretva.Service
             Mapper = mapper;
         }
 
-        public virtual PagedResult<TModel> GetPaged(TSearch search)
+        public virtual async Task<PagedResult<TModel>> GetPaged(TSearch search)
         {
-            List<TModel> result = new List<TModel>();
-
             var query = _context.Set<TDbEntity>().AsQueryable();
 
             query = AddFilter(search, query);
 
-            int count = query.Count();
+            int count = await query.CountAsync();
 
             if (search?.Page.HasValue == true && search?.PageSize.HasValue == true)
             {
                 query = query.Skip(search.Page.Value * search.PageSize.Value).Take(search.PageSize.Value);
             }
 
-            var list = query.ToList();
+            var list = await query.ToListAsync();
 
-            result = Mapper.Map(list, result);
+            var result = Mapper.Map<List<TModel>>(list);
 
-            PagedResult<TModel> pagedResult = new PagedResult<TModel>();
-            pagedResult.ResultList = result;    
-            pagedResult.Count = count;
-            return pagedResult;
+            return new PagedResult<TModel>
+            {
+                ResultList = result,
+                Count = count
+            };
         }
+
 
         public virtual IQueryable<TDbEntity> AddFilter(TSearch search, IQueryable<TDbEntity> query)
         {
             return query;
         }
 
-        public virtual TModel GetById(int id)
+        public virtual async Task<TModel> GetById(int id)
         {
-            var entity = _context.Set<TDbEntity>().Find(id);
+            var entity = await _context.Set<TDbEntity>().FindAsync(id);
 
             if (entity != null) { return Mapper.Map<TModel>(entity); }
             else { return null; } 
