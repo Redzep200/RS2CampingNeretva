@@ -38,7 +38,7 @@ class AccommodationService {
     final response = await http.put(
       url,
       headers: headers,
-      body: jsonEncode(accommodation.toJson()),
+      body: jsonEncode(accommodation.toUpdateJson()),
     );
 
     if (response.statusCode != 200) {

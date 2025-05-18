@@ -27,10 +27,12 @@ class VehicleService {
     final response = await http.put(
       url,
       headers: headers,
-      body: jsonEncode(vehicle.toJson()),
+      body: jsonEncode(vehicle.toUpdateJson()),
     );
 
     if (response.statusCode != 200) {
+      print('Update failed: ${response.statusCode}');
+      print('Response body: ${response.body}');
       throw Exception('Failed to update vehicle');
     }
   }

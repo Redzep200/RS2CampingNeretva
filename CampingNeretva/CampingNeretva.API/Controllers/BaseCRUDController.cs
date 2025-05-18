@@ -29,9 +29,9 @@ namespace CampingNeretva.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        public virtual IActionResult Delete(int id)
+        public virtual async Task<IActionResult> Delete(int id)
         {
-            _service.Delete(id);
+            await _service.Delete(id);
             return Ok();
         }
     }

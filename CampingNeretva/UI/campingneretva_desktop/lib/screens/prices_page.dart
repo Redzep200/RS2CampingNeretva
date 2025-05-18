@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:campingneretva_desktop/models/accommodation_model.dart';
 import 'package:campingneretva_desktop/models/image_model.dart';
 import 'package:campingneretva_desktop/models/person_model.dart';
@@ -71,7 +70,7 @@ class _PricePageState extends State<PricePage> {
     required String title,
     T? item,
     required Future<void> Function(T) onSave,
-    required T Function(String, double, String, int?) createItem,
+    required T Function(String, double, String, int?, int) createItem,
   }) async {
     final isEditing = item != null;
     final typeController = TextEditingController(
@@ -152,6 +151,7 @@ class _PricePageState extends State<PricePage> {
                         final price = double.tryParse(
                           priceController.text.trim(),
                         );
+
                         if (type.isNotEmpty &&
                             price != null &&
                             uploadedImageUrl != null) {
@@ -160,10 +160,8 @@ class _PricePageState extends State<PricePage> {
                             price,
                             uploadedImageUrl!,
                             uploadedImageId,
+                            isEditing ? (item as dynamic).id : 0,
                           );
-                          if (isEditing) {
-                            (newItem as dynamic).id = (item as dynamic).id;
-                          }
                           await onSave(newItem);
                           Navigator.pop(context);
                           _loadAll();
@@ -182,7 +180,7 @@ class _PricePageState extends State<PricePage> {
     required List<T> items,
     required Future<void> Function(T item) onDelete,
     required Future<void> Function(T item) onSave,
-    required T Function(String, double, String, int?) createItem,
+    required T Function(String, double, String, int?, int) createItem,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -290,8 +288,8 @@ class _PricePageState extends State<PricePage> {
                         }
                       },
                       createItem:
-                          (type, price, imageUrl, imageId) => Vehicle(
-                            id: 0,
+                          (type, price, imageUrl, imageId, id) => Vehicle(
+                            id: id,
                             type: type,
                             price: price,
                             imageUrl: imageUrl,
@@ -310,8 +308,8 @@ class _PricePageState extends State<PricePage> {
                         }
                       },
                       createItem:
-                          (type, price, imageUrl, imageId) => PersonType(
-                            id: 0,
+                          (type, price, imageUrl, imageId, id) => PersonType(
+                            id: id,
                             type: type,
                             price: price,
                             imageUrl: imageUrl,
@@ -330,8 +328,8 @@ class _PricePageState extends State<PricePage> {
                         }
                       },
                       createItem:
-                          (type, price, imageUrl, imageId) => Accommodation(
-                            id: 0,
+                          (type, price, imageUrl, imageId, id) => Accommodation(
+                            id: id,
                             type: type,
                             price: price,
                             imageUrl: imageUrl,

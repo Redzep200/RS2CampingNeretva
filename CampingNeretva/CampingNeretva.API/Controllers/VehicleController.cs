@@ -36,6 +36,14 @@ namespace CampingNeretva.API.Controllers
             return await base.GetById(id);
         }
 
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+        public override async Task<IActionResult> Delete(int id)
+        {
+            await base.Delete(id);
+            return Ok();
+        }
+
         [Authorize(Roles = "Admin")]
         public override async Task<VehicleModel> Insert(VehicleInsertRequest request)
         {

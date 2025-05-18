@@ -17,6 +17,12 @@ namespace CampingNeretva.API.Controllers
             return await base.GetList(searchObject);
         }
 
-
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+        public override async Task<IActionResult> Delete(int id)
+        {
+            await base.Delete(id);
+            return Ok();
+        }
     }
 }

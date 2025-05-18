@@ -27,7 +27,7 @@ class PersonService {
     final response = await http.put(
       url,
       headers: headers,
-      body: jsonEncode(person.toJson()),
+      body: jsonEncode(person.toUpdateJson()),
     );
 
     if (response.statusCode != 200) {
