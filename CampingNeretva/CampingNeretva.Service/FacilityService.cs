@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CampingNeretva.Model.Requests;
 using CampingNeretva.Service.ImageServices;
+using Microsoft.EntityFrameworkCore;
 
 namespace CampingNeretva.Service
 {
@@ -54,6 +55,36 @@ namespace CampingNeretva.Service
             }
 
             return result;
+        }
+
+        public override async Task Delete(int id)
+        {
+            var facility = await _context.Facilities.FindAsync(id);
+            if (facility == null)
+            {
+                throw new Exception("Facility not found");
+            }
+
+            var facilityImages = await _context.FacilityImages.Where(x=>x.FacilityId == id).ToListAsync();
+            _context.FacilityImages.RemoveRange(facilityImages);
+
+            _context.Facilities.Remove(facility);
+            _context.SaveChanges();
+        }
+
+        public override async Task<FacilityModel> Insert(FacilityInsertRequest request)
+        {
+            var entity = await base.Insert(request);
+            var imageId = request.ImageId;
+
+            _context.FacilityImages.Add(new FacilityImage
+            {
+                FacilityId = entity.FacilityId,
+                ImageId = imageId
+            });
+
+            await _context.SaveChangesAsync();
+            return await GetById(entity.FacilityId);
         }
     }
 }

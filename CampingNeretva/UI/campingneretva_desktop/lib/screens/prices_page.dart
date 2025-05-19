@@ -25,10 +25,16 @@ class _PricePageState extends State<PricePage> {
   List<PersonType> persons = [];
   List<Vehicle> vehicles = [];
 
+  String searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
     _loadAll();
+    _searchController.addListener(() {
+      setState(() => searchQuery = _searchController.text.toLowerCase());
+    });
   }
 
   Future<void> _loadAll() async {
@@ -151,7 +157,6 @@ class _PricePageState extends State<PricePage> {
                         final price = double.tryParse(
                           priceController.text.trim(),
                         );
-
                         if (type.isNotEmpty &&
                             price != null &&
                             uploadedImageUrl != null) {
@@ -182,6 +187,12 @@ class _PricePageState extends State<PricePage> {
     required Future<void> Function(T item) onSave,
     required T Function(String, double, String, int?, int) createItem,
   }) {
+    final filteredItems =
+        items.where((item) {
+          final type = (item as dynamic).type.toString().toLowerCase();
+          return type.contains(searchQuery);
+        }).toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -215,9 +226,9 @@ class _PricePageState extends State<PricePage> {
         ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          itemCount: items.length,
+          itemCount: filteredItems.length,
           itemBuilder: (_, index) {
-            final item = items[index] as dynamic;
+            final item = filteredItems[index] as dynamic;
             final imageUrl = "${PricePage.baseUrl}${item.imageUrl}";
 
             return Card(
@@ -276,6 +287,22 @@ class _PricePageState extends State<PricePage> {
               : SingleChildScrollView(
                 child: Column(
                   children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          prefixIcon: const Icon(Icons.search),
+                          hintText: 'Pretraga po nazivu...',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                    ),
                     _buildSection<Vehicle>(
                       title: '🚗 Vozila',
                       items: vehicles,

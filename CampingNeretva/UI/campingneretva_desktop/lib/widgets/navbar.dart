@@ -8,29 +8,32 @@ class CustomNavbar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<String> navItems = [
-      "Cijene",
-      "Parcele",
-      "Rezervacije",
-      "Aktivnosti",
-      "Rentanje",
-      "Radnici",
-      "Korisnici",
-      "Sadržaji",
-      "O kampu",
-    ];
+    final Map<String, String?> navRoutes = {
+      "Cijene": '/prices',
+      "Parcele": null,
+      "Rezervacije": null,
+      "Aktivnosti": null,
+      "Rentanje": null,
+      "Radnici": null,
+      "Korisnici": null,
+      "Sadržaji": '/facilities',
+      "O kampu": null,
+    };
 
     return AppBar(
       backgroundColor: Colors.green,
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children:
-            navItems.map((item) {
+            navRoutes.entries.map((entry) {
+              final label = entry.key;
+              final route = entry.value;
               return TextButton(
-                onPressed: () {
-                  // You can use Navigator.pushNamed(context, '/route') later
-                },
-                child: Text(item, style: const TextStyle(color: Colors.white)),
+                onPressed:
+                    route != null
+                        ? () => Navigator.pushNamed(context, route)
+                        : null,
+                child: Text(label, style: const TextStyle(color: Colors.white)),
               );
             }).toList(),
       ),

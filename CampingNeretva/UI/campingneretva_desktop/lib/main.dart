@@ -1,3 +1,4 @@
+import 'package:campingneretva_desktop/screens/facility_page.dart';
 import 'package:campingneretva_desktop/screens/prices_page.dart';
 import 'package:flutter/material.dart';
 import 'package:campingneretva_desktop/screens/login_page.dart';
@@ -17,7 +18,10 @@ class AdminDesktopApp extends StatelessWidget {
       title: 'Admin Panel',
       debugShowCheckedModeBanner: false,
       home: LoginPage(),
-      routes: {'prices': (context) => const PricePage()},
+      routes: {
+        '/prices': (context) => const PricePage(),
+        '/facilities': (context) => const FacilityPage(),
+      },
     );
   }
 }
