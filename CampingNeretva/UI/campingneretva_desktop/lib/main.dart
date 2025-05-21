@@ -1,3 +1,4 @@
+import 'package:campingneretva_desktop/screens/activity_page.dart';
 import 'package:campingneretva_desktop/screens/facility_page.dart';
 import 'package:campingneretva_desktop/screens/prices_page.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +22,7 @@ class AdminDesktopApp extends StatelessWidget {
       routes: {
         '/prices': (context) => const PricePage(),
         '/facilities': (context) => const FacilityPage(),
+        '/activities': (context) => const ActivityPage(),
       },
     );
   }

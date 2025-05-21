@@ -65,11 +65,14 @@ namespace CampingNeretva.Service
                 throw new Exception("Facility not found");
             }
 
+            var relatedActivities = await _context.Activities.Where(x => x.FacilityId == id).ToListAsync();
+            _context.Activities.RemoveRange(relatedActivities);
+
             var facilityImages = await _context.FacilityImages.Where(x=>x.FacilityId == id).ToListAsync();
             _context.FacilityImages.RemoveRange(facilityImages);
 
             _context.Facilities.Remove(facility);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
         public override async Task<FacilityModel> Insert(FacilityInsertRequest request)
@@ -85,6 +88,27 @@ namespace CampingNeretva.Service
 
             await _context.SaveChangesAsync();
             return await GetById(entity.FacilityId);
+        }
+
+        public override async Task<FacilityModel> Update(int id, FacilityUpdateRequest request)
+        {
+            var entity = await base.Update(id, request);
+
+            var existingLinks = await _context.FacilityImages.Where(x => x.FacilityId == id).ToListAsync();
+            _context.FacilityImages.RemoveRange(existingLinks);
+
+            if (request.ImageId.HasValue)
+            {
+                _context.FacilityImages.Add(new FacilityImage
+                {
+                    FacilityId = id,
+                    ImageId = request.ImageId.Value
+                });
+            }
+
+            await _context.SaveChangesAsync();
+
+            return await GetById(id);
         }
     }
 }

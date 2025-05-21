@@ -80,7 +80,7 @@ namespace CampingNeretva.Service
             _context.AccommodationImages.RemoveRange(accommodationImages);
 
             _context.Accommodations.Remove(accommodation);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
         public override async Task<AccommodationModel> Insert(AcommodationInsertRequest request)
@@ -96,6 +96,27 @@ namespace CampingNeretva.Service
 
             await _context.SaveChangesAsync();
             return await GetById(entity.AccommodationId);
+        }
+
+        public override async Task<AccommodationModel> Update(int id, AcommodationUpdateRequest request)
+        {
+            var entity = await base.Update(id, request);
+
+            var existingLinks = await _context.AccommodationImages.Where(x => x.AccommodationId == id).ToListAsync();
+            _context.AccommodationImages.RemoveRange(existingLinks);
+
+            if (request.ImageId.HasValue)
+            {
+                _context.AccommodationImages.Add(new AccommodationImage
+                {
+                    AccommodationId = id,
+                    ImageId = request.ImageId.Value
+                });
+            }
+
+            await _context.SaveChangesAsync();
+
+            return await GetById(id);
         }
     }
 }

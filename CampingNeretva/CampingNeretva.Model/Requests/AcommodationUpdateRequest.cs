@@ -8,6 +8,6 @@ namespace CampingNeretva.Model.Requests
     {
         public string Type { get; set; }
         public decimal PricePerNight { get; set; }
-        public int ImageId { get; set; }
+        public int? ImageId { get; set; }
     }
 }

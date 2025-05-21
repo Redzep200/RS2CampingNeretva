@@ -6,8 +6,10 @@ namespace CampingNeretva.Model.Requests
 {
     public class ActivityUpdateRequest
     {
+        public string Name { get; set; }
+        public string? Description { get; set; }
         public DateTime Date { get; set; }
         public decimal Price { get; set; }
-        public string? Description { get; set; }
+        public int? ImageId { get; set; }
     }
 }

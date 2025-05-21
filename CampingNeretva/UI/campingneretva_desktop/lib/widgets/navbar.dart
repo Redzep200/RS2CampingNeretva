@@ -12,7 +12,7 @@ class CustomNavbar extends StatelessWidget implements PreferredSizeWidget {
       "Cijene": '/prices',
       "Parcele": null,
       "Rezervacije": null,
-      "Aktivnosti": null,
+      "Aktivnosti": '/activities',
       "Rentanje": null,
       "Radnici": null,
       "Korisnici": null,

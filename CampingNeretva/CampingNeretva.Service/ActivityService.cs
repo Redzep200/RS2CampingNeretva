@@ -75,5 +75,61 @@ namespace CampingNeretva.Service
 
             return result;
         }
+
+        public override async Task Delete(int id)
+        {
+            var activity = await _context.Activities.Include(a => a.Reservations).FirstOrDefaultAsync(a=>a.ActivityId == id);
+            if (activity == null)
+            {
+                throw new Exception("Activity not found");
+            }
+
+            foreach (var reservation in activity.Reservations.ToList())
+            {
+                reservation.Activities.Remove(activity);
+            }
+
+            var activityImages = await _context.ActivityImages.Where(x => x.ActivityId == id).ToListAsync();
+            _context.ActivityImages.RemoveRange(activityImages);
+
+            _context.Activities.Remove(activity);
+            await _context.SaveChangesAsync();
+        }
+
+        public override async Task<ActivityModel> Insert(ActivityInsertRequest request)
+        {
+            var entity = await base.Insert(request);
+            var imageId = request.ImageId;
+
+            _context.ActivityImages.Add(new ActivityImage
+            {
+                ActivityId = entity.ActivityId,
+                ImageId = imageId
+            });
+
+            await _context.SaveChangesAsync();
+            return await GetById(entity.ActivityId);
+        }
+
+        public override async Task<ActivityModel> Update(int id, ActivityUpdateRequest request)
+        {
+            var entity = await base.Update(id, request);
+
+            var existingLinks = await _context.ActivityImages.Where(x => x.ActivityId == id).ToListAsync();
+            _context.ActivityImages.RemoveRange(existingLinks);
+
+            if (request.ImageId.HasValue)
+            {
+                _context.ActivityImages.Add(new ActivityImage
+                {
+                    ActivityId = id,
+                    ImageId = request.ImageId.Value
+                });
+            }
+
+            await _context.SaveChangesAsync();
+
+            return await GetById(id);
+        }
     }
 }
