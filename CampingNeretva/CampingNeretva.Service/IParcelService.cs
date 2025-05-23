@@ -1,4 +1,5 @@
 ﻿using CampingNeretva.Model;
+using CampingNeretva.Model.DTO;
 using CampingNeretva.Model.Requests;
 using CampingNeretva.Model.SearchObjects;
 using System;
@@ -12,5 +13,6 @@ namespace CampingNeretva.Service
 {
     public interface IParcelService : ICRUDService<ParcelModel, ParcelSearchObject, ParcelInsertRequest, ParcelUpdateRequest>
     {
+        Task<List<UnavailableParcelModel>> GetUnavailableParcels(DateTime dateFrom, DateTime dateTo);
     }
 }

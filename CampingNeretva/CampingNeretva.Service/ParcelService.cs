@@ -11,6 +11,7 @@ using CampingNeretva.Model.SearchObjects;
 using CampingNeretva.Model.Requests;
 using CampingNeretva.Service.ImageServices;
 using Microsoft.EntityFrameworkCore;
+using CampingNeretva.Model.DTO;
 
 namespace CampingNeretva.Service
 {
@@ -117,6 +118,57 @@ namespace CampingNeretva.Service
 
             return model;
         }
+
+        public async Task<List<UnavailableParcelModel>> GetUnavailableParcels(DateTime dateFrom, DateTime dateTo)
+        {
+            var unavailableParcels = await _context.Reservations
+                .Where(r => r.CheckInDate < dateTo && r.CheckOutDate > dateFrom)
+                .Select(r => r.Parcel)
+                .Distinct()
+                .Select(p => new UnavailableParcelModel
+                {
+                    ParcelId = p.ParcelId,
+                    ParcelNumber = p.ParcelNumber
+                })
+                .ToListAsync();
+
+            return unavailableParcels;
+        }
+
+        public override async Task Delete(int id)
+        {
+            var parcel = await _context.Parcels.FindAsync(id);
+            if (parcel == null)
+            {
+                throw new Exception("Parcel not found");
+            }
+            var relatedReservations = await _context.Reservations
+                                      .Where(x => x.ParcelId == id)
+                                      .ToListAsync();
+            _context.Reservations.RemoveRange(relatedReservations);
+
+            var parcelImages = await _context.ParcelImages.Where(x => x.ParcelId == id).ToListAsync();
+            _context.ParcelImages.RemoveRange(parcelImages);
+
+            _context.Parcels.Remove(parcel);
+            await _context.SaveChangesAsync();
+        }
+
+        public override async Task<ParcelModel> Insert(ParcelInsertRequest request)
+        {
+            var entity = await base.Insert(request);
+            var imageId = request.ImageId;
+
+            _context.ParcelImages.Add(new ParcelImage
+            {
+                ParcelId = entity.ParcelId,
+                ImageId = imageId
+            });
+
+            await _context.SaveChangesAsync();
+            return await GetById(entity.ParcelId);
+        }
+
     }
 
 }

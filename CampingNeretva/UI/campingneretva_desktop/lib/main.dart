@@ -4,6 +4,7 @@ import 'package:campingneretva_desktop/screens/prices_page.dart';
 import 'package:flutter/material.dart';
 import 'package:campingneretva_desktop/screens/login_page.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:campingneretva_desktop/screens/parcel_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,6 +24,7 @@ class AdminDesktopApp extends StatelessWidget {
         '/prices': (context) => const PricePage(),
         '/facilities': (context) => const FacilityPage(),
         '/activities': (context) => const ActivityPage(),
+        '/parcels': (context) => const ParcelPage(),
       },
     );
   }

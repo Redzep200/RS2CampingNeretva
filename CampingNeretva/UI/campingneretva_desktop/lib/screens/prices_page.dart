@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:campingneretva_desktop/models/accommodation_model.dart';
-import 'package:campingneretva_desktop/models/image_model.dart';
 import 'package:campingneretva_desktop/models/person_model.dart';
 import 'package:campingneretva_desktop/models/vehicle_model.dart';
 import 'package:campingneretva_desktop/services/accommodation_service.dart';
@@ -50,20 +49,20 @@ class _PricePageState extends State<PricePage> {
           context: context,
           builder:
               (context) => AlertDialog(
-                title: const Text('Confirm Deletion'),
+                title: const Text('Potvrdi brisanje'),
                 content: const Text(
-                  'Are you sure you want to delete this item?',
+                  'Da li ste sigurni da želite obrisati stavku?',
                 ),
                 actions: [
                   TextButton(
-                    child: const Text('Cancel'),
+                    child: const Text('Izlaz'),
                     onPressed: () => Navigator.of(context).pop(false),
                   ),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
                     ),
-                    child: const Text('Delete'),
+                    child: const Text('Obriši'),
                     onPressed: () => Navigator.of(context).pop(true),
                   ),
                 ],
@@ -95,13 +94,15 @@ class _PricePageState extends State<PricePage> {
           (_) => StatefulBuilder(
             builder:
                 (context, setState) => AlertDialog(
-                  title: Text(isEditing ? 'Edit $title' : 'Add $title'),
+                  title: Text(
+                    isEditing ? 'Uredi stavku $title' : 'Nova stavka $title',
+                  ),
                   content: SingleChildScrollView(
                     child: Column(
                       children: [
                         TextField(
                           controller: typeController,
-                          decoration: const InputDecoration(labelText: 'Type'),
+                          decoration: const InputDecoration(labelText: 'Vrsta'),
                         ),
                         TextField(
                           controller: priceController,
@@ -109,7 +110,7 @@ class _PricePageState extends State<PricePage> {
                             decimal: true,
                           ),
                           decoration: const InputDecoration(
-                            labelText: 'Price (€)',
+                            labelText: 'Cijena (€)',
                           ),
                         ),
                         const SizedBox(height: 10),
@@ -149,7 +150,7 @@ class _PricePageState extends State<PricePage> {
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Cancel'),
+                      child: const Text('Izlaz'),
                     ),
                     ElevatedButton(
                       onPressed: () async {
@@ -172,7 +173,7 @@ class _PricePageState extends State<PricePage> {
                           _loadAll();
                         }
                       },
-                      child: const Text('Save'),
+                      child: const Text('Spasi'),
                     ),
                   ],
                 ),
@@ -243,7 +244,7 @@ class _PricePageState extends State<PricePage> {
                       (_, __, ___) => const Icon(Icons.broken_image, size: 40),
                 ),
                 title: Text('${item.type}'),
-                subtitle: Text('€${item.price.toStringAsFixed(2)} / night'),
+                subtitle: Text('€${item.price.toStringAsFixed(2)} / noć'),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [

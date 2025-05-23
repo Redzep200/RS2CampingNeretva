@@ -92,7 +92,7 @@ class _ActivityPageState extends State<ActivityPage> {
       text: activity?.description ?? '',
     );
     final priceController = TextEditingController(
-      text: isEditing ? activity!.price.toString() : '',
+      text: isEditing ? activity.price.toString() : '',
     );
     DateTime selectedDate = activity?.date ?? DateTime.now();
     String? uploadedImageUrl = activity?.imageUrl;
@@ -104,21 +104,21 @@ class _ActivityPageState extends State<ActivityPage> {
           (_) => StatefulBuilder(
             builder:
                 (context, setState) => AlertDialog(
-                  title: Text(isEditing ? 'Edit Activity' : 'Add Activity'),
+                  title: Text(
+                    isEditing ? 'Uredi aktivnost' : 'Dodaj aktivnost',
+                  ),
                   content: SingleChildScrollView(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         TextField(
                           controller: nameController,
-                          decoration: const InputDecoration(labelText: 'Name'),
+                          decoration: const InputDecoration(labelText: 'Naziv'),
                         ),
                         const SizedBox(height: 8),
                         TextField(
                           controller: descController,
-                          decoration: const InputDecoration(
-                            labelText: 'Description',
-                          ),
+                          decoration: const InputDecoration(labelText: 'Opis'),
                           maxLines: 3,
                         ),
                         const SizedBox(height: 8),
@@ -128,13 +128,13 @@ class _ActivityPageState extends State<ActivityPage> {
                             decimal: true,
                           ),
                           decoration: const InputDecoration(
-                            labelText: 'Price (€)',
+                            labelText: 'Cijena (€)',
                           ),
                         ),
                         const SizedBox(height: 8),
                         Row(
                           children: [
-                            const Text('Date:'),
+                            const Text('Datum:'),
                             const SizedBox(width: 10),
                             TextButton(
                               onPressed: () async {
@@ -163,7 +163,7 @@ class _ActivityPageState extends State<ActivityPage> {
                         DropdownButtonFormField<Facility>(
                           value: selectedFacility,
                           decoration: const InputDecoration(
-                            labelText: 'Facility',
+                            labelText: 'Mjesto održavanja aktivnosti',
                           ),
                           isExpanded: true,
                           items:
@@ -207,8 +207,7 @@ class _ActivityPageState extends State<ActivityPage> {
                               borderRadius: BorderRadius.circular(12),
                               child: Container(
                                 constraints: const BoxConstraints(
-                                  maxWidth:
-                                      300, // set a maximum width instead of infinity
+                                  maxWidth: 300,
                                 ),
                                 child: Image.network(
                                   'http://localhost:5205$uploadedImageUrl',
@@ -227,7 +226,7 @@ class _ActivityPageState extends State<ActivityPage> {
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Cancel'),
+                      child: const Text('Izlaz'),
                     ),
                     ElevatedButton(
                       onPressed: () async {
@@ -238,16 +237,16 @@ class _ActivityPageState extends State<ActivityPage> {
                         );
 
                         if (name.isEmpty || desc.isEmpty || price == null) {
-                          _showError('All fields must be filled correctly.');
+                          _showError('Svako polje more biti tačno popunjeno.');
                           return;
                         }
                         if (selectedDate.isBefore(DateTime.now())) {
-                          _showError('Date cannot be in the past.');
+                          _showError('Ne može se unijeti prosli datum.');
                           return;
                         }
 
                         final newActivity = Activity(
-                          id: isEditing ? activity!.id : 0,
+                          id: isEditing ? activity.id : 0,
                           name: name,
                           description: desc,
                           date: selectedDate,
@@ -266,10 +265,10 @@ class _ActivityPageState extends State<ActivityPage> {
                           Navigator.pop(context);
                           _loadActivities();
                         } catch (_) {
-                          _showError('Failed to save activity.');
+                          _showError('Greška pri spašavanju aktivnosti.');
                         }
                       },
-                      child: const Text('Save'),
+                      child: const Text('Spasi'),
                     ),
                   ],
                 ),
@@ -303,7 +302,6 @@ class _ActivityPageState extends State<ActivityPage> {
               ),
             ),
 
-            // Content
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(12),
@@ -335,7 +333,6 @@ class _ActivityPageState extends State<ActivityPage> {
               ),
             ),
 
-            // Actions
             Container(
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: Column(
@@ -352,22 +349,22 @@ class _ActivityPageState extends State<ActivityPage> {
                         context: context,
                         builder:
                             (_) => AlertDialog(
-                              title: const Text('Delete Activity'),
+                              title: const Text('Obriši aktivnost'),
                               content: const Text(
-                                'Are you sure you want to delete this activity?',
+                                'Da li ste sigurni da želite obrisati aktivnost?',
                               ),
                               actions: [
                                 TextButton(
                                   onPressed:
                                       () => Navigator.pop(context, false),
-                                  child: const Text('Cancel'),
+                                  child: const Text('Izlaz'),
                                 ),
                                 ElevatedButton(
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.red,
                                   ),
                                   onPressed: () => Navigator.pop(context, true),
-                                  child: const Text('Delete'),
+                                  child: const Text('Obriši'),
                                 ),
                               ],
                             ),
@@ -395,14 +392,13 @@ class _ActivityPageState extends State<ActivityPage> {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              // Search & Add
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: TextField(
                       decoration: const InputDecoration(
-                        labelText: 'Search by name',
+                        labelText: 'Pretraga po nazivu',
                         border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.search),
                       ),
@@ -417,14 +413,13 @@ class _ActivityPageState extends State<ActivityPage> {
                   const SizedBox(width: 10),
                   IconButton(
                     icon: const Icon(Icons.add, color: Colors.green),
-                    tooltip: 'Add Activity',
+                    tooltip: 'Nova aktivnost',
                     onPressed: () => _showActivityDialog(),
                   ),
                 ],
               ),
               const SizedBox(height: 16),
 
-              // Sorting & Date Filter
               Row(
                 children: [
                   IconButton(
@@ -436,7 +431,7 @@ class _ActivityPageState extends State<ActivityPage> {
                           : Icons.swap_vert,
                       color: Colors.blueGrey,
                     ),
-                    tooltip: 'Sort by price',
+                    tooltip: 'Sortiraj po cijeni',
                     onPressed: () {
                       setState(() {
                         _sortMode = (_sortMode + 1) % 3;
@@ -446,10 +441,10 @@ class _ActivityPageState extends State<ActivityPage> {
                   ),
                   Text(
                     _sortMode == 1
-                        ? 'Price: Low → High'
+                        ? 'Cijena: Niska → Visoka'
                         : _sortMode == 2
-                        ? 'Price: High → Low'
-                        : 'No sorting',
+                        ? 'Cijena: Visoka → Niska'
+                        : 'Bez sortiranja',
                   ),
                   const Spacer(),
                   IconButton(
@@ -477,17 +472,18 @@ class _ActivityPageState extends State<ActivityPage> {
                           _applyFilters();
                         });
                       },
-                      child: const Text('Clear Date'),
+                      child: const Text('Ukloni datum'),
                     ),
                 ],
               ),
               const SizedBox(height: 16),
 
-              // Activity List
               Expanded(
                 child:
                     _filteredActivities.isEmpty
-                        ? const Center(child: Text("No activities found."))
+                        ? const Center(
+                          child: Text("Nema odgovarajućih aktivnosti."),
+                        )
                         : ListView.builder(
                           itemCount: _filteredActivities.length,
                           itemBuilder: (context, index) {

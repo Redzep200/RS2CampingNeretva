@@ -18,8 +18,6 @@ class ReviewService {
       final uri = Uri.parse(
         '$baseUrl/Review',
       ).replace(queryParameters: queryParameters);
-
-      // Get reviews without authentication - this is allowed based on your API
       final response = await http.get(uri);
 
       if (response.statusCode == 200) {
@@ -49,16 +47,12 @@ class ReviewService {
   }
 
   static Future<Map<String, String>> _getAuthHeaders() async {
-    // Basic authentication headers
     if (AuthService.currentUser == null) {
       throw Exception('User not logged in');
     }
 
-    // Create auth headers - we'll use username for now
-    // In a real app, you would use a stored token or similar
     final username = AuthService.currentUser!.username;
-    final password =
-        "password"; // You'd need to store this securely or get it from a secure storage
+    final password = "password";
 
     final basicAuth =
         'Basic ${base64Encode(utf8.encode('$username:$password'))}';

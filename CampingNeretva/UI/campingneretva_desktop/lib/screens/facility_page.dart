@@ -43,20 +43,20 @@ class _FacilityPageState extends State<FacilityPage> {
           context: context,
           builder:
               (context) => AlertDialog(
-                title: const Text('Confirm Deletion'),
+                title: const Text('Potvrdi brisanje'),
                 content: const Text(
-                  'Are you sure you want to delete this facility?',
+                  'Da li ste sigurni da želite obrisati sadržaj?',
                 ),
                 actions: [
                   TextButton(
-                    child: const Text('Cancel'),
+                    child: const Text('Izlaz'),
                     onPressed: () => Navigator.of(context).pop(false),
                   ),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
                     ),
-                    child: const Text('Delete'),
+                    child: const Text('Obriši'),
                     onPressed: () => Navigator.of(context).pop(true),
                   ),
                 ],
@@ -83,21 +83,19 @@ class _FacilityPageState extends State<FacilityPage> {
           (_) => StatefulBuilder(
             builder:
                 (context, setState) => AlertDialog(
-                  title: Text(isEditing ? 'Edit Facility' : 'Add Facility'),
+                  title: Text(isEditing ? 'Uredi sadržaj' : 'Dodaj sadržaj'),
                   content: SingleChildScrollView(
                     child: Column(
                       children: [
                         TextField(
                           controller: typeController,
                           decoration: const InputDecoration(
-                            labelText: 'Facility Type',
+                            labelText: 'Vrsta sadržaja',
                           ),
                         ),
                         TextField(
                           controller: descController,
-                          decoration: const InputDecoration(
-                            labelText: 'Description',
-                          ),
+                          decoration: const InputDecoration(labelText: 'Opis'),
                           maxLines: 5,
                         ),
                         const SizedBox(height: 10),
@@ -137,7 +135,7 @@ class _FacilityPageState extends State<FacilityPage> {
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Cancel'),
+                      child: const Text('Izlaz'),
                     ),
                     ElevatedButton(
                       onPressed: () async {
@@ -150,24 +148,24 @@ class _FacilityPageState extends State<FacilityPage> {
                                 .length;
 
                         if (type.isEmpty) {
-                          _showError('Facility type is required.');
+                          _showError('Potreban unos vrste sadržaja.');
                           return;
                         }
-                        if (wordCount < 20) {
+                        if (wordCount < 10) {
                           _showError(
-                            'Description must contain at least 20 words.',
+                            'Opis mora da sadrži minimalno 10 riječi.',
                           );
                           return;
                         }
                         if (!isEditing &&
                             (uploadedImageUrl == null ||
                                 uploadedImageId == null)) {
-                          _showError('Please upload an image.');
+                          _showError('Molim vas ubacite sliku.');
                           return;
                         }
 
                         final newFacility = Facility(
-                          id: isEditing ? facility!.id : 0,
+                          id: isEditing ? facility.id : 0,
                           facilityType: type,
                           description: desc,
                           imageUrl: uploadedImageUrl!,
@@ -183,10 +181,10 @@ class _FacilityPageState extends State<FacilityPage> {
                           Navigator.pop(context);
                           _loadFacilities();
                         } catch (e) {
-                          _showError('Error saving facility.');
+                          _showError('Greška pri spašavanju sadržaja.');
                         }
                       },
-                      child: const Text('Save'),
+                      child: const Text('Spasi'),
                     ),
                   ],
                 ),

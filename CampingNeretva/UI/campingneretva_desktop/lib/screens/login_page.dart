@@ -1,8 +1,6 @@
 import 'package:campingneretva_desktop/screens/prices_page.dart';
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
-import 'package:campingneretva_desktop/models/user_model.dart';
-import 'admin_dashboard.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -22,7 +20,7 @@ class _LoginPageState extends State<LoginPage> {
     try {
       final user = await AuthService.login(username, password);
       if (user!.userType.typeName != 'Admin') {
-        _showError('Only admin users can access this application.');
+        _showError('Samo administrator može koristiti aplikaciju.');
         return;
       }
 
@@ -31,7 +29,7 @@ class _LoginPageState extends State<LoginPage> {
         MaterialPageRoute(builder: (_) => PricePage()),
       );
     } catch (e) {
-      _showError('Login failed: ${e.toString()}');
+      _showError('Neuspješan Login: ${e.toString()}');
     } finally {
       setState(() => _isLoading = false);
     }
@@ -42,7 +40,7 @@ class _LoginPageState extends State<LoginPage> {
       context: context,
       builder:
           (_) => AlertDialog(
-            title: Text('Access Denied'),
+            title: Text('Pristup odbijen'),
             content: Text(message),
             actions: [
               TextButton(

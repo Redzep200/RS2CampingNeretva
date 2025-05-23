@@ -5,6 +5,7 @@ using CampingNeretva.Model.SearchObjects;
 using CampingNeretva.Model.Requests;
 using Microsoft.AspNetCore.Authorization;
 using CampingNeretva.Service.ImageServices;
+using CampingNeretva.Model.DTO;
 
 namespace CampingNeretva.API.Controllers
 {
@@ -13,11 +14,13 @@ namespace CampingNeretva.API.Controllers
     public class ParcelController : BaseCRUDController<ParcelModel, ParcelSearchObject, ParcelInsertRequest, ParcelUpdateRequest>
     {
         private readonly ParcelImageService _imageService;
+        private readonly ParcelService _parcelService;
 
-        public ParcelController(IParcelService service, ParcelImageService imageService)
+        public ParcelController(IParcelService service, ParcelImageService imageService, ParcelService parcelService)
         : base(service)
         {
             _imageService = imageService;
+            _parcelService = parcelService;
         }
 
         [AllowAnonymous]
@@ -70,6 +73,15 @@ namespace CampingNeretva.API.Controllers
         {
             await _imageService.RemoveImage(parcelId, imageId);
             return Ok();
+        }
+
+
+        [HttpGet("unavailable")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<List<UnavailableParcelModel>>> GetUnavailableParcels([FromQuery] DateTime dateFrom, [FromQuery] DateTime dateTo)
+        {
+            var result = await _parcelService.GetUnavailableParcels(dateFrom, dateTo);
+            return Ok(result);
         }
     }
 }

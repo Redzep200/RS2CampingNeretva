@@ -12,6 +12,7 @@ using Microsoft.OpenApi.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddTransient<IParcelService, ParcelService>();
+builder.Services.AddTransient<ParcelService>();
 builder.Services.AddTransient<IActivityService, ActivityService>();
 builder.Services.AddTransient<IAccommodationService, AccommodationService>();
 builder.Services.AddTransient<IPersonService, PersonService>();

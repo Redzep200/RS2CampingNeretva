@@ -10,7 +10,7 @@ class CustomNavbar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     final Map<String, String?> navRoutes = {
       "Cijene": '/prices',
-      "Parcele": null,
+      "Parcele": '/parcels',
       "Rezervacije": null,
       "Aktivnosti": '/activities',
       "Rentanje": null,

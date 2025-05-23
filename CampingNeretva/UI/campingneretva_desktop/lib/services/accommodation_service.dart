@@ -1,4 +1,3 @@
-// services/price_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/accommodation_model.dart';
@@ -7,7 +6,6 @@ import 'package:campingneretva_desktop/services/auth_service.dart';
 class AccommodationService {
   static const String baseUrl = 'http://localhost:5205';
 
-  // Accommodation
   static Future<List<Accommodation>> fetchAll() async {
     final response = await http.get(Uri.parse('$baseUrl/Accommodation'));
     if (response.statusCode == 200) {
