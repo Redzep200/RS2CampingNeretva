@@ -36,7 +36,7 @@ class ReservationService {
   static Future<List<Reservation>> getByUserId(int userId) async {
     final headers = await AuthService.getAuthHeaders();
 
-    final uri = Uri.http('192.168.0.15:5205', '/Reservation', {
+    final uri = Uri.http('10.0.2.2:5205', '/Reservation', {
       'UserId': userId.toString(),
       'IsPersonsIncluded': 'true',
       'IsVehicleIncluded': 'true',
@@ -50,13 +50,7 @@ class ReservationService {
 
     if (response.statusCode == 200) {
       final body = json.decode(response.body);
-      print('DEBUG: Full response body: ${jsonEncode(body)}');
       final List data = body['resultList'];
-      for (var item in data) {
-        print(
-          'DEBUG: Reservation item: ${jsonEncode(item)}',
-        ); // <--- Add this too
-      }
       return data.map((e) => Reservation.fromJson(e)).toList();
     } else {
       print(

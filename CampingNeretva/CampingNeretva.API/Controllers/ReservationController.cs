@@ -28,7 +28,7 @@ namespace CampingNeretva.API.Controllers
             return await base.Insert(request);
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Guest")]
         public override async Task<ReservationModel> Update(int id, [FromBody] ReservationUpdateRequest request)
         {
             return await base.Update(id, request);

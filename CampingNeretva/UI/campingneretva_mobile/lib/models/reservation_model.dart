@@ -48,13 +48,11 @@ class Reservation {
               .map((e) => PersonType.fromJson(e['person']))
               .toList(),
 
-      // Handle reservationVehicles structure
       vehicles:
           (json['reservationVehicles'] as List)
               .map((e) => Vehicle.fromJson(e['vehicle']))
               .toList(),
 
-      // Handle reservationAccommodations structure
       accommodation:
           (json['reservationAccommodations'] as List).isNotEmpty
               ? Accommodation.fromJson(
@@ -62,13 +60,11 @@ class Reservation {
               )
               : throw Exception('No accommodation found in reservation'),
 
-      // Handle rentable items
       rentableItems:
           (json['reservationRentables'] as List)
               .map((e) => RentableItem.fromJson(e['item']))
               .toList(),
 
-      // Activities may already be flat
       activities:
           (json['activities'] as List)
               .map((e) => Activity.fromJson(e))

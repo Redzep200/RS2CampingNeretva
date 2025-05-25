@@ -139,5 +139,58 @@ namespace CampingNeretva.Service
             return model;
         }
 
+        public override async Task Delete(int id)
+        {
+            var item = await _context.RentableItems.FindAsync(id);
+            if (item == null)
+            {
+                throw new Exception("Rentable item not found");
+            }
+
+            var relatedReservations = await _context.ReservationRentables.Where(x => x.ItemId == id).ToListAsync();
+            _context.ReservationRentables.RemoveRange(relatedReservations);
+
+            var itemImages = await _context.RentableItemImages.Where(x => x.RentableItemId == id).ToListAsync();
+            _context.RentableItemImages.RemoveRange(itemImages);
+
+            _context.RentableItems.Remove(item);
+            await _context.SaveChangesAsync();
+        }
+
+        public override async Task<RentableItemModel> Insert(RentableItemInsertRequest request)
+        {
+            var entity = await base.Insert(request);
+            var imageId = request.ImageId;
+
+            _context.RentableItemImages.Add(new RentableItemImage
+            {
+                RentableItemId = entity.ItemId,
+                ImageId = imageId
+            });
+
+            await _context.SaveChangesAsync();
+            return await GetById(entity.ItemId);
+        }
+
+        public override async Task<RentableItemModel> Update(int id, RentableItemsUpdateRequest request)
+        {
+            var entity = await base.Update(id, request);
+
+            var existingLinks = await _context.RentableItemImages.Where(x => x.RentableItemId == id).ToListAsync();
+            _context.RentableItemImages.RemoveRange(existingLinks);
+
+            if (request.ImageId.HasValue)
+            {
+                _context.RentableItemImages.Add(new RentableItemImage
+                {
+                    RentableItemId = id,
+                    ImageId = request.ImageId.Value
+                });
+            }
+
+            await _context.SaveChangesAsync();
+
+            return await GetById(id);
+        }
     }
 }

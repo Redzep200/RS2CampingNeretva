@@ -62,7 +62,13 @@ namespace CampingNeretva.Service
 
             if (search?.IsParcelIncluded == true)
             {
-                filteredQuery = filteredQuery.Include(x => x.Parcel);
+                filteredQuery = filteredQuery.Include(x => x.Parcel).ThenInclude(p => p.ParcelAccommodation)
+                .Include(x => x.Parcel).ThenInclude(p => p.ParcelType); ;
+            }
+
+            if (search?.IsUserIncluded == true)
+            {
+                filteredQuery = filteredQuery.Include(x => x.User).ThenInclude(x=>x.UserType);
             }
 
             return filteredQuery;
@@ -216,5 +222,28 @@ namespace CampingNeretva.Service
             return await base.GetById(id);
         }
 
+        public override async Task Delete(int id)
+        {
+            var item = await _context.Reservations.FindAsync(id);
+            if (item == null)
+            {
+                throw new Exception("Reservation not found");
+            }
+
+            var relatedAccommodations = await _context.ReservationAccommodations.Where(x => x.ReservationId == id).ToListAsync();
+            _context.ReservationAccommodations.RemoveRange(relatedAccommodations);
+
+            var relatedPersons = await _context.ReservationPersons.Where(x => x.ReservationId == id).ToListAsync();
+            _context.ReservationPersons.RemoveRange(relatedPersons);
+
+            var relatedRentables = await _context.ReservationRentables.Where(x => x.ReservationId == id).ToListAsync();
+            _context.ReservationRentables.RemoveRange(relatedRentables);
+
+            var relatedVehicles = await _context.ReservationVehicles.Where(x => x.ReservationId == id).ToListAsync();
+            _context.ReservationVehicles.RemoveRange(relatedVehicles);
+
+            _context.Reservations.Remove(item);
+            await _context.SaveChangesAsync();
+        }
     }
 }

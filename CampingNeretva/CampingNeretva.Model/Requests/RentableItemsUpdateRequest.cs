@@ -9,5 +9,7 @@ namespace CampingNeretva.Model.Requests
         public int TotalQuantity { get; set; }
         public string? Description { get; set; }
         public decimal PricePerDay { get; set; }
+        public int? ImageId { get; set; }
+        public string Name { get; set; }
     }
 }

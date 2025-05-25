@@ -1,6 +1,8 @@
 import 'package:campingneretva_desktop/screens/activity_page.dart';
 import 'package:campingneretva_desktop/screens/facility_page.dart';
 import 'package:campingneretva_desktop/screens/prices_page.dart';
+import 'package:campingneretva_desktop/screens/rentable_item_page.dart';
+import 'package:campingneretva_desktop/screens/reservations_page.dart';
 import 'package:flutter/material.dart';
 import 'package:campingneretva_desktop/screens/login_page.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -25,6 +27,8 @@ class AdminDesktopApp extends StatelessWidget {
         '/facilities': (context) => const FacilityPage(),
         '/activities': (context) => const ActivityPage(),
         '/parcels': (context) => const ParcelPage(),
+        '/rentableItems': (context) => const RentableItemsPage(),
+        '/reservations': (context) => const ReservationsPage(),
       },
     );
   }
