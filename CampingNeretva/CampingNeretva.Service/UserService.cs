@@ -37,7 +37,7 @@ namespace CampingNeretva.Service
 
             if (!string.IsNullOrWhiteSpace(search.UserName))
             {
-                filteredQuery = filteredQuery.Where(x => x.UserName.Equals(search.UserName));
+                filteredQuery = filteredQuery.Where(x => x.UserName.StartsWith(search.UserName));
             }
 
             if (!string.IsNullOrWhiteSpace(search.Email))
@@ -55,25 +55,28 @@ namespace CampingNeretva.Service
 
         public override void beforeInsert(UserInsertRequest request, User entity)
         {
-            var userType = _context.UserTypes.FirstOrDefault(x => x.TypeName == "Guest");
-            if(userType != null)
+            if (request.UserTypeId.HasValue)
             {
-                entity.UserType = userType;
+                var type = _context.UserTypes.FirstOrDefault(x => x.UserTypeId == request.UserTypeId.Value);
+                if (type == null)
+                    throw new Exception("Korisnička uloga ne postoji");
+
+                entity.UserType = type;
             }
             else
             {
-                throw new Exception("Role *Guest* has been removed");
+                var guestType = _context.UserTypes.FirstOrDefault(x => x.TypeName == "Guest");
+                if (guestType != null)
+                    entity.UserType = guestType;
+                else
+                    throw new Exception("Role *Guest* has been removed");
             }
 
-            if(request.Password != request.PasswordConfirmation)
-            {
+            if (request.Password != request.PasswordConfirmation)
                 throw new Exception("Password and PasswordConfirmation are different");
-            }
-            else
-            {
-                entity.PasswordSalt = GenerateSalt();
-                entity.PasswordHash = GenerateHash(entity.PasswordSalt, request.Password);
-            }
+
+            entity.PasswordSalt = GenerateSalt();
+            entity.PasswordHash = GenerateHash(entity.PasswordSalt, request.Password);
 
         }
 
@@ -115,6 +118,24 @@ namespace CampingNeretva.Service
             }
 
             return this.Mapper.Map<UserModel>(entity);
+        }
+
+        public override async Task Delete(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
+            {
+                throw new Exception("User not found");
+            }
+
+            var relatedReservations = await _context.Reservations.Where(x => x.UserId == id).ToListAsync();
+            _context.Reservations.RemoveRange(relatedReservations);
+
+            var relatedReviews = await _context.Reviews.Where(x => x.UserId == id).ToListAsync();
+            _context.Reviews.RemoveRange(relatedReviews);
+
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
         }
     }
 }

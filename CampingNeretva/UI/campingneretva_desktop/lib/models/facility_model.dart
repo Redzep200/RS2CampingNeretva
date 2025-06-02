@@ -14,15 +14,20 @@ class Facility {
   });
 
   factory Facility.fromJson(Map<String, dynamic> json) {
+    String extractedImageUrl = 'assets/default_image.png';
+    int? extractedImageId;
+
+    if (json['images'] != null && (json['images'] as List).isNotEmpty) {
+      final firstImage = json['images'][0];
+      extractedImageUrl = firstImage['path'] ?? 'assets/default_image.png';
+      extractedImageId = firstImage['imageId'];
+    }
     return Facility(
       id: json['facilityId'],
       facilityType: json['facilityType'],
       description: json['description'],
-      imageUrl:
-          (json['images'] as List).isNotEmpty
-              ? json['images'][0]['path']
-              : 'assets/default_facility.png',
-      imageId: json['imageId'],
+      imageUrl: extractedImageUrl,
+      imageId: extractedImageId,
     );
   }
 
@@ -32,7 +37,7 @@ class Facility {
       'facilityType': facilityType,
       'description': description,
       'images': [
-        {'path': imageUrl},
+        {'path': imageUrl, 'imageId': imageId},
       ],
       'imageId': imageId,
     };
@@ -42,7 +47,7 @@ class Facility {
     return {
       'facilityType': facilityType,
       'description': description,
-      'imageId': imageId ?? 0,
+      'imageId': imageId,
     };
   }
 }

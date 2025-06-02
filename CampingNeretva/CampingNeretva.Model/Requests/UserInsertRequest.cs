@@ -13,5 +13,6 @@ namespace CampingNeretva.Model.Requests
         public string? PhoneNumber { get; set; }
         public string Password { get; set; }
         public string PasswordConfirmation { get; set; }
+        public int? UserTypeId { get; set; }
     }
 }

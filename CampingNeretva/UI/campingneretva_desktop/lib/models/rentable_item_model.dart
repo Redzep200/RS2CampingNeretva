@@ -20,17 +20,22 @@ class RentableItem {
   });
 
   factory RentableItem.fromJson(Map<String, dynamic> json) {
+    String extractedImageUrl = 'assets/default_image.png';
+    int? extractedImageId;
+
+    if (json['images'] != null && (json['images'] as List).isNotEmpty) {
+      final firstImage = json['images'][0];
+      extractedImageUrl = firstImage['path'] ?? 'assets/default_image.png';
+      extractedImageId = firstImage['imageId'];
+    }
     return RentableItem(
       id: json['itemId'],
       name: json['name'],
       description: json['description'],
       pricePerDay: json['pricePerDay'],
       availableQuantity: json['availableQuantity'],
-      imageUrl:
-          (json['images'] as List).isNotEmpty
-              ? json['images'][0]['path']
-              : 'assets/default_rentableitem.png',
-      imageId: json['imageId'],
+      imageUrl: extractedImageUrl,
+      imageId: extractedImageId,
       totalQuantity: json['totalQuantity'],
     );
   }
@@ -43,7 +48,7 @@ class RentableItem {
       'pricePerDay': pricePerDay,
       'availableQuantity': availableQuantity,
       'images': [
-        {'path': imageUrl},
+        {'path': imageUrl, 'imageId': imageId},
       ],
       'imageId': imageId,
       'totalQuantity': totalQuantity,
@@ -56,7 +61,7 @@ class RentableItem {
       'description': description,
       'pricePerDay': pricePerDay,
       'totalQuantity': totalQuantity,
-      'imageId': imageId ?? 0,
+      'imageId': imageId,
     };
   }
 }

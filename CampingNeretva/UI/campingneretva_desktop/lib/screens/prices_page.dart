@@ -345,7 +345,7 @@ class _PricePageState extends State<PricePage> {
                           ),
                     ),
                     _buildSection<Accommodation>(
-                      title: '🎕️ Smještaji',
+                      title: '⛺ Smještaji',
                       items: accommodations,
                       onDelete: (a) => AccommodationService.delete(a.id),
                       onSave: (a) async {

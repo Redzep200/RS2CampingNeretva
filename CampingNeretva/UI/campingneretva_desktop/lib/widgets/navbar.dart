@@ -14,10 +14,10 @@ class CustomNavbar extends StatelessWidget implements PreferredSizeWidget {
       "Rezervacije": '/reservations',
       "Aktivnosti": '/activities',
       "Rentanje": '/rentableItems',
-      "Radnici": null,
-      "Korisnici": null,
+      "Radnici": '/workers',
+      "Korisnici": '/users',
       "Sadržaji": '/facilities',
-      "O kampu": null,
+      "O kampu": '/dashboard',
     };
 
     return AppBar(

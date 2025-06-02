@@ -39,7 +39,7 @@ namespace CampingNeretva.Service
 
             if (search?.IsWorkerIncluded == true)
             {
-                filteredQuery = filteredQuery.Include(x => x.Worker);
+                filteredQuery = filteredQuery.Include(x => x.Worker).ThenInclude(r => r.Roles);
             }
 
             if (search?.WorkerId.HasValue == true)
@@ -70,6 +70,7 @@ namespace CampingNeretva.Service
                 entity.Worker = worker;
             }
         }
+
 
     }
 }

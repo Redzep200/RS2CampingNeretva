@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CampingNeretva.Model.SearchObjects;
 using CampingNeretva.Model.Requests;
+using Microsoft.EntityFrameworkCore;
 
 namespace CampingNeretva.Service
 {
@@ -29,5 +30,20 @@ namespace CampingNeretva.Service
             return filteredQuery;
         }
 
+
+        public override async Task Delete(int id)
+        {
+            var type = await _context.UserTypes.FindAsync(id);
+            if (type == null)
+            {
+                throw new Exception("User type not found");
+            }
+
+            var relatedUsers = await _context.Users.Where(x => x.UserTypeId == id).ToListAsync();
+            _context.Users.RemoveRange(relatedUsers);
+
+            _context.UserTypes.Remove(type);
+            await _context.SaveChangesAsync();
+        }
     }
 }

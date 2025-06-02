@@ -304,7 +304,7 @@ class _ParcelPageState extends State<ParcelPage> {
                         children: [
                           const Expanded(
                             child: Text(
-                              '📦 Upravljanje parcelama',
+                              '🍀 Upravljanje parcelama',
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,

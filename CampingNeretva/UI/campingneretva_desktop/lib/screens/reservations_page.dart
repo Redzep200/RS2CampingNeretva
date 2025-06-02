@@ -35,9 +35,9 @@ class _ReservationsPageState extends State<ReservationsPage> {
 
   String _getCategory(Reservation r) {
     final now = DateTime.now();
-    if (r.endDate.isBefore(now)) return 'Past';
-    if (r.startDate.isAfter(now)) return 'Upcoming';
-    return 'Active';
+    if (r.endDate.isBefore(now)) return 'Istekle';
+    if (r.startDate.isAfter(now)) return 'Buduće';
+    return 'Aktivne';
   }
 
   List<Reservation> _applyFilters(List<Reservation> reservations) {
@@ -84,15 +84,17 @@ class _ReservationsPageState extends State<ReservationsPage> {
                 } else if (snapshot.hasError) {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text('No reservations found.'));
+                  return const Center(
+                    child: Text('Nije pronađena ni jedna rezervacija.'),
+                  );
                 }
 
                 final filteredReservations = _applyFilters(snapshot.data!);
 
                 final sorted = {
-                  'Active': <Reservation>[],
-                  'Upcoming': <Reservation>[],
-                  'Past': <Reservation>[],
+                  'Aktivne': <Reservation>[],
+                  'Buduće': <Reservation>[],
+                  'Istekle': <Reservation>[],
                 };
 
                 for (var r in filteredReservations) {
@@ -138,7 +140,7 @@ class _ReservationsPageState extends State<ReservationsPage> {
             width: 200,
             child: TextField(
               decoration: const InputDecoration(
-                labelText: 'Search by username',
+                labelText: 'Pretraga po korisničkom imenu',
                 border: OutlineInputBorder(),
               ),
               onChanged: (value) {
@@ -152,7 +154,7 @@ class _ReservationsPageState extends State<ReservationsPage> {
             width: 200,
             child: TextField(
               decoration: const InputDecoration(
-                labelText: 'Reservation number',
+                labelText: 'Broj rezervacije',
                 border: OutlineInputBorder(),
               ),
               keyboardType: TextInputType.number,
@@ -179,7 +181,7 @@ class _ReservationsPageState extends State<ReservationsPage> {
                 });
               },
               decoration: const InputDecoration(
-                labelText: 'Vehicle Type',
+                labelText: 'Tip vozila',
                 border: OutlineInputBorder(),
               ),
             ),
@@ -190,7 +192,7 @@ class _ReservationsPageState extends State<ReservationsPage> {
               icon: const Icon(Icons.date_range),
               label: Text(
                 _selectedDate == null
-                    ? 'Reservation Date'
+                    ? 'Datum rezervacije'
                     : _dateFormat.format(_selectedDate!),
               ),
               onPressed: () async {
@@ -216,7 +218,7 @@ class _ReservationsPageState extends State<ReservationsPage> {
                 });
               },
               icon: const Icon(Icons.clear),
-              label: const Text("Clear Date"),
+              label: const Text("Ukloni datum"),
             ),
         ],
       ),
@@ -231,7 +233,7 @@ class _ReservationsPageState extends State<ReservationsPage> {
       child: ExpansionTile(
         tilePadding: const EdgeInsets.symmetric(horizontal: 16),
         title: Text(
-          'Reservation #${r.reservationId} - ${r.user.firstName} ${r.user.lastName}',
+          'Rezervacija #${r.reservationId} - ${r.user.firstName} ${r.user.lastName}',
         ),
         subtitle: Text(
           '${_dateFormat.format(r.startDate)} → ${_dateFormat.format(r.endDate)}',
@@ -241,39 +243,39 @@ class _ReservationsPageState extends State<ReservationsPage> {
           vertical: 8,
         ),
         children: [
-          _infoRow('Parcel', r.parcel.number.toString()),
+          _infoRow('Parcela', r.parcel.number.toString()),
           if (r.accommodations.isNotEmpty)
             _infoRow(
-              'Accommodations',
+              'Smjestaj',
               r.accommodations
                   .map((a) => '${a.accommodation.type} x${a.quantity}')
                   .join(', '),
             ),
           if (r.persons.isNotEmpty)
             _infoRow(
-              'Persons',
+              'Osobe',
               r.persons
                   .map((p) => '${p.person.type} x${p.quantity}')
                   .join(', '),
             ),
           if (r.vehicles.isNotEmpty)
             _infoRow(
-              'Vehicles',
+              'Vozila',
               r.vehicles
                   .map((v) => '${v.vehicle.type} x${v.quantity}')
                   .join(', '),
             ),
           if (r.rentableItems != null && r.rentableItems!.isNotEmpty)
             _infoRow(
-              'Items',
+              'Rentane stavke',
               r.rentableItems!
                   .map((i) => '${i.item.name} x${i.quantity}')
                   .join(', '),
             ),
           if (r.activities != null && r.activities!.isNotEmpty)
-            _infoRow('Activities', r.activities!.map((a) => a.name).join(', ')),
-          _infoRow('Total Price', '${r.totalPrice.toStringAsFixed(2)} €'),
-          _infoRow('Payment Status', r.paymentStatus),
+            _infoRow('Aktivnosti', r.activities!.map((a) => a.name).join(', ')),
+          _infoRow('Cijena', '${r.totalPrice.toStringAsFixed(2)} €'),
+          _infoRow('Status', r.paymentStatus),
         ],
       ),
     );

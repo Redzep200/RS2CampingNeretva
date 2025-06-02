@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CampingNeretva.Model.SearchObjects;
 using CampingNeretva.Model.Requests;
+using Microsoft.EntityFrameworkCore;
 
 namespace CampingNeretva.Service
 {
@@ -28,6 +29,27 @@ namespace CampingNeretva.Service
             }
 
             return filteredQuery;
+        }
+
+        public override async Task Delete(int id)
+        {
+            var role = await _context.Roles.FindAsync(id);
+            if (role == null)
+            {
+                throw new Exception("Role not found");
+            }
+
+            var workersWithRole = await _context.Workers.Include(w => w.Roles)
+                .Where(w => w.Roles.Any(r => r.RoleId == id)).ToListAsync();
+
+            foreach (var worker in workersWithRole)
+            {
+                var roleToRemove = worker.Roles.First(r => r.RoleId == id);
+                worker.Roles.Remove(roleToRemove);
+            }
+
+            _context.Roles.Remove(role);
+            await _context.SaveChangesAsync();
         }
     }
 }

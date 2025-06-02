@@ -6,7 +6,10 @@ import 'package:campingneretva_desktop/services/auth_service.dart';
 class ReservationService {
   static const String _baseUrl = 'http://localhost:5205';
 
-  static Future<List<Reservation>> fetchAll() async {
+  static Future<List<Reservation>> fetchAll({
+    DateTime? from,
+    DateTime? to,
+  }) async {
     final headers = await AuthService.getAuthHeaders();
 
     final uri = Uri.http('localhost:5205', '/Reservation', {
@@ -18,6 +21,8 @@ class ReservationService {
       'IsParcelIncluded': 'true',
       'IsUserIncluded': 'true',
       'PageSize': '1000',
+      if (from != null) 'CheckInDate': from.toIso8601String(),
+      if (to != null) 'CheckOutDate': to.toIso8601String(),
     });
 
     final response = await http.get(uri, headers: headers);

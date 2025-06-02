@@ -83,20 +83,15 @@ class _ActivityPageState extends State<ActivityPage> {
     ).showSnackBar(SnackBar(content: Text(msg), backgroundColor: Colors.red));
   }
 
-  Future<void> _showActivityDialog({Activity? activity}) async {
-    final isEditing = activity != null;
+  Future<void> _showAddActivityDialog() async {
     final facilities = await FacilityService.fetchAll();
-    Facility? selectedFacility = activity?.facility;
-    final nameController = TextEditingController(text: activity?.name ?? '');
-    final descController = TextEditingController(
-      text: activity?.description ?? '',
-    );
-    final priceController = TextEditingController(
-      text: isEditing ? activity.price.toString() : '',
-    );
-    DateTime selectedDate = activity?.date ?? DateTime.now();
-    String? uploadedImageUrl = activity?.imageUrl;
-    int? uploadedImageId = activity?.imageId;
+    Facility? selectedFacility;
+    final nameController = TextEditingController();
+    final descController = TextEditingController();
+    final priceController = TextEditingController();
+    DateTime selectedDate = DateTime.now();
+    String? uploadedImageUrl;
+    int? uploadedImageId;
 
     await showDialog(
       context: context,
@@ -104,9 +99,7 @@ class _ActivityPageState extends State<ActivityPage> {
           (_) => StatefulBuilder(
             builder:
                 (context, setState) => AlertDialog(
-                  title: Text(
-                    isEditing ? 'Uredi aktivnost' : 'Dodaj aktivnost',
-                  ),
+                  title: const Text('Dodaj aktivnost'),
                   content: SingleChildScrollView(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -138,10 +131,11 @@ class _ActivityPageState extends State<ActivityPage> {
                             const SizedBox(width: 10),
                             TextButton(
                               onPressed: () async {
+                                final now = DateTime.now();
                                 final picked = await showDatePicker(
                                   context: context,
-                                  initialDate: selectedDate,
-                                  firstDate: DateTime.now(),
+                                  initialDate: now,
+                                  firstDate: now,
                                   lastDate: DateTime(2100),
                                 );
                                 if (picked != null) {
@@ -240,13 +234,22 @@ class _ActivityPageState extends State<ActivityPage> {
                           _showError('Svako polje more biti tačno popunjeno.');
                           return;
                         }
-                        if (selectedDate.isBefore(DateTime.now())) {
+
+                        final now = DateTime.now();
+                        final today = DateTime(now.year, now.month, now.day);
+                        final selected = DateTime(
+                          selectedDate.year,
+                          selectedDate.month,
+                          selectedDate.day,
+                        );
+
+                        if (selected.isBefore(today)) {
                           _showError('Ne može se unijeti prosli datum.');
                           return;
                         }
 
                         final newActivity = Activity(
-                          id: isEditing ? activity.id : 0,
+                          id: 0,
                           name: name,
                           description: desc,
                           date: selectedDate,
@@ -257,16 +260,337 @@ class _ActivityPageState extends State<ActivityPage> {
                         );
 
                         try {
-                          if (isEditing) {
-                            await ActivityService.update(newActivity);
-                          } else {
-                            await ActivityService.create(newActivity);
-                          }
+                          await ActivityService.create(newActivity);
                           Navigator.pop(context);
                           _loadActivities();
                         } catch (_) {
                           _showError('Greška pri spašavanju aktivnosti.');
                         }
+                      },
+                      child: const Text('Spasi'),
+                    ),
+                  ],
+                ),
+          ),
+    );
+  }
+
+  // Edit Activity Dialog
+  // Updated _showEditActivityDialog method
+  // Fixed _showEditActivityDialog method
+  Future<void> _showEditActivityDialog(Activity activity) async {
+    final facilities = await FacilityService.fetchAll();
+    Facility? selectedFacility = activity.facility;
+    final nameController = TextEditingController(text: activity.name);
+    final descController = TextEditingController(text: activity.description);
+    final priceController = TextEditingController(
+      text: activity.price.toString(),
+    );
+    DateTime selectedDate = activity.date;
+
+    // Variables to handle image updates - FIXED: Initialize with current values
+    String? newImageUrl =
+        activity.imageUrl; // Initialize with current image URL
+    int? newImageId = activity.imageId; // Initialize with current image ID
+    bool shouldUpdateImage = false;
+
+    await showDialog(
+      context: context,
+      builder:
+          (_) => StatefulBuilder(
+            builder:
+                (context, setState) => AlertDialog(
+                  title: const Text('Uredi aktivnost'),
+                  content: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextField(
+                          controller: nameController,
+                          decoration: const InputDecoration(labelText: 'Naziv'),
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: descController,
+                          decoration: const InputDecoration(labelText: 'Opis'),
+                          maxLines: 3,
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: priceController,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          decoration: const InputDecoration(
+                            labelText: 'Cijena (€)',
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Text('Datum:'),
+                            const SizedBox(width: 10),
+                            TextButton(
+                              onPressed: () async {
+                                final now = DateTime.now();
+                                final initialDate =
+                                    selectedDate.isBefore(now)
+                                        ? now
+                                        : selectedDate;
+                                final picked = await showDatePicker(
+                                  context: context,
+                                  initialDate: initialDate,
+                                  firstDate: now,
+                                  lastDate: DateTime(2100),
+                                );
+                                if (picked != null) {
+                                  setState(() {
+                                    selectedDate = picked;
+                                  });
+                                }
+                              },
+                              child: Text(
+                                selectedDate.toLocal().toString().split(' ')[0],
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        DropdownButtonFormField<Facility>(
+                          value: selectedFacility,
+                          decoration: const InputDecoration(
+                            labelText: 'Mjesto održavanja aktivnosti',
+                          ),
+                          isExpanded: true,
+                          items:
+                              facilities.map((f) {
+                                return DropdownMenuItem(
+                                  value: f,
+                                  child: Text(f.facilityType),
+                                );
+                              }).toList(),
+                          onChanged: (val) {
+                            setState(() {
+                              selectedFacility = val;
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 8),
+
+                        // Current image section - FIXED: Check for non-empty imageUrl
+                        if (activity.imageUrl.isNotEmpty && !shouldUpdateImage)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 12.0),
+                            child: Column(
+                              children: [
+                                const Text('Trenutna slika:'),
+                                const SizedBox(height: 8),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Container(
+                                    constraints: const BoxConstraints(
+                                      maxWidth: 300,
+                                    ),
+                                    child: Image.network(
+                                      'http://localhost:5205${activity.imageUrl}',
+                                      height: 100,
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (_, __, ___) =>
+                                              const Icon(Icons.broken_image),
+                                      // ADDED: Loading builder for better UX
+                                      loadingBuilder: (
+                                        context,
+                                        child,
+                                        loadingProgress,
+                                      ) {
+                                        if (loadingProgress == null)
+                                          return child;
+                                        return Container(
+                                          height: 100,
+                                          child: Center(
+                                            child: CircularProgressIndicator(
+                                              value:
+                                                  loadingProgress
+                                                              .expectedTotalBytes !=
+                                                          null
+                                                      ? loadingProgress
+                                                              .cumulativeBytesLoaded /
+                                                          loadingProgress
+                                                              .expectedTotalBytes!
+                                                      : null,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                ElevatedButton.icon(
+                                  onPressed: () {
+                                    setState(() {
+                                      shouldUpdateImage = true;
+                                    });
+                                  },
+                                  icon: const Icon(Icons.edit),
+                                  label: const Text('Promijeni sliku'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.orange,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                        if (shouldUpdateImage)
+                          Column(
+                            children: [
+                              ElevatedButton.icon(
+                                onPressed: () async {
+                                  final result = await FilePicker.platform
+                                      .pickFiles(type: FileType.image);
+                                  if (result != null &&
+                                      result.files.single.path != null) {
+                                    final file = File(
+                                      result.files.single.path!,
+                                    );
+                                    final imageModel =
+                                        await ImageService.upload(file);
+                                    setState(() {
+                                      newImageUrl = imageModel.path;
+                                      newImageId = imageModel.imageId;
+                                    });
+                                  }
+                                },
+                                icon: const Icon(Icons.upload),
+                                label: const Text('Upload Nova Slika'),
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  TextButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        shouldUpdateImage = false;
+                                        newImageUrl = activity.imageUrl;
+                                        newImageId = activity.imageId;
+                                      });
+                                    },
+                                    child: const Text('Zadrži staru sliku'),
+                                  ),
+                                ],
+                              ),
+                              if (newImageUrl != null &&
+                                  newImageUrl != activity.imageUrl)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 12.0),
+                                  child: Column(
+                                    children: [
+                                      const Text('Nova slika:'),
+                                      const SizedBox(height: 8),
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Container(
+                                          constraints: const BoxConstraints(
+                                            maxWidth: 300,
+                                          ),
+                                          child: Image.network(
+                                            'http://localhost:5205$newImageUrl',
+                                            height: 100,
+                                            fit: BoxFit.cover,
+                                            errorBuilder:
+                                                (_, __, ___) => const Icon(
+                                                  Icons.broken_image,
+                                                ),
+                                            loadingBuilder: (
+                                              context,
+                                              child,
+                                              loadingProgress,
+                                            ) {
+                                              if (loadingProgress == null)
+                                                return child;
+                                              return Container(
+                                                height: 100,
+                                                child: Center(
+                                                  child: CircularProgressIndicator(
+                                                    value:
+                                                        loadingProgress
+                                                                    .expectedTotalBytes !=
+                                                                null
+                                                            ? loadingProgress
+                                                                    .cumulativeBytesLoaded /
+                                                                loadingProgress
+                                                                    .expectedTotalBytes!
+                                                            : null,
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
+                          ),
+                      ],
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Izlaz'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () async {
+                        final name = nameController.text.trim();
+                        final desc = descController.text.trim();
+                        final price = double.tryParse(
+                          priceController.text.trim(),
+                        );
+
+                        if (name.isEmpty || desc.isEmpty || price == null) {
+                          _showError('Svako polje more biti tačno popunjeno.');
+                          return;
+                        }
+
+                        final now = DateTime.now();
+                        final today = DateTime(now.year, now.month, now.day);
+                        final selected = DateTime(
+                          selectedDate.year,
+                          selectedDate.month,
+                          selectedDate.day,
+                        );
+
+                        if (selected.isBefore(today)) {
+                          _showError('Ne može se unijeti prosli datum.');
+                          return;
+                        }
+
+                        // FIXED: Simplified image data handling
+                        final String finalImageUrl =
+                            newImageUrl ?? activity.imageUrl;
+                        final int? finalImageId =
+                            newImageId ?? activity.imageId;
+
+                        final updatedActivity = Activity(
+                          id: activity.id,
+                          name: name,
+                          description: desc,
+                          date: selectedDate,
+                          price: price,
+                          imageUrl: finalImageUrl,
+                          imageId: finalImageId,
+                          facility: selectedFacility,
+                        );
                       },
                       child: const Text('Spasi'),
                     ),
@@ -340,7 +664,7 @@ class _ActivityPageState extends State<ActivityPage> {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.edit, color: Colors.orange),
-                    onPressed: () => _showActivityDialog(activity: activity),
+                    onPressed: () => _showEditActivityDialog(activity),
                   ),
                   IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),
@@ -414,7 +738,7 @@ class _ActivityPageState extends State<ActivityPage> {
                   IconButton(
                     icon: const Icon(Icons.add, color: Colors.green),
                     tooltip: 'Nova aktivnost',
-                    onPressed: () => _showActivityDialog(),
+                    onPressed: () => _showAddActivityDialog(),
                   ),
                 ],
               ),
