@@ -380,7 +380,6 @@ class _ActivityPageState extends State<ActivityPage> {
                         ),
                         const SizedBox(height: 8),
 
-                        // Current image section - FIXED: Check for non-empty imageUrl
                         if (activity.imageUrl.isNotEmpty && !shouldUpdateImage)
                           Padding(
                             padding: const EdgeInsets.only(bottom: 12.0),
@@ -575,7 +574,6 @@ class _ActivityPageState extends State<ActivityPage> {
                           return;
                         }
 
-                        // FIXED: Simplified image data handling
                         final String finalImageUrl =
                             newImageUrl ?? activity.imageUrl;
                         final int? finalImageId =
@@ -591,6 +589,16 @@ class _ActivityPageState extends State<ActivityPage> {
                           imageId: finalImageId,
                           facility: selectedFacility,
                         );
+
+                        try {
+                          await ActivityService.update(
+                            updatedActivity,
+                          ); // <- MISSING LINE
+                          Navigator.pop(context); // Close dialog
+                          _loadActivities(); // Refresh UI
+                        } catch (e) {
+                          _showError('Greška pri spašavanju izmjena.');
+                        }
                       },
                       child: const Text('Spasi'),
                     ),

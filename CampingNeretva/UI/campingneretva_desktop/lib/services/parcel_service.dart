@@ -30,8 +30,13 @@ class ParcelService {
 
     if (response.statusCode == 200) {
       final jsonData = json.decode(response.body);
-      final List items = jsonData['resultList'];
-      return items.map((e) => Parcel.fromJson(e)).toList();
+      final rawItems = jsonData['resultList'];
+
+      return (rawItems is List
+              ? rawItems.whereType<Map<String, dynamic>>()
+              : <Map<String, dynamic>>[])
+          .map((e) => Parcel.fromJson(e))
+          .toList();
     } else {
       throw Exception('Failed to load parcels');
     }

@@ -18,16 +18,13 @@ class ParcelTypeService {
     }
   }
 
-  static Future<void> create(ParcelType data) async {
+  static Future<void> create(ParcelType at) async {
     final headers = await AuthService.getAuthHeaders();
-    final response = await http.post(
+    await http.post(
       Uri.parse('$baseUrl/ParcelType'),
       headers: headers,
-      body: json.encode(data.toJson()),
+      body: json.encode({'parcelType1': at.name}),
     );
-    if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception('Failed to create parcel type');
-    }
   }
 
   static Future<void> delete(int id) async {
@@ -37,7 +34,8 @@ class ParcelTypeService {
       headers: headers,
     );
     if (response.statusCode != 200) {
-      throw Exception('Failed to delete parcel type');
+      final message = jsonDecode(response.body)['message'] ?? 'Unknown error';
+      throw Exception('Failed to delete parcel type: $message');
     }
   }
 }

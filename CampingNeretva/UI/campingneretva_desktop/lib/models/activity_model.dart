@@ -22,15 +22,13 @@ class Activity {
   });
 
   factory Activity.fromJson(Map<String, dynamic> json) {
-    // Extract imageId and imageUrl from images array
     String extractedImageUrl = 'assets/default_activity.png';
     int? extractedImageId;
 
     if (json['images'] != null && (json['images'] as List).isNotEmpty) {
       final firstImage = json['images'][0];
       extractedImageUrl = firstImage['path'] ?? 'assets/default_activity.png';
-      extractedImageId =
-          firstImage['imageId']; // Get imageId from the image object
+      extractedImageId = firstImage['imageId'];
     }
 
     return Activity(
@@ -40,7 +38,7 @@ class Activity {
       date: DateTime.parse(json['date']),
       price: json['price'],
       imageUrl: extractedImageUrl,
-      imageId: extractedImageId, // Use extracted imageId
+      imageId: extractedImageId,
       facility:
           json['facility'] != null ? Facility.fromJson(json['facility']) : null,
     );
@@ -54,10 +52,7 @@ class Activity {
       'date': date.toIso8601String(),
       'price': price,
       'images': [
-        {
-          'path': imageUrl,
-          'imageId': imageId, // Include imageId in the image object
-        },
+        {'path': imageUrl, 'imageId': imageId},
       ],
       'imageId': imageId,
       'facilityId': facility?.id,

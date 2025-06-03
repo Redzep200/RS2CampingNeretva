@@ -11,4 +11,7 @@ class ParcelType {
   Map<String, dynamic> toJson() {
     return {'parcelTypeId': id, 'parcelType1': name};
   }
+
+  @override
+  String toString() => name;
 }

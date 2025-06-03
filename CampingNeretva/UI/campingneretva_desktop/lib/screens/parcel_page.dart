@@ -49,7 +49,6 @@ class _ParcelPageState extends State<ParcelPage> {
   }
 
   Future<void> _loadParcels() async {
-    // Fetch all available parcels
     parcels = await ParcelService.fetchAll(
       shade: shade,
       electricity: electricity,
@@ -57,7 +56,6 @@ class _ParcelPageState extends State<ParcelPage> {
       type: selectedType?.name,
     );
 
-    // If range selected, fetch unavailable ones
     if (startDate != null && endDate != null) {
       final unavailableIds = await ParcelService.fetchUnavailableParcelIds(
         startDate!,
@@ -70,6 +68,31 @@ class _ParcelPageState extends State<ParcelPage> {
     }
 
     setState(() {});
+  }
+
+  Future<String?> _promptInput(String label) async {
+    final controller = TextEditingController();
+    return await showDialog<String>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text(label),
+            content: TextField(
+              controller: controller,
+              decoration: const InputDecoration(hintText: "Unesite naziv"),
+            ),
+            actions: [
+              TextButton(
+                child: const Text("Odustani"),
+                onPressed: () => Navigator.pop(context),
+              ),
+              ElevatedButton(
+                child: const Text("Dodaj"),
+                onPressed: () => Navigator.pop(context, controller.text.trim()),
+              ),
+            ],
+          ),
+    );
   }
 
   Future<void> _showParcelDialog({Parcel? parcel}) async {
@@ -217,8 +240,8 @@ class _ParcelPageState extends State<ParcelPage> {
                           electricity: electricityValue,
                           description: descriptionController.text.trim(),
                           isAvailable: true,
-                          parcelAccommodation: accValue!.name,
-                          parcelType: typeValue!.name,
+                          parcelAccommodation: accValue!,
+                          parcelType: typeValue!,
                           imageUrl: imageUrl ?? '',
                           imageId: imageId,
                         );
@@ -282,6 +305,125 @@ class _ParcelPageState extends State<ParcelPage> {
     }
   }
 
+  void _showDetailsDialog() async {
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text("Detalji o smještajima i tipovima parcela"),
+              content: SizedBox(
+                width: 600,
+                child: Row(
+                  children: [
+                    // Parcel Types
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Tipovi parcela",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          ...parcelTypes.map(
+                            (t) => ListTile(
+                              title: Text(t.name),
+                              trailing: IconButton(
+                                icon: const Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
+                                ),
+                                onPressed: () async {
+                                  await ParcelTypeService.delete(t.id);
+                                  parcelTypes =
+                                      await ParcelTypeService.fetchAll();
+                                  setState(() {});
+                                },
+                              ),
+                            ),
+                          ),
+                          TextButton.icon(
+                            onPressed: () async {
+                              final name = await _promptInput(
+                                "Novi tip parcele",
+                              );
+                              if (name != null && name.isNotEmpty) {
+                                await ParcelTypeService.create(
+                                  ParcelType(id: 0, name: name),
+                                );
+                                parcelTypes =
+                                    await ParcelTypeService.fetchAll();
+                                setState(() {});
+                              }
+                            },
+                            icon: const Icon(Icons.add),
+                            label: const Text("Dodaj tip"),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    // Parcel Accommodations
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Smještaji",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          ...accommodations.map(
+                            (a) => ListTile(
+                              title: Text(a.name),
+                              trailing: IconButton(
+                                icon: const Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
+                                ),
+                                onPressed: () async {
+                                  await ParcelAccommodationService.delete(a.id);
+                                  accommodations =
+                                      await ParcelAccommodationService.fetchAll();
+                                  setState(() {});
+                                },
+                              ),
+                            ),
+                          ),
+                          TextButton.icon(
+                            onPressed: () async {
+                              final name = await _promptInput("Novi smještaj");
+                              if (name != null && name.isNotEmpty) {
+                                await ParcelAccommodationService.create(
+                                  ParcelAccommodation(id: 0, name: name),
+                                );
+                                accommodations =
+                                    await ParcelAccommodationService.fetchAll();
+                                setState(() {});
+                              }
+                            },
+                            icon: const Icon(Icons.add),
+                            label: const Text("Dodaj smještaj"),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  child: const Text("Zatvori"),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final filteredParcels =
@@ -314,6 +456,11 @@ class _ParcelPageState extends State<ParcelPage> {
                           IconButton(
                             icon: const Icon(Icons.add, color: Colors.green),
                             onPressed: () => _showParcelDialog(),
+                          ),
+                          ElevatedButton.icon(
+                            icon: const Icon(Icons.info_outline),
+                            label: const Text("Pregled detalja"),
+                            onPressed: _showDetailsDialog,
                           ),
                         ],
                       ),

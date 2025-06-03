@@ -11,5 +11,6 @@ namespace CampingNeretva.Model.Requests
         public DateTime Date { get; set; }
         public decimal Price { get; set; }
         public int? ImageId { get; set; }
+        public int? FacilityId { get; set; }
     }
 }

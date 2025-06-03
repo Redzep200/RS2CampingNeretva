@@ -1,3 +1,6 @@
+import 'package:campingneretva_desktop/models/parcel_accommodation_model.dart';
+import 'package:campingneretva_desktop/models/parcel_type_model.dart';
+
 class Parcel {
   final int id;
   final int number;
@@ -5,8 +8,8 @@ class Parcel {
   final bool electricity;
   final String? description;
   bool isAvailable;
-  final String parcelAccommodation;
-  final String parcelType;
+  final ParcelAccommodation parcelAccommodation;
+  final ParcelType parcelType;
   final String imageUrl;
   int? imageId;
 
@@ -31,9 +34,10 @@ class Parcel {
       electricity: json['electricity'],
       description: json['description'],
       isAvailable: json['availabilityStatus'],
-      parcelAccommodation:
-          json['parcelAccommodation']?['parcelAccommodation1'] ?? "Unknown",
-      parcelType: json['parcelType']?['parcelType1'] ?? "Unknown",
+      parcelAccommodation: ParcelAccommodation.fromJson(
+        json['parcelAccommodation'],
+      ),
+      parcelType: ParcelType.fromJson(json['parcelType']),
       imageUrl:
           (json['images'] as List).isNotEmpty
               ? json['images'][0]['path']
@@ -50,8 +54,8 @@ class Parcel {
       'electricity': electricity,
       'description': description,
       'availabilityStatus': isAvailable,
-      'parcelAccommodation': {'parcelAccommodation1': parcelAccommodation},
-      'parcelType': {'parcelType1': parcelType},
+      'parcelAccommodationId': parcelAccommodation.id,
+      'parcelTypeId': parcelType.id,
       'images': [
         {'path': imageUrl},
       ],
@@ -66,8 +70,8 @@ class Parcel {
       'electricity': electricity,
       'description': description,
       'availabilityStatus': isAvailable,
-      'parcelAccommodation': {'parcelAccommodation1': parcelAccommodation},
-      'parcelType': {'parcelType1': parcelType},
+      'parcelAccommodationId': parcelAccommodation.id,
+      'parcelTypeId': parcelType.id,
       'imageId': imageId ?? 0,
     };
   }

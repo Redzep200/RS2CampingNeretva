@@ -18,16 +18,13 @@ class ParcelAccommodationService {
     }
   }
 
-  static Future<void> create(ParcelAccommodation data) async {
+  static Future<void> create(ParcelAccommodation acc) async {
     final headers = await AuthService.getAuthHeaders();
-    final response = await http.post(
+    await http.post(
       Uri.parse('$baseUrl/ParcelAccommodation'),
       headers: headers,
-      body: json.encode(data.toJson()),
+      body: json.encode({'parcelAccommodation1': acc.name}),
     );
-    if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception('Failed to create parcel accommodation');
-    }
   }
 
   static Future<void> delete(int id) async {
