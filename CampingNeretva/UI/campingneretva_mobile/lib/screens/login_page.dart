@@ -33,30 +33,37 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Login'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (error != null)
-            Text(error!, style: const TextStyle(color: Colors.red)),
-          TextField(
-            controller: _username,
-            decoration: const InputDecoration(labelText: 'Username'),
+      content: SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.6,
           ),
-          TextField(
-            controller: _password,
-            decoration: const InputDecoration(labelText: 'Password'),
-            obscureText: true,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (error != null)
+                Text(error!, style: const TextStyle(color: Colors.red)),
+              TextField(
+                controller: _username,
+                decoration: const InputDecoration(labelText: 'Username'),
+              ),
+              TextField(
+                controller: _password,
+                decoration: const InputDecoration(labelText: 'Password'),
+                obscureText: true,
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const RegisterPage()),
+                  );
+                },
+                child: const Text("Don't have an account? Register"),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const RegisterPage()),
-              );
-            },
-            child: const Text("Don't have an account? Register"),
-          ),
-        ],
+        ),
       ),
       actions: [TextButton(onPressed: _login, child: const Text('Login'))],
     );

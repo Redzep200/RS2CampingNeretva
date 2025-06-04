@@ -61,22 +61,40 @@ class _RegisterPageState extends State<RegisterPage> {
               TextFormField(
                 controller: _email,
                 decoration: const InputDecoration(labelText: 'Email'),
-                validator: (v) => v!.isEmpty ? 'Email required' : null,
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Email required';
+                  final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+                  return emailRegex.hasMatch(v) ? null : 'Enter a valid email';
+                },
               ),
               TextFormField(
                 controller: _firstName,
                 decoration: const InputDecoration(labelText: 'First Name'),
-                validator: (v) => v!.isEmpty ? 'First name required' : null,
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'First name required';
+                  final nameRegex = RegExp(r'^[a-zA-Z]+$');
+                  return nameRegex.hasMatch(v) ? null : 'Only letters allowed';
+                },
               ),
+
               TextFormField(
                 controller: _lastName,
                 decoration: const InputDecoration(labelText: 'Last Name'),
-                validator: (v) => v!.isEmpty ? 'Last name required' : null,
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Last name required';
+                  final nameRegex = RegExp(r'^[a-zA-Z]+$');
+                  return nameRegex.hasMatch(v) ? null : 'Only letters allowed';
+                },
               ),
+
               TextFormField(
                 controller: _phoneNumber,
                 decoration: const InputDecoration(labelText: 'Phone Number'),
-                validator: (v) => v!.isEmpty ? 'Phone number required' : null,
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Phone number required';
+                  final phoneRegex = RegExp(r'^\d+$');
+                  return phoneRegex.hasMatch(v) ? null : 'Only digits allowed';
+                },
               ),
               TextFormField(
                 controller: _password,

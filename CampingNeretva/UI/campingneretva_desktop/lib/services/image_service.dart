@@ -49,8 +49,6 @@ class ImageService {
       Uri.parse('$_baseUrl/Image/$id'),
       headers: headers,
     );
-    print('Delete status: ${response.statusCode}');
-    print('Delete response: ${response.body}');
     if (response.statusCode != 200) {
       throw Exception('Failed to delete image');
     }

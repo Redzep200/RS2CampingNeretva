@@ -16,10 +16,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final _accommodationService = AccommodationService();
-  final _vehicleService = VehicleService();
-  final _personService = PersonService();
-
   List<Accommodation> accommodations = [];
   List<Vehicle> vehicles = [];
   List<PersonType> persons = [];

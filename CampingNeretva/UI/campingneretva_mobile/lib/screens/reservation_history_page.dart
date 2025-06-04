@@ -14,6 +14,31 @@ class ReservationHistoryPage extends StatefulWidget {
 class _ReservationHistoryPageState extends State<ReservationHistoryPage> {
   late Future<List<Reservation>> _reservationsFuture;
 
+  double calculateTotalPrice(Reservation r) {
+    final nights = r.endDate.difference(r.startDate).inDays;
+    double total = 0;
+
+    total += r.accommodation.price * nights;
+
+    for (var v in r.vehicles) {
+      total += v.price * nights;
+    }
+
+    for (var p in r.persons) {
+      total += p.price * nights;
+    }
+
+    for (var item in r.rentableItems) {
+      total += item.pricePerDay * nights;
+    }
+
+    for (var a in r.activities) {
+      total += a.price;
+    }
+
+    return total;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -117,6 +142,15 @@ class _ReservationHistoryPageState extends State<ReservationHistoryPage> {
                             fontFamily: 'MochiyPop',
                           ),
                         ),
+                      Text(
+                        'Total Price: ${calculateTotalPrice(r).toStringAsFixed(2)} KM',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontFamily: 'MochiyPop',
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green,
+                        ),
+                      ),
                     ],
                   ),
                 ),

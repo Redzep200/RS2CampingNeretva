@@ -93,6 +93,18 @@ class _ParcelsPageState extends State<ParcelsPage> {
     }
   }
 
+  void _clearFilters() {
+    setState(() {
+      _dateFrom = null;
+      _dateTo = null;
+      _shade = null;
+      _electricity = null;
+      _selectedAccommodation = null;
+      _selectedType = null;
+    });
+    _loadParcels();
+  }
+
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
@@ -101,98 +113,118 @@ class _ParcelsPageState extends State<ParcelsPage> {
         children: [
           Padding(
             padding: const EdgeInsets.all(12),
-            child: Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              alignment: WrapAlignment.center,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.date_range),
-                  label: Text(
-                    _dateFrom != null && _dateTo != null
-                        ? '${DateFormat('dd.MM').format(_dateFrom!)} - ${DateFormat('dd.MM').format(_dateTo!)}'
-                        : "Pick date range",
-                  ),
-                  onPressed: _selectDateRange,
-                ),
-                ConstrainedBox(
-                  constraints: const BoxConstraints(minWidth: 150),
-                  child: DropdownButtonFormField<ParcelAccommodation>(
-                    decoration: const InputDecoration(
-                      labelText: "Accommodation",
-                      border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.date_range),
+                        label: Text(
+                          _dateFrom != null && _dateTo != null
+                              ? '${DateFormat('dd.MM').format(_dateFrom!)} - ${DateFormat('dd.MM').format(_dateTo!)}'
+                              : "Pick date range",
+                        ),
+                        onPressed: _selectDateRange,
                       ),
                     ),
-                    value: _selectedAccommodation,
-                    onChanged: (value) {
-                      setState(() => _selectedAccommodation = value);
-                      _loadParcels();
-                    },
-                    items:
-                        _accommodations
-                            .map(
-                              (e) => DropdownMenuItem(
-                                value: e,
-                                child: Text(e.name),
-                              ),
-                            )
-                            .toList(),
-                  ),
+                    const SizedBox(width: 10),
+                    TextButton.icon(
+                      icon: const Icon(Icons.clear),
+                      label: const Text("Remove Filters"),
+                      onPressed: _clearFilters,
+                      style: TextButton.styleFrom(foregroundColor: Colors.red),
+                    ),
+                  ],
                 ),
-
-                ConstrainedBox(
-                  constraints: const BoxConstraints(minWidth: 150),
-                  child: DropdownButtonFormField<ParcelType>(
-                    decoration: const InputDecoration(
-                      labelText: "Parcel Type",
-                      border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: DropdownButtonFormField<ParcelAccommodation>(
+                        decoration: const InputDecoration(
+                          labelText: "Accommodation",
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                        ),
+                        value: _selectedAccommodation,
+                        onChanged: (value) {
+                          setState(() => _selectedAccommodation = value);
+                          _loadParcels();
+                        },
+                        items:
+                            _accommodations
+                                .map(
+                                  (e) => DropdownMenuItem(
+                                    value: e,
+                                    child: Text(e.name),
+                                  ),
+                                )
+                                .toList(),
                       ),
                     ),
-                    value: _selectedType,
-                    onChanged: (value) {
-                      setState(() => _selectedType = value);
-                      _loadParcels();
-                    },
-                    items:
-                        _types
-                            .map(
-                              (e) => DropdownMenuItem(
-                                value: e,
-                                child: Text(e.name),
-                              ),
-                            )
-                            .toList(),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: DropdownButtonFormField<ParcelType>(
+                        decoration: const InputDecoration(
+                          labelText: "Parcel Type",
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                        ),
+                        value: _selectedType,
+                        onChanged: (value) {
+                          setState(() => _selectedType = value);
+                          _loadParcels();
+                        },
+                        items:
+                            _types
+                                .map(
+                                  (e) => DropdownMenuItem(
+                                    value: e,
+                                    child: Text(e.name),
+                                  ),
+                                )
+                                .toList(),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Center(
+                  child: Wrap(
+                    spacing: 10,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      FilterChip(
+                        label: const Text("Shade"),
+                        selected: _shade == true,
+                        onSelected: (selected) {
+                          setState(() => _shade = selected ? true : null);
+                          _loadParcels();
+                        },
+                      ),
+                      FilterChip(
+                        label: const Text("Electricity"),
+                        selected: _electricity == true,
+                        onSelected: (selected) {
+                          setState(() => _electricity = selected ? true : null);
+                          _loadParcels();
+                        },
+                      ),
+                    ],
                   ),
-                ),
-                FilterChip(
-                  label: const Text("Shade"),
-                  selected: _shade == true,
-                  onSelected: (selected) {
-                    setState(() {
-                      _shade = selected ? true : null;
-                    });
-                    _loadParcels();
-                  },
-                ),
-                FilterChip(
-                  label: const Text("Electricity"),
-                  selected: _electricity == true,
-                  onSelected: (selected) {
-                    setState(() {
-                      _electricity = selected ? true : null;
-                    });
-                    _loadParcels();
-                  },
                 ),
               ],
             ),
           ),
+
           const Divider(),
           isLoading
               ? const Center(child: CircularProgressIndicator())

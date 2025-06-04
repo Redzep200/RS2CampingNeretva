@@ -77,6 +77,44 @@ class _UserPageState extends State<UsersPage> {
     _fetchUsers();
   }
 
+  void _confirmDelete(User user) {
+    showDialog(
+      context: context,
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Confirm Delete'),
+            content: Text('Delete user "${user.firstName} ${user.lastName}"?'),
+            actions: [
+              TextButton(
+                child: const Text('Cancel'),
+                onPressed: () => Navigator.of(ctx).pop(),
+              ),
+              ElevatedButton(
+                child: const Text('Delete'),
+                onPressed: () async {
+                  Navigator.of(ctx).pop();
+                  await _deleteUser(user.id);
+                },
+              ),
+            ],
+          ),
+    );
+  }
+
+  Future<void> _deleteUser(int userId) async {
+    setState(() => _isLoading = true);
+    try {
+      await _userService.deleteUser(userId);
+      await _fetchUsers();
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to delete user: $e')));
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
   Widget _buildSearchBar() {
     return TextField(
       controller: _firstNameController,
@@ -94,7 +132,17 @@ class _UserPageState extends State<UsersPage> {
     return ListTile(
       title: Text('${user.firstName} ${user.lastName}'),
       subtitle: Text(user.email),
-      trailing: Text(user.username),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(user.username),
+          const SizedBox(width: 10),
+          IconButton(
+            icon: const Icon(Icons.delete, color: Colors.red),
+            onPressed: () => _confirmDelete(user),
+          ),
+        ],
+      ),
     );
   }
 

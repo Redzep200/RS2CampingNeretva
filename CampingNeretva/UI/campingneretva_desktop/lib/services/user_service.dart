@@ -79,4 +79,16 @@ class UserService {
       throw Exception('Failed to load users');
     }
   }
+
+  Future<void> deleteUser(int id) async {
+    final headers = await AuthService.getAuthHeaders();
+    final response = await http.delete(
+      Uri.parse('$_baseUrl/User/$id'),
+      headers: headers,
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to delete user: ${response.body}');
+    }
+  }
 }

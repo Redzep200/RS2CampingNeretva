@@ -104,7 +104,7 @@ class _ReservationPageState extends State<ReservationPage> {
     activities =
         activities
             .where(
-              (a) => a.date.isAfter(startDate!) && a.date.isBefore(endDate!),
+              (a) => !a.date.isBefore(startDate!) && !a.date.isAfter(endDate!),
             )
             .toList();
 
@@ -199,13 +199,16 @@ class _ReservationPageState extends State<ReservationPage> {
             if (_datesSelected) _buildActivitySection(),
             const SizedBox(height: 24),
             if (_datesSelected)
-              Text(
-                'Estimated Price: ${estimatedTotal.toStringAsFixed(2)} KM',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'MochiyPop',
-                ),
+              StatefulBuilder(
+                builder:
+                    (context, setState) => Text(
+                      'Estimated Price: ${estimatedTotal.toStringAsFixed(2)} KM',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'MochiyPop',
+                      ),
+                    ),
               ),
             const SizedBox(height: 12),
             ElevatedButton(

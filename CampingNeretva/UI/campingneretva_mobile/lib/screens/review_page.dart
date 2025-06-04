@@ -22,35 +22,43 @@ class _ReviewPageState extends State<ReviewPage> {
   bool isLoading = true;
   String? errorMessage;
 
-  // Map to track if a user has reviewed a worker
   Map<int, Review> userReviewsByWorker = {};
 
   @override
   void initState() {
     super.initState();
-    _loadData();
+    _loadInitialData();
   }
 
-  Future<void> _loadData() async {
-    setState(() {
-      isLoading = true;
-    });
+  Future<void> _loadInitialData() async {
+    setState(() => isLoading = true);
 
     try {
       workers = await WorkerService.getAll();
-      await _loadReviews();
+      reviews = await ReviewService.getAll();
+      await _loadUserReviewMap();
     } catch (e) {
       errorMessage = 'Failed to load data: $e';
     } finally {
-      setState(() {
-        isLoading = false;
-      });
+      setState(() => isLoading = false);
     }
   }
 
-  Future<void> _loadReviews() async {
+  Future<void> _loadReviewsForWorker() async {
+    setState(() => isLoading = true);
+
+    try {
+      reviews = await ReviewService.getAll(workerId: selectedWorker?.id);
+      await _loadUserReviewMap();
+    } catch (e) {
+      errorMessage = 'Failed to load reviews: $e';
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
+
+  Future<void> _loadUserReviewMap() async {
     final user = AuthService.currentUser;
-    reviews = await ReviewService.getAll(workerId: selectedWorker?.id);
     userReviewsByWorker.clear();
 
     if (user != null) {
@@ -61,7 +69,6 @@ class _ReviewPageState extends State<ReviewPage> {
       }
     }
 
-    // Sort user's review first
     reviews.sort((a, b) {
       if (user != null) {
         if (a.user.id == user.id && b.user.id != user.id) return -1;
@@ -91,16 +98,12 @@ class _ReviewPageState extends State<ReviewPage> {
       return;
     }
 
-    setState(() {
-      isLoading = true;
-    });
+    setState(() => isLoading = true);
 
     try {
-      // Check if the user already has a review for this worker
       final existingReview = userReviewsByWorker[selectedWorker!.id];
 
       if (existingReview != null) {
-        // Update existing review
         await ReviewService.update(
           reviewId: existingReview.id,
           rating: rating,
@@ -110,7 +113,6 @@ class _ReviewPageState extends State<ReviewPage> {
           const SnackBar(content: Text('Review updated successfully')),
         );
       } else {
-        // Submit new review
         await ReviewService.submit(
           userId: user.id,
           workerId: selectedWorker!.id,
@@ -124,16 +126,13 @@ class _ReviewPageState extends State<ReviewPage> {
 
       _commentController.clear();
       rating = 0;
-      await _loadReviews();
+      await _loadReviewsForWorker();
     } catch (e) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error: $e')));
-      print('Error submitting review: $e');
     } finally {
-      setState(() {
-        isLoading = false;
-      });
+      setState(() => isLoading = false);
     }
   }
 
@@ -143,9 +142,11 @@ class _ReviewPageState extends State<ReviewPage> {
       rating = review.rating;
       _commentController.text = review.comment;
     });
+    _loadReviewsForWorker();
   }
 
   double _calculateAverageRating() {
+    if (selectedWorker == null) return 0;
     final workerReviews = reviews.where(
       (r) => r.worker.id == selectedWorker!.id,
     );
@@ -165,57 +166,62 @@ class _ReviewPageState extends State<ReviewPage> {
               ? const Center(child: CircularProgressIndicator())
               : errorMessage != null
               ? Center(child: Text(errorMessage!))
-              : Padding(
-                padding: const EdgeInsets.all(16.0),
+              : SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Worker dropdown
-                    DropdownButton<Worker>(
-                      hint: const Text('Select Worker'),
-                      value: selectedWorker,
-                      isExpanded: true,
-                      items:
-                          workers.map((worker) {
-                            return DropdownMenuItem<Worker>(
-                              value: worker,
-                              child: Text(worker.fullName),
-                            );
-                          }).toList(),
-                      onChanged: (value) async {
-                        selectedWorker = value;
-                        await _loadReviews(); // fetch filtered reviews
-                        setState(() {}); // re-render UI
-                      },
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Review title
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    // Dropdown with clear button
+                    Row(
                       children: [
-                        Text(
-                          selectedWorker == null
-                              ? 'All Reviews'
-                              : 'Reviews for ${selectedWorker!.fullName}',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                        Expanded(
+                          child: DropdownButton<Worker>(
+                            hint: const Text('Select Worker'),
+                            value: selectedWorker,
+                            isExpanded: true,
+                            items:
+                                workers.map((worker) {
+                                  return DropdownMenuItem<Worker>(
+                                    value: worker,
+                                    child: Text(worker.fullName),
+                                  );
+                                }).toList(),
+                            onChanged: (value) async {
+                              setState(() => selectedWorker = value);
+                              await _loadReviewsForWorker();
+                            },
                           ),
                         ),
                         if (selectedWorker != null)
-                          Text(
-                            'Average rating: ${_calculateAverageRating().toStringAsFixed(1)} / 5',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey[700],
-                            ),
+                          IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () async {
+                              setState(() => selectedWorker = null);
+                              await _loadReviewsForWorker();
+                            },
                           ),
                       ],
                     ),
                     const SizedBox(height: 16),
 
-                    // Only show review form if user is logged in
+                    // Header
+                    Text(
+                      selectedWorker == null
+                          ? 'All Reviews'
+                          : 'Reviews for ${selectedWorker!.fullName}',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    if (selectedWorker != null)
+                      Text(
+                        'Average rating: ${_calculateAverageRating().toStringAsFixed(1)} / 5',
+                        style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                      ),
+                    const SizedBox(height: 16),
+
+                    // Review form
                     if (user != null) ...[
                       TextField(
                         controller: _commentController,
@@ -256,80 +262,67 @@ class _ReviewPageState extends State<ReviewPage> {
                       const SizedBox(height: 16),
                     ],
 
-                    // Reviews list
-                    Expanded(
-                      child:
-                          reviews.isEmpty
-                              ? const Center(child: Text('No reviews yet'))
-                              : ListView.builder(
-                                itemCount: reviews.length,
-                                itemBuilder: (context, index) {
-                                  final review = reviews[index];
-                                  final isUserReview =
-                                      user != null && review.user.id == user.id;
+                    // Reviews
+                    if (reviews.isEmpty)
+                      const Center(child: Text('No reviews yet'))
+                    else
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: reviews.length,
+                        itemBuilder: (context, index) {
+                          final review = reviews[index];
+                          final isUserReview =
+                              user != null && review.user.id == user.id;
 
-                                  return Card(
-                                    margin: const EdgeInsets.only(bottom: 8),
-                                    child: ListTile(
-                                      title: Text(review.comment),
-                                      subtitle: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            children: List.generate(
-                                              5,
-                                              (i) => Icon(
-                                                Icons.star,
-                                                size: 16,
-                                                color:
-                                                    review.rating > i
-                                                        ? Colors.amber
-                                                        : Colors.grey,
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            'By: ${review.user.firstName} ${review.user.lastName}',
-                                            style: TextStyle(
-                                              fontStyle:
-                                                  isUserReview
-                                                      ? FontStyle.italic
-                                                      : FontStyle.normal,
-                                              fontWeight:
-                                                  isUserReview
-                                                      ? FontWeight.bold
-                                                      : FontWeight.normal,
-                                            ),
-                                          ),
-                                          Text(
-                                            'For: ${review.worker.fullName}',
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                          Text(
-                                            'Posted: ${review.datePosted}',
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                        ],
+                          return Card(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            child: ListTile(
+                              title: Text(review.comment),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: List.generate(
+                                      5,
+                                      (i) => Icon(
+                                        Icons.star,
+                                        size: 16,
+                                        color:
+                                            review.rating > i
+                                                ? Colors.amber
+                                                : Colors.grey,
                                       ),
-                                      trailing:
-                                          isUserReview
-                                              ? IconButton(
-                                                icon: const Icon(Icons.edit),
-                                                onPressed:
-                                                    () => _editReview(review),
-                                              )
-                                              : null,
                                     ),
-                                  );
-                                },
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'By: ${review.user.firstName} ${review.user.lastName}',
+                                    style: TextStyle(
+                                      fontStyle:
+                                          isUserReview
+                                              ? FontStyle.italic
+                                              : FontStyle.normal,
+                                      fontWeight:
+                                          isUserReview
+                                              ? FontWeight.bold
+                                              : FontWeight.normal,
+                                    ),
+                                  ),
+                                  Text(
+                                    'For: ${review.worker.fullName}',
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                  Text(
+                                    'Posted: ${review.datePosted}',
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                ],
                               ),
-                    ),
+                            ),
+                          );
+                        },
+                      ),
                   ],
                 ),
               ),
