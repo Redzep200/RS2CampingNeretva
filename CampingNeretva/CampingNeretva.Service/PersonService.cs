@@ -105,18 +105,17 @@ namespace CampingNeretva.Service
         {
             var entity = await base.Update(id, request);
 
-            var existingLinks = await _context.PersonImages.Where(x => x.PersonId == id).ToListAsync();
-            _context.PersonImages.RemoveRange(existingLinks);
-
-            if (request.ImageId.HasValue)
+            if (request.ImageId.HasValue && request.ImageId.Value > 0)
             {
+                var existingLinks = await _context.PersonImages.Where(x => x.PersonId == id).ToListAsync();
+                _context.PersonImages.RemoveRange(existingLinks);
+
                 _context.PersonImages.Add(new PersonImage
                 {
                     PersonId = id,
                     ImageId = request.ImageId.Value
                 });
             }
-
             await _context.SaveChangesAsync();
 
             return await GetById(id);

@@ -107,11 +107,11 @@ namespace CampingNeretva.Service
         {
             var entity = await base.Update(id, request);
 
-            var existingLinks = await _context.VehicleImages.Where(x => x.VehicleId == id).ToListAsync();
-            _context.VehicleImages.RemoveRange(existingLinks);
-
-            if (request.ImageId.HasValue)
+            if (request.ImageId.HasValue && request.ImageId.Value > 0)
             {
+                var existingLinks = await _context.VehicleImages.Where(x => x.VehicleId == id).ToListAsync();
+                _context.VehicleImages.RemoveRange(existingLinks);
+
                 _context.VehicleImages.Add(new VehicleImage
                 {
                     VehicleId = id,
@@ -120,7 +120,6 @@ namespace CampingNeretva.Service
             }
 
             await _context.SaveChangesAsync();
-
             return await GetById(id);
         }
     }

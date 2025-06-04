@@ -42,7 +42,7 @@ namespace CampingNeretva.API.Controllers
             }
         }
 
-        [HttpDelete("image/{imageId}")]
+        [HttpDelete("{imageId}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> RemoveImage(int imageId)
         {

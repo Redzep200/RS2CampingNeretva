@@ -39,6 +39,10 @@ class Vehicle {
   }
 
   Map<String, dynamic> toUpdateJson() {
-    return {'type': type, 'pricePerNight': price, 'imageId': imageId ?? 0};
+    return {
+      'type': type,
+      'pricePerNight': price,
+      if (imageId != null && imageId! > 0) 'imageId': imageId,
+    };
   }
 }

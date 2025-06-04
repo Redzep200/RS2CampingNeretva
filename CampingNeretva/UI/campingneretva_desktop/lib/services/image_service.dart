@@ -7,9 +7,12 @@ import 'package:campingneretva_desktop/services/auth_service.dart';
 class ImageService {
   static const String _baseUrl = 'http://localhost:5205';
 
-  // Fetch all images
   static Future<List<ImageModel>> fetchAll() async {
-    final response = await http.get(Uri.parse('$_baseUrl/api/images'));
+    final headers = await AuthService.getAuthHeaders();
+    final response = await http.get(
+      Uri.parse('$_baseUrl/Image'),
+      headers: headers,
+    );
     if (response.statusCode == 200) {
       final data = json.decode(response.body)['resultList'];
       return List<ImageModel>.from(data.map((e) => ImageModel.fromJson(e)));
@@ -18,7 +21,6 @@ class ImageService {
     }
   }
 
-  // Upload a new image (using multipart form data)
   static Future<ImageModel> upload(File imageFile) async {
     final headers = await AuthService.getAuthHeaders();
     final request = http.MultipartRequest(
@@ -34,8 +36,6 @@ class ImageService {
     final response = await http.Response.fromStream(streamedResponse);
 
     if (response.statusCode != 200 && response.statusCode != 201) {
-      print('Upload failed: ${response.statusCode}');
-      print('Response body: ${response.body}');
       throw Exception('Failed to upload image');
     }
 
@@ -43,13 +43,14 @@ class ImageService {
     return ImageModel.fromJson(jsonResponse);
   }
 
-  // Delete image by ID
   static Future<void> delete(int id) async {
     final headers = await AuthService.getAuthHeaders();
     final response = await http.delete(
       Uri.parse('$_baseUrl/Image/$id'),
       headers: headers,
     );
+    print('Delete status: ${response.statusCode}');
+    print('Delete response: ${response.body}');
     if (response.statusCode != 200) {
       throw Exception('Failed to delete image');
     }

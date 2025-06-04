@@ -168,9 +168,18 @@ class _PricePageState extends State<PricePage> {
                             uploadedImageId,
                             isEditing ? (item as dynamic).id : 0,
                           );
-                          await onSave(newItem);
-                          Navigator.pop(context);
-                          _loadAll();
+
+                          try {
+                            await onSave(newItem);
+                            Navigator.pop(context);
+                            _loadAll();
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text("Greška pri spremanju: $e"),
+                              ),
+                            );
+                          }
                         }
                       },
                       child: const Text('Spasi'),

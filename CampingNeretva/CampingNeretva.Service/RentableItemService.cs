@@ -63,7 +63,6 @@ namespace CampingNeretva.Service
                     item.AvailableQuantity = item.TotalQuantity - reserved;
                 }
 
-                // Remove fully booked items
                 result.ResultList = result.ResultList
                     .Where(x => x.AvailableQuantity > 0)
                     .ToList();
@@ -88,7 +87,6 @@ namespace CampingNeretva.Service
 
        public async Task<List<RentableItemModel>> GetAvailableAsync(DateTime from, DateTime until)
 {
-    // Get reserved quantities in the selected range
     var reservedQuantities = await _context.ReservationRentables
         .Where(r =>
             r.Reservation.CheckInDate < until &&
@@ -101,7 +99,6 @@ namespace CampingNeretva.Service
         })
         .ToDictionaryAsync(x => x.RentableItemId, x => x.ReservedQuantity);
 
-    // Load all items with images
     var items = await _context.RentableItems
         .Include(x => x.RentableItemImages)
         .ToListAsync();
@@ -117,7 +114,7 @@ namespace CampingNeretva.Service
         {
             var model = Mapper.Map<RentableItemModel>(item);
             model.AvailableQuantity = availableQuantity;
-            model.Images = await _rentableItemImageService.GetImages(item.ItemId); // async call
+            model.Images = await _rentableItemImageService.GetImages(item.ItemId);
             models.Add(model);
         }
     }
@@ -176,11 +173,11 @@ namespace CampingNeretva.Service
         {
             var entity = await base.Update(id, request);
 
-            var existingLinks = await _context.RentableItemImages.Where(x => x.RentableItemId == id).ToListAsync();
+            if (request.ImageId.HasValue && request.ImageId.Value > 0)
+            {
+                var existingLinks = await _context.RentableItemImages.Where(x => x.RentableItemId == id).ToListAsync();
             _context.RentableItemImages.RemoveRange(existingLinks);
 
-            if (request.ImageId.HasValue)
-            {
                 _context.RentableItemImages.Add(new RentableItemImage
                 {
                     RentableItemId = id,

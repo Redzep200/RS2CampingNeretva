@@ -77,6 +77,7 @@ namespace CampingNeretva.Service
             await RemoveRelated(_context.FacilityImages);
             await RemoveRelated(_context.PersonImages);
             await RemoveRelated(_context.VehicleImages);
+            await RemoveRelated(_context.RentableItemImages);
 
             await _context.SaveChangesAsync();
 

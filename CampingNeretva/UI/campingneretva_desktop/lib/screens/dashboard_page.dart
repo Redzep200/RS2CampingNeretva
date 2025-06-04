@@ -4,6 +4,8 @@ import 'package:fl_chart/fl_chart.dart';
 import '../widgets/navbar.dart';
 import '../services/reservation_service.dart';
 import '../services/review_service.dart';
+import '../services/image_service.dart';
+import '../models/image_model.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -13,7 +15,6 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  // Date filters per section
   int yearRevenue = DateTime.now().year;
   int? monthRevenue;
 
@@ -101,12 +102,6 @@ class _DashboardPageState extends State<DashboardPage> {
       from: range.start,
       to: range.end,
     );
-    print("Fetched ${reservations.length} reservations");
-    for (var res in reservations) {
-      print(
-        "Reservation #${res.reservationId} has ${res.activities?.length ?? 0} activities",
-      );
-    }
     final activityCounts = <String, int>{};
     for (var res in reservations) {
       for (var act in res.activities ?? []) {
@@ -146,6 +141,114 @@ class _DashboardPageState extends State<DashboardPage> {
     setState(() {
       topWorkers = sorted.take(3).toList();
     });
+  }
+
+  void _showImagesDialog() async {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          child: FutureBuilder<List<ImageModel>>(
+            future: ImageService.fetchAll(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              } else if (snapshot.hasError) {
+                return Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Text('Greška pri dohvaćanju slika: ${snapshot.error}'),
+                );
+              }
+
+              final images = snapshot.data ?? [];
+
+              return Container(
+                width: 600,
+                height: 500,
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Sve slike',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: GridView.builder(
+                        itemCount: images.length,
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 3,
+                              crossAxisSpacing: 8,
+                              mainAxisSpacing: 8,
+                            ),
+                        itemBuilder: (context, index) {
+                          final img = images[index];
+                          return Stack(
+                            children: [
+                              Positioned.fill(
+                                child: Image.network(
+                                  'http://localhost:5205/${img.path}',
+                                  fit: BoxFit.cover,
+                                  errorBuilder:
+                                      (context, _, __) =>
+                                          const Icon(Icons.broken_image),
+                                ),
+                              ),
+                              Positioned(
+                                top: 4,
+                                right: 4,
+                                child: IconButton(
+                                  icon: const Icon(
+                                    Icons.delete,
+                                    color: Colors.red,
+                                  ),
+                                  onPressed: () async {
+                                    try {
+                                      await ImageService.delete(img.imageId);
+                                      Navigator.of(context).pop();
+                                      _showImagesDialog(); // Refresh the dialog
+                                    } catch (e) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Greška pri brisanju slike: $e',
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        child: const Text('Zatvori'),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
   }
 
   Widget _yearMonthPicker({
@@ -252,7 +355,16 @@ class _DashboardPageState extends State<DashboardPage> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Revenue
+            Align(
+              alignment: Alignment.centerRight,
+              child: ElevatedButton.icon(
+                onPressed: _showImagesDialog,
+                icon: const Icon(Icons.image),
+                label: const Text('Prikaži slike'),
+              ),
+            ),
+            const SizedBox(height: 16),
+
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -284,7 +396,6 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
             const SizedBox(height: 24),
 
-            // Parcel
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -321,7 +432,6 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
             const SizedBox(height: 24),
 
-            // Activities chart
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -345,7 +455,6 @@ class _DashboardPageState extends State<DashboardPage> {
             SizedBox(height: 200, child: _buildBarChart()),
             const SizedBox(height: 24),
 
-            // Workers chart
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
