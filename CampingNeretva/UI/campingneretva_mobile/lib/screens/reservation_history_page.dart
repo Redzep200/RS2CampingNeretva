@@ -13,31 +13,7 @@ class ReservationHistoryPage extends StatefulWidget {
 
 class _ReservationHistoryPageState extends State<ReservationHistoryPage> {
   late Future<List<Reservation>> _reservationsFuture;
-
-  double calculateTotalPrice(Reservation r) {
-    final nights = r.endDate.difference(r.startDate).inDays;
-    double total = 0;
-
-    total += r.accommodation.price * nights;
-
-    for (var v in r.vehicles) {
-      total += v.price * nights;
-    }
-
-    for (var p in r.persons) {
-      total += p.price * nights;
-    }
-
-    for (var item in r.rentableItems) {
-      total += item.pricePerDay * nights;
-    }
-
-    for (var a in r.activities) {
-      total += a.price;
-    }
-
-    return total;
-  }
+  final Set<int> _expandedReservations = {};
 
   @override
   void initState() {
@@ -45,6 +21,22 @@ class _ReservationHistoryPageState extends State<ReservationHistoryPage> {
     _reservationsFuture = ReservationService.getByUserId(
       AuthService.currentUser!.id,
     );
+  }
+
+  double calculateTotalPrice(Reservation r) {
+    final nights = r.endDate.difference(r.startDate).inDays;
+    double total = 0;
+
+    total += r.accommodation.price * nights;
+    total += r.vehicles.fold(0, (sum, v) => sum + (v.price * nights));
+    total += r.persons.fold(0, (sum, p) => sum + (p.price * nights));
+    total += r.rentableItems.fold(
+      0,
+      (sum, i) => sum + (i.pricePerDay * nights),
+    );
+    total += r.activities.fold(0, (sum, a) => sum + a.price);
+
+    return total;
   }
 
   @override
@@ -70,6 +62,11 @@ class _ReservationHistoryPageState extends State<ReservationHistoryPage> {
             separatorBuilder: (_, __) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
               final r = reservations[index];
+              final isExpanded = _expandedReservations.contains(
+                r.reservationId,
+              );
+              final totalPrice = calculateTotalPrice(r);
+
               return Card(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
@@ -109,48 +106,70 @@ class _ReservationHistoryPageState extends State<ReservationHistoryPage> {
                           fontFamily: 'MochiyPop',
                         ),
                       ),
-                      const SizedBox(height: 10),
-                      if (r.persons.isNotEmpty)
-                        Text(
-                          'Persons: ${r.persons.map((p) => p.type).join(', ')}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontFamily: 'MochiyPop',
-                          ),
-                        ),
-                      if (r.vehicles.isNotEmpty)
-                        Text(
-                          'Vehicles: ${r.vehicles.map((v) => v.type).join(', ')}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontFamily: 'MochiyPop',
-                          ),
-                        ),
-                      if (r.rentableItems.isNotEmpty)
-                        Text(
-                          'Items: ${r.rentableItems.map((i) => i.name).join(', ')}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontFamily: 'MochiyPop',
-                          ),
-                        ),
-                      if (r.activities.isNotEmpty)
-                        Text(
-                          'Activities: ${r.activities.map((a) => a.name).join(', ')}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontFamily: 'MochiyPop',
-                          ),
-                        ),
+                      const SizedBox(height: 8),
                       Text(
-                        'Total Price: ${calculateTotalPrice(r).toStringAsFixed(2)} KM',
+                        'Total Price: ${totalPrice.toStringAsFixed(2)} KM',
                         style: const TextStyle(
-                          fontSize: 14,
+                          fontSize: 15,
                           fontFamily: 'MochiyPop',
                           fontWeight: FontWeight.bold,
                           color: Colors.green,
                         ),
                       ),
+                      const SizedBox(height: 10),
+                      TextButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            if (isExpanded) {
+                              _expandedReservations.remove(r.reservationId);
+                            } else {
+                              _expandedReservations.add(r.reservationId);
+                            }
+                          });
+                        },
+                        icon: Icon(
+                          isExpanded
+                              ? Icons.keyboard_arrow_up
+                              : Icons.keyboard_arrow_down,
+                        ),
+                        label: Text(
+                          isExpanded ? 'Hide Add-ons' : 'Show Add-ons',
+                        ),
+                      ),
+                      if (isExpanded) ...[
+                        if (r.persons.isNotEmpty)
+                          Text(
+                            'Persons: ${r.persons.map((p) => p.type).join(', ')}',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontFamily: 'MochiyPop',
+                            ),
+                          ),
+                        if (r.vehicles.isNotEmpty)
+                          Text(
+                            'Vehicles: ${r.vehicles.map((v) => v.type).join(', ')}',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontFamily: 'MochiyPop',
+                            ),
+                          ),
+                        if (r.rentableItems.isNotEmpty)
+                          Text(
+                            'Items: ${r.rentableItems.map((i) => i.name).join(', ')}',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontFamily: 'MochiyPop',
+                            ),
+                          ),
+                        if (r.activities.isNotEmpty)
+                          Text(
+                            'Activities: ${r.activities.map((a) => a.name).join(', ')}',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontFamily: 'MochiyPop',
+                            ),
+                          ),
+                      ],
                     ],
                   ),
                 ),
