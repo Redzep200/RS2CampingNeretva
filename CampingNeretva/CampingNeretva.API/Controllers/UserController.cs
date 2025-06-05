@@ -53,5 +53,13 @@ namespace CampingNeretva.API.Controllers
             await base.Delete(id);
             return Ok();
         }
+
+        [HttpPut("me")]
+        [Authorize]
+        public async Task<UserModel> UpdateOwnProfile([FromBody] UserUpdateRequest request)
+        {
+            var username = User.Identity?.Name;
+            return await (_service as IUserService).UpdateOwnProfile(username, request);
+        }
     }
 }

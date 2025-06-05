@@ -15,6 +15,8 @@ import 'package:campingneretva_mobile/services/vehicle_service.dart';
 import 'package:campingneretva_mobile/services/reservation_service.dart';
 import 'package:campingneretva_mobile/services/auth_service.dart';
 import 'package:campingneretva_mobile/widgets/app_scaffold.dart';
+import '../services/payment_service.dart';
+import 'paypal_webview.dart';
 
 class ReservationPage extends StatefulWidget {
   const ReservationPage({super.key});
@@ -40,6 +42,9 @@ class _ReservationPageState extends State<ReservationPage> {
   Map<int, int> selectedPersons = {};
   Map<int, int> selectedRentItems = {};
   Set<int> selectedActivities = {};
+
+  bool _isProcessingPayment = false;
+  int? _currentReservationId;
 
   bool get _datesSelected => startDate != null && endDate != null;
 
@@ -75,11 +80,28 @@ class _ReservationPageState extends State<ReservationPage> {
     };
 
     try {
-      await ReservationService.insert(payload);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Reservation successful!')),
-        );
+      final reservation = await ReservationService.insert(payload);
+
+      // Extract reservation ID (adjust based on your ReservationService response structure)
+      final reservationId = reservation['id'] ?? reservation['reservationId'];
+
+      if (reservationId != null) {
+        setState(() {
+          _currentReservationId = reservationId;
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Reservation created! Proceed to payment.'),
+            ),
+          );
+        }
+
+        // Automatically start payment process
+        await _startPayPalPayment();
+      } else {
+        throw Exception('Failed to get reservation ID');
       }
     } catch (e) {
       if (mounted) {
@@ -89,6 +111,118 @@ class _ReservationPageState extends State<ReservationPage> {
       }
     }
   }
+
+  Future<void> _startPayPalPayment() async {
+    if (_currentReservationId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No reservation found. Please try again.'),
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isProcessingPayment = true;
+    });
+
+    try {
+      final orderResponse = await PaymentService.createPayPalOrder(
+        reservationId: _currentReservationId!,
+        amount: estimatedTotal,
+        currency: 'EUR', // Change to USD if needed
+      );
+
+      final approvalUrl = orderResponse['approvalUrl'] as String;
+      final orderId = orderResponse['orderId'] as String;
+
+      if (mounted) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder:
+                (context) => PayPalWebView(
+                  approvalUrl: approvalUrl,
+                  returnUrl: 'https://your-app.com/payment/success',
+                  cancelUrl: 'https://your-app.com/payment/cancel',
+                  onSuccess: (returnedOrderId) async {
+                    Navigator.of(context).pop();
+                    await _capturePayment(orderId);
+                  },
+                  onCancel: () {
+                    Navigator.of(context).pop();
+                    setState(() {
+                      _isProcessingPayment = false;
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Payment cancelled')),
+                    );
+                  },
+                  onError: (error) {
+                    Navigator.of(context).pop();
+                    setState(() {
+                      _isProcessingPayment = false;
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Payment error: $error')),
+                    );
+                  },
+                ),
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isProcessingPayment = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to start payment: $e')));
+      }
+    }
+  }
+
+  Future<void> _capturePayment(String orderId) async {
+    try {
+      final captureResponse = await PaymentService.capturePayPalOrder(
+        orderId: orderId,
+        reservationId: _currentReservationId!,
+      );
+
+      setState(() {
+        _isProcessingPayment = false;
+      });
+
+      if (captureResponse['status'] == 'COMPLETED') {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Payment successful! Your reservation is confirmed.',
+              ),
+              backgroundColor: Colors.green,
+            ),
+          );
+
+          // Navigate back or to confirmation page
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        }
+      } else {
+        throw Exception('Payment capture failed');
+      }
+    } catch (e) {
+      setState(() {
+        _isProcessingPayment = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to complete payment: $e')),
+        );
+      }
+    }
+  }
+
+  // ... (keep all existing methods: _loadAll, _pickDateRange, etc.)
 
   Future<void> _loadAll() async {
     if (!_datesSelected) return;
@@ -134,6 +268,7 @@ class _ReservationPageState extends State<ReservationPage> {
         selectedPersons.clear();
         selectedRentItems.clear();
         selectedActivities.clear();
+        _currentReservationId = null;
       });
       await _loadAll();
     }
@@ -199,22 +334,93 @@ class _ReservationPageState extends State<ReservationPage> {
             if (_datesSelected) _buildActivitySection(),
             const SizedBox(height: 24),
             if (_datesSelected)
-              StatefulBuilder(
-                builder:
-                    (context, setState) => Text(
-                      'Estimated Price: ${estimatedTotal.toStringAsFixed(2)} KM',
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.blue[50],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue[200]!),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      'Total Amount: ${estimatedTotal.toStringAsFixed(2)} KM',
                       style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                         fontFamily: 'MochiyPop',
                       ),
                     ),
+                    const SizedBox(height: 8),
+                    if (_currentReservationId != null)
+                      Text(
+                        'Reservation ID: $_currentReservationId',
+                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                      ),
+                  ],
+                ),
               ),
-            const SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: _datesSelected ? _submitReservation : null,
-              child: const Text('Make reservation'),
-            ),
+            const SizedBox(height: 16),
+            if (_datesSelected && _currentReservationId == null)
+              ElevatedButton(
+                onPressed: _submitReservation,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  backgroundColor: Colors.green[600],
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text(
+                  'Create Reservation',
+                  style: TextStyle(fontSize: 16),
+                ),
+              ),
+            if (_currentReservationId != null && !_isProcessingPayment)
+              Column(
+                children: [
+                  ElevatedButton(
+                    onPressed: _startPayPalPayment,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      backgroundColor: Colors.blue[600],
+                      foregroundColor: Colors.white,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.payment),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Pay with PayPal',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        _currentReservationId = null;
+                      });
+                    },
+                    child: const Text('Cancel Reservation'),
+                  ),
+                ],
+              ),
+            if (_isProcessingPayment)
+              Container(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    const CircularProgressIndicator(),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Processing payment...',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
       ),

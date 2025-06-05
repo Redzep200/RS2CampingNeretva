@@ -15,6 +15,12 @@ public partial class Payment
 
     public DateTime TransactionDate { get; set; }
 
+    public string? PayPalOrderId { get; set; }
+
+    public string? PayPalPaymentId { get; set; }
+
+    public string? Status { get; set; } = "PENDING";
+
     public virtual Reservation Reservation { get; set; } = null!;
 
     public virtual User User { get; set; } = null!;

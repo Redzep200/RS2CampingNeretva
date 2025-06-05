@@ -35,13 +35,15 @@ builder.Services.AddTransient<RentableItemImageService>();
 builder.Services.AddTransient<IReservationService, ReservationService>();
 builder.Services.AddTransient<IParcelAccommodationService, ParcelAccommodationService>();
 builder.Services.AddTransient<IParcelTypeService, ParcelTypeService>();
+builder.Services.AddTransient<IPaymentService, PaymentService>();
 
+builder.Services.AddHttpClient();
 
 builder.Services.AddControllers();
 
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
-    serverOptions.ListenAnyIP(5205); // Allows connections from emulator
+    serverOptions.ListenAnyIP(5205); 
 });
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

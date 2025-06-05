@@ -217,6 +217,11 @@ public partial class _200012Context : DbContext
             entity.HasKey(e => e.PaymentId).HasName("PK__Payments__9B556A3894676AAF");
 
             entity.Property(e => e.Amount).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.PayPalOrderId).HasMaxLength(255);
+            entity.Property(e => e.PayPalPaymentId).HasMaxLength(255);
+            entity.Property(e => e.Status)
+                .HasMaxLength(50)
+                .HasDefaultValue("PENDING");
             entity.Property(e => e.TransactionDate).HasColumnType("datetime");
 
             entity.HasOne(d => d.Reservation).WithMany(p => p.Payments)

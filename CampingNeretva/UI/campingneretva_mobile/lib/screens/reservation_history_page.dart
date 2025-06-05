@@ -108,7 +108,7 @@ class _ReservationHistoryPageState extends State<ReservationHistoryPage> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Total Price: ${totalPrice.toStringAsFixed(2)} KM',
+                        'Total Price: ${totalPrice.toStringAsFixed(2)} €',
                         style: const TextStyle(
                           fontSize: 15,
                           fontFamily: 'MochiyPop',

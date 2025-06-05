@@ -37,7 +37,7 @@ class AppScaffold extends StatelessWidget {
                         showDialog(
                           context: context,
                           builder: (_) => const LoginPage(),
-                        ).then((_) => setState(() {})); // Refresh after login
+                        ).then((_) => setState(() {}));
                       }
                     },
                     child: Column(
@@ -147,7 +147,6 @@ class AppScaffold extends StatelessWidget {
                       ),
                     ),
 
-                  // Social links
                   Padding(
                     padding: const EdgeInsets.only(bottom: 16),
                     child: Row(

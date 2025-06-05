@@ -52,6 +52,7 @@ namespace CampingNeretva.API
             {
                 var claims = new List<Claim>()
                 {
+                    new Claim(ClaimTypes.Name, user.UserName),
                     new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
                     new Claim(ClaimTypes.NameIdentifier, user.UserName),
                     new Claim(ClaimTypes.Role, user.UserType.TypeName)

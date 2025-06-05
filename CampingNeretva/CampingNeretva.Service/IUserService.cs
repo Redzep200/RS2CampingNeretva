@@ -13,5 +13,6 @@ namespace CampingNeretva.Service
     {
         UserModel Login(string username, string password);
         public string GenerateHash(string salt, string password);
+        Task<UserModel> UpdateOwnProfile(string username, UserUpdateRequest request);
     }
 }

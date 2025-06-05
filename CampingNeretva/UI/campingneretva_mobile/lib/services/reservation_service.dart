@@ -19,17 +19,21 @@ class ReservationService {
     }
   }
 
-  static Future<void> insert(Map<String, dynamic> payload) async {
+  static Future<Map<String, dynamic>> insert(
+    Map<String, dynamic> payload,
+  ) async {
     final headers = await AuthService.getAuthHeaders();
 
     final response = await http.post(
       Uri.parse('$baseUrl/Reservation'),
       headers: headers,
-      body: json.encode(payload),
+      body: jsonEncode(payload),
     );
 
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw Exception('Failed to create reservation');
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to create reservation: ${response.body}');
     }
   }
 

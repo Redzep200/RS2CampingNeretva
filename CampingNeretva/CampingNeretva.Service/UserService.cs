@@ -137,5 +137,36 @@ namespace CampingNeretva.Service
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<UserModel> UpdateOwnProfile(string username, UserUpdateRequest request)
+        {
+            var user = _context.Users.Include(u => u.UserType)
+                                     .FirstOrDefault(u => u.UserName == username);
+
+            if (user == null)
+                throw new Exception("User not found");
+
+            if (!string.IsNullOrWhiteSpace(request.UserName))
+                user.UserName = request.UserName;
+
+            if (!string.IsNullOrWhiteSpace(request.Email))
+                user.Email = request.Email;
+
+            if (!string.IsNullOrWhiteSpace(request.PhoneNumber))
+                user.PhoneNumber = request.PhoneNumber;
+
+            if (!string.IsNullOrWhiteSpace(request.Password))
+            {
+                if (request.Password != request.PasswordConfirmation)
+                    throw new Exception("Passwords do not match");
+
+                user.PasswordSalt = GenerateSalt();
+                user.PasswordHash = GenerateHash(user.PasswordSalt, request.Password);
+            }
+
+            await _context.SaveChangesAsync();
+            return Mapper.Map<UserModel>(user);
+        }
+
     }
 }

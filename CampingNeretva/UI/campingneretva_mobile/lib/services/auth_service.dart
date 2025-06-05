@@ -5,7 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AuthService {
   static User? currentUser;
-  static String? _password; // Store password temporarily for basic auth
+  static String? _password;
   static const storage = FlutterSecureStorage();
   static const String baseUrl = 'http://10.0.2.2:5205';
 
