@@ -24,7 +24,7 @@ namespace CampingNeretva.Service
         {
             _configuration = configuration;
             _httpClient = httpClient;
-            _paypalBaseUrl = _configuration["PayPal:BaseUrl"] ?? "https://api-m.sandbox.paypal.com"; // Use sandbox for testing
+            _paypalBaseUrl = _configuration["PayPal:BaseUrl"] ?? "https://api-m.sandbox.paypal.com";
             _clientId = _configuration["PayPal:ClientId"] ?? "";
             _clientSecret = _configuration["PayPal:ClientSecret"] ?? "";
         }
@@ -32,6 +32,7 @@ namespace CampingNeretva.Service
         public async Task<PayPalOrderResponse> CreatePayPalOrder(CreatePayPalOrderRequest request)
         {
             var accessToken = await GetPayPalAccessToken();
+            Console.WriteLine($"[CreateOrder] PayPal Access Token: {accessToken}");
 
             var orderRequest = new
             {
@@ -66,6 +67,7 @@ namespace CampingNeretva.Service
 
             var response = await _httpClient.PostAsync($"{_paypalBaseUrl}/v2/checkout/orders", content);
             var responseContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"[CreateOrder] PayPal response: {response.StatusCode}\n{responseContent}");
 
             if (!response.IsSuccessStatusCode)
             {
@@ -75,10 +77,8 @@ namespace CampingNeretva.Service
             var orderResponse = JsonSerializer.Deserialize<JsonElement>(responseContent);
             var orderId = orderResponse.GetProperty("id").GetString();
             var links = orderResponse.GetProperty("links").EnumerateArray();
-            var approvalUrl = links.FirstOrDefault(l =>
-                l.GetProperty("rel").GetString() == "approve").GetProperty("href").GetString();
+            var approvalUrl = links.FirstOrDefault(l => l.GetProperty("rel").GetString() == "approve").GetProperty("href").GetString();
 
-            // Save pending payment record
             var payment = new PaymentInsertRequest
             {
                 ReservationId = request.ReservationId,
@@ -109,9 +109,11 @@ namespace CampingNeretva.Service
             var response = await _httpClient.PostAsync($"{_paypalBaseUrl}/v2/checkout/orders/{request.OrderId}/capture", content);
             var responseContent = await response.Content.ReadAsStringAsync();
 
+            Console.WriteLine($"[CaptureOrder] Capture response: {response.StatusCode} - {responseContent}");
+
             if (!response.IsSuccessStatusCode)
             {
-                throw new Exception($"PayPal Capture Error: {responseContent}");
+                throw new Exception($"Capture failed: {responseContent}");
             }
 
             var captureResponse = JsonSerializer.Deserialize<JsonElement>(responseContent);
@@ -125,10 +127,7 @@ namespace CampingNeretva.Service
                 var captureId = captures.GetProperty("id").GetString();
                 var amount = decimal.Parse(captures.GetProperty("amount").GetProperty("value").GetString());
 
-                // Update payment record
-                var existingPayment = await _context.Payments
-                    .FirstOrDefaultAsync(p => p.PayPalOrderId == request.OrderId);
-
+                var existingPayment = await _context.Payments.FirstOrDefaultAsync(p => p.PayPalOrderId == request.OrderId);
                 if (existingPayment != null)
                 {
                     existingPayment.PayPalPaymentId = captureId;
@@ -145,10 +144,8 @@ namespace CampingNeretva.Service
                     TransactionDate = DateTime.UtcNow
                 };
             }
-            else
-            {
-                throw new Exception($"Payment capture failed with status: {status}");
-            }
+
+            throw new Exception($"Unexpected capture status: {status}");
         }
 
         public async Task<List<PaymentModel>> GetPaymentsByReservationId(int reservationId)

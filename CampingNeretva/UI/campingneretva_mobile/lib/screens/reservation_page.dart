@@ -17,6 +17,7 @@ import 'package:campingneretva_mobile/services/auth_service.dart';
 import 'package:campingneretva_mobile/widgets/app_scaffold.dart';
 import '../services/payment_service.dart';
 import 'paypal_webview.dart';
+import '../screens/reservation_history_page.dart';
 
 class ReservationPage extends StatefulWidget {
   const ReservationPage({super.key});
@@ -130,7 +131,7 @@ class _ReservationPageState extends State<ReservationPage> {
       final orderResponse = await PaymentService.createPayPalOrder(
         reservationId: _currentReservationId!,
         amount: estimatedTotal,
-        currency: 'EUR', // Change to USD if needed
+        currency: 'EUR',
       );
 
       final approvalUrl = orderResponse['approvalUrl'] as String;
@@ -142,8 +143,8 @@ class _ReservationPageState extends State<ReservationPage> {
             builder:
                 (context) => PayPalWebView(
                   approvalUrl: approvalUrl,
-                  returnUrl: 'https://your-app.com/payment/success',
-                  cancelUrl: 'https://your-app.com/payment/cancel',
+                  returnUrl: 'myapp://paypal-success',
+                  cancelUrl: 'myapp://paypal-cancel',
                   onSuccess: (returnedOrderId) async {
                     Navigator.of(context).pop();
                     await _capturePayment(orderId);
@@ -204,8 +205,12 @@ class _ReservationPageState extends State<ReservationPage> {
             ),
           );
 
-          // Navigate back or to confirmation page
-          Navigator.of(context).popUntil((route) => route.isFirst);
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (context) => const ReservationHistoryPage(),
+            ),
+            (Route<dynamic> route) => false,
+          );
         }
       } else {
         throw Exception('Payment capture failed');
@@ -221,8 +226,6 @@ class _ReservationPageState extends State<ReservationPage> {
       }
     }
   }
-
-  // ... (keep all existing methods: _loadAll, _pickDateRange, etc.)
 
   Future<void> _loadAll() async {
     if (!_datesSelected) return;
