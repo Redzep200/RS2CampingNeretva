@@ -2,12 +2,14 @@ using CampingNeretva.API;
 using CampingNeretva.Model.SearchObjects;
 using CampingNeretva.Service;
 using CampingNeretva.Service.Database;
+using CampingNeretva.Service.NotificationService;
 using CampingNeretva.Service.ImageServices;
 using Mapster;
 using MapsterMapper;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using CampingNeretva.Model.emailHelpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +38,8 @@ builder.Services.AddTransient<IReservationService, ReservationService>();
 builder.Services.AddTransient<IParcelAccommodationService, ParcelAccommodationService>();
 builder.Services.AddTransient<IParcelTypeService, ParcelTypeService>();
 builder.Services.AddTransient<IPaymentService, PaymentService>();
+builder.Services.AddSingleton<EmailService>();
+builder.Services.AddHostedService<ReservationNotificationSubscriber>();
 
 builder.Services.AddHttpClient();
 
@@ -82,6 +86,8 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader();
     });
 });
+builder.Services.Configure<EmailSettings>(
+    builder.Configuration.GetSection("EmailSettings"));
 
 var app = builder.Build();
 

@@ -9,6 +9,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using EasyNetQ;
+using EasyNetQ.DI;
+using EasyNetQ.Serialization.NewtonsoftJson;
 
 namespace CampingNeretva.Service
 {
@@ -207,9 +210,15 @@ namespace CampingNeretva.Service
                     }
             }
 
+            var mappedEntity = Mapper.Map<ReservationModel>(entity);
+
+            var bus = RabbitHutch.CreateBus("host=localhost", x =>
+            x.Register<EasyNetQ.ISerializer>(_ => new EasyNetQ.Serialization.NewtonsoftJson.NewtonsoftJsonSerializer()));
+            await bus.PubSub.PublishAsync(mappedEntity);
+
             _context.SaveChanges();
 
-            return Mapper.Map<ReservationModel>(entity);
+            return mappedEntity;
         }
 
         public override async Task<PagedResult<ReservationModel>> GetPaged(ReservationSearchObject search)
