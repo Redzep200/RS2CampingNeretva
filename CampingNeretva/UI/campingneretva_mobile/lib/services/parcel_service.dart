@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/parcel_model.dart';
+import '../services/auth_service.dart';
 
 class ParcelService {
   static const String baseUrl = "http://10.0.2.2:5205";
@@ -35,6 +36,20 @@ class ParcelService {
       return items.map((e) => Parcel.fromJson(e)).toList();
     } else {
       throw Exception('Failed to load parcels');
+    }
+  }
+
+  static Future<List<Parcel>> getRecommendedParcels() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/UserPreference/recommended/parcels'),
+      headers: await AuthService.getAuthHeaders(),
+    );
+
+    if (response.statusCode == 200) {
+      final List items = jsonDecode(response.body);
+      return items.map((e) => Parcel.fromJson(e)).toList();
+    } else {
+      throw Exception('Failed to load recommended parcels');
     }
   }
 }

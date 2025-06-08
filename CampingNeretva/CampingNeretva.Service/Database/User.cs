@@ -29,5 +29,7 @@ public partial class User
 
     public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
 
+    public virtual ICollection<UserPreference> UserPreferences { get; set; } = new List<UserPreference>();
+
     public virtual UserType UserType { get; set; } = null!;
 }

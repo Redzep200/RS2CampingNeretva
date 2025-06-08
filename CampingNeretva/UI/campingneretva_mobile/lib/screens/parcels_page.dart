@@ -20,6 +20,7 @@ class _ParcelsPageState extends State<ParcelsPage> {
   final _accommodationService = ParcelAccommodationService();
   final _typeService = ParcelTypeService();
   List<Parcel> parcels = [];
+  List<Parcel> recommendedParcels = [];
   List<ParcelAccommodation> _accommodations = [];
   List<ParcelType> _types = [];
 
@@ -53,11 +54,23 @@ class _ParcelsPageState extends State<ParcelsPage> {
     }
   }
 
+  Future<void> _loadRecommendedParcels() async {
+    try {
+      final data = await ParcelService.getRecommendedParcels();
+      setState(() {
+        recommendedParcels = data;
+      });
+    } catch (e) {
+      debugPrint("Error loading recommended parcels: $e");
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _fetchFilters();
     _loadParcels();
+    _loadRecommendedParcels();
   }
 
   Future<void> _selectDateRange() async {
@@ -224,7 +237,6 @@ class _ParcelsPageState extends State<ParcelsPage> {
               ],
             ),
           ),
-
           const Divider(),
           isLoading
               ? const Center(child: CircularProgressIndicator())
@@ -240,44 +252,82 @@ class _ParcelsPageState extends State<ParcelsPage> {
                   ),
                   itemBuilder: (context, index) {
                     final parcel = parcels[index];
+                    final isRecommended = recommendedParcels.any(
+                      (rp) => rp.id == parcel.id,
+                    );
                     final imageUrl =
-                        parcel.imageUrl.startsWith('/')
+                        parcel.imageUrl != null &&
+                                parcel.imageUrl!.startsWith('/')
                             ? "http://10.0.2.2:5205${parcel.imageUrl}"
-                            : parcel.imageUrl;
+                            : parcel.imageUrl ?? '';
 
                     return Card(
                       elevation: 3,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
+                        side:
+                            isRecommended
+                                ? const BorderSide(
+                                  color: Colors.green,
+                                  width: 2,
+                                )
+                                : BorderSide.none,
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                      child: Stack(
                         children: [
-                          Expanded(
-                            child: ClipRRect(
-                              borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(16),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Expanded(
+                                child: ClipRRect(
+                                  borderRadius: const BorderRadius.vertical(
+                                    top: Radius.circular(16),
+                                  ),
+                                  child:
+                                      imageUrl.isNotEmpty
+                                          ? Image.network(
+                                            imageUrl,
+                                            fit: BoxFit.cover,
+                                            errorBuilder:
+                                                (_, __, ___) => const Icon(
+                                                  Icons.broken_image,
+                                                ),
+                                          )
+                                          : const Icon(Icons.broken_image),
+                                ),
                               ),
-                              child: Image.network(
-                                imageUrl,
-                                fit: BoxFit.cover,
-                                errorBuilder:
-                                    (_, __, ___) =>
-                                        const Icon(Icons.broken_image),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Center(
+                                  child: Text(
+                                    "Parcel #${parcel.number}",
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
+                            ],
                           ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Center(
-                              child: Text(
-                                "Parcel #${parcel.number}",
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
+                          if (isRecommended)
+                            Positioned(
+                              top: 8,
+                              left: 8,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                color: Colors.green,
+                                child: const Text(
+                                  "Recommended",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
                         ],
                       ),
                     );

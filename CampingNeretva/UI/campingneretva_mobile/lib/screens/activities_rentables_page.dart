@@ -17,12 +17,15 @@ class _ActivitiesRentablesPageState extends State<ActivitiesRentablesPage> {
   DateTimeRange? _selectedRange;
   List<RentableItem> rentableItems = [];
   List<Activity> activities = [];
+  List<RentableItem> recommendedRentableItems = [];
+  List<Activity> recommendedActivities = [];
   bool isLoading = false;
 
   @override
   void initState() {
     super.initState();
     _loadData();
+    _loadRecommendedData();
   }
 
   Future<void> _pickDateRange() async {
@@ -75,7 +78,76 @@ class _ActivitiesRentablesPageState extends State<ActivitiesRentablesPage> {
     }
   }
 
-  Widget _buildImage(String imageUrl, {double width = 50, double height = 50}) {
+  Future<void> _loadRecommendedData() async {
+    try {
+      final fetchedRecommendedRentables =
+          await RentableItemService.getRecommendedRentableItems();
+      final fetchedRecommendedActivities =
+          await ActivityService.getRecommendedActivities();
+
+      debugPrint(
+        "Fetched recommended rentables: ${fetchedRecommendedRentables.length}",
+      );
+      debugPrint(
+        "Fetched recommended activities: ${fetchedRecommendedActivities.length}",
+      );
+
+      setState(() {
+        recommendedRentableItems = fetchedRecommendedRentables;
+        recommendedActivities = fetchedRecommendedActivities;
+      });
+    } catch (e) {
+      debugPrint("Error loading recommended data: $e");
+    }
+  }
+
+  Widget _buildItemTile({
+    required String name,
+    required String? imageUrl,
+    required String subtitle,
+    bool isRecommended = false,
+    bool isThreeLine = false,
+  }) {
+    return ListTile(
+      tileColor: isRecommended ? Colors.green[50] : null,
+      leading: _buildImage(imageUrl, width: 60, height: 60),
+      title: Row(
+        children: [
+          Text(name),
+          if (isRecommended)
+            Padding(
+              padding: const EdgeInsets.only(left: 8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.green,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: const Text(
+                  "Recommended",
+                  style: TextStyle(color: Colors.white, fontSize: 12),
+                ),
+              ),
+            ),
+        ],
+      ),
+      subtitle: Text(
+        subtitle,
+        maxLines: isThreeLine ? 3 : 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      isThreeLine: isThreeLine,
+    );
+  }
+
+  Widget _buildImage(
+    String? imageUrl, {
+    double width = 50,
+    double height = 50,
+  }) {
+    if (imageUrl == null || imageUrl.isEmpty) {
+      return const Icon(Icons.broken_image, size: 50);
+    }
     if (imageUrl.startsWith('/')) {
       return Image.network(
         "http://10.0.2.2:5205$imageUrl",
@@ -91,6 +163,8 @@ class _ActivitiesRentablesPageState extends State<ActivitiesRentablesPage> {
         width: width,
         height: height,
         fit: BoxFit.cover,
+        errorBuilder:
+            (context, error, stackTrace) => const Icon(Icons.broken_image),
       );
     }
   }
@@ -98,7 +172,7 @@ class _ActivitiesRentablesPageState extends State<ActivitiesRentablesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Activities & Renting")),
+      appBar: AppBar(title: const Text("Activities & Rentables")),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -119,7 +193,7 @@ class _ActivitiesRentablesPageState extends State<ActivitiesRentablesPage> {
                 const SizedBox(width: 8),
                 ElevatedButton(
                   onPressed: _clearFilters,
-                  child: const Text("Clear Filters"),
+                  child: const Text("Clear"),
                 ),
               ],
             ),
@@ -140,11 +214,13 @@ class _ActivitiesRentablesPageState extends State<ActivitiesRentablesPage> {
                             ),
                             const SizedBox(height: 8),
                             ...rentableItems.map(
-                              (item) => ListTile(
-                                leading: _buildImage(item.imageUrl),
-                                title: Text(item.name),
-                                subtitle: Text(
-                                  "Available: ${item.availableQuantity}",
+                              (item) => _buildItemTile(
+                                name: item.name,
+                                imageUrl: item.imageUrl,
+                                subtitle:
+                                    "Available: ${item.availableQuantity}",
+                                isRecommended: recommendedRentableItems.any(
+                                  (ri) => ri.id == item.id,
                                 ),
                               ),
                             ),
@@ -160,11 +236,13 @@ class _ActivitiesRentablesPageState extends State<ActivitiesRentablesPage> {
                             ),
                             const SizedBox(height: 8),
                             ...activities.map(
-                              (a) => ListTile(
-                                leading: _buildImage(a.imageUrl),
-                                title: Text(a.name),
-                                subtitle: Text(
-                                  "${a.description}\n${DateFormat('dd.MM.yyyy').format(a.date)}",
+                              (a) => _buildItemTile(
+                                name: a.name,
+                                imageUrl: a.imageUrl,
+                                subtitle:
+                                    "${a.description ?? 'No description'}\n${DateFormat('dd.MM.yyyy').format(a.date)}",
+                                isRecommended: recommendedActivities.any(
+                                  (ra) => ra.id == a.id,
                                 ),
                                 isThreeLine: true,
                               ),

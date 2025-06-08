@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -17,6 +19,11 @@ class _RegisterPageState extends State<RegisterPage> {
   final _firstName = TextEditingController();
   final _lastName = TextEditingController();
   final _phoneNumber = TextEditingController();
+  final _numberOfPeople = TextEditingController();
+  bool _hasSmallChildren = false;
+  bool _hasSeniorTravelers = false;
+  String? _carLength;
+  bool _hasDogs = false;
 
   String? error;
 
@@ -33,8 +40,19 @@ class _RegisterPageState extends State<RegisterPage> {
       );
 
       if (user != null) {
-        if (mounted)
-          Navigator.pop(context); // go back to login or previous screen
+        // Save user preferences
+        await http.post(
+          Uri.parse('http://10.0.2.2:5205/UserPreference'),
+          headers: await AuthService.getAuthHeaders(),
+          body: jsonEncode({
+            'numberOfPeople': int.parse(_numberOfPeople.text),
+            'hasSmallChildren': _hasSmallChildren,
+            'hasSeniorTravelers': _hasSeniorTravelers,
+            'carLength': _carLength,
+            'hasDogs': _hasDogs,
+          }),
+        );
+        if (mounted) Navigator.pop(context);
       } else {
         setState(() => error = "Registration failed. Try again.");
       }
@@ -76,7 +94,6 @@ class _RegisterPageState extends State<RegisterPage> {
                   return nameRegex.hasMatch(v) ? null : 'Only letters allowed';
                 },
               ),
-
               TextFormField(
                 controller: _lastName,
                 decoration: const InputDecoration(labelText: 'Last Name'),
@@ -86,7 +103,6 @@ class _RegisterPageState extends State<RegisterPage> {
                   return nameRegex.hasMatch(v) ? null : 'Only letters allowed';
                 },
               ),
-
               TextFormField(
                 controller: _phoneNumber,
                 decoration: const InputDecoration(labelText: 'Phone Number'),
@@ -115,6 +131,44 @@ class _RegisterPageState extends State<RegisterPage> {
                 validator:
                     (v) =>
                         v != _password.text ? 'Passwords do not match' : null,
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                "Tell us about yourself",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              TextFormField(
+                controller: _numberOfPeople,
+                decoration: const InputDecoration(
+                  labelText: 'Number of People',
+                ),
+                keyboardType: TextInputType.number,
+                validator: (v) => v!.isEmpty ? 'Required' : null,
+              ),
+              CheckboxListTile(
+                title: const Text("Traveling with small children"),
+                value: _hasSmallChildren,
+                onChanged: (v) => setState(() => _hasSmallChildren = v!),
+              ),
+              CheckboxListTile(
+                title: const Text("Traveling with senior travelers"),
+                value: _hasSeniorTravelers,
+                onChanged: (v) => setState(() => _hasSeniorTravelers = v!),
+              ),
+              DropdownButtonFormField<String>(
+                decoration: const InputDecoration(labelText: 'Car Length'),
+                value: _carLength,
+                items:
+                    ['Small', 'Medium', 'Large']
+                        .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                        .toList(),
+                onChanged: (v) => setState(() => _carLength = v),
+                validator: (v) => v == null ? 'Required' : null,
+              ),
+              CheckboxListTile(
+                title: const Text("Traveling with dogs"),
+                value: _hasDogs,
+                onChanged: (v) => setState(() => _hasDogs = v!),
               ),
               const SizedBox(height: 20),
               ElevatedButton(

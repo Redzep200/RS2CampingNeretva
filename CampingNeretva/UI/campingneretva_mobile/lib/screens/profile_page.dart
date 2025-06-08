@@ -18,6 +18,11 @@ class _ProfilePageState extends State<ProfilePage> {
   late TextEditingController _phone;
   final _password = TextEditingController();
   final _confirmPassword = TextEditingController();
+  final _numberOfPeople = TextEditingController();
+  bool _hasSmallChildren = false;
+  bool _hasSeniorTravelers = false;
+  String? _carLength;
+  bool _hasDogs = false;
   bool _isEditing = false;
 
   @override
@@ -27,10 +32,24 @@ class _ProfilePageState extends State<ProfilePage> {
     _username = TextEditingController(text: user.username);
     _email = TextEditingController(text: user.email);
     _phone = TextEditingController(text: user.phoneNumber ?? '');
+    _loadPreferences();
   }
 
-  void _toggleEdit() {
-    setState(() => _isEditing = !_isEditing);
+  Future<void> _loadPreferences() async {
+    final response = await http.get(
+      Uri.parse('http://10.0.2.2:5205/UserPreference'),
+      headers: await AuthService.getAuthHeaders(),
+    );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      setState(() {
+        _numberOfPeople.text = data['numberOfPeople'].toString();
+        _hasSmallChildren = data['hasSmallChildren'];
+        _hasSeniorTravelers = data['hasSeniorTravelers'];
+        _carLength = data['carLength'];
+        _hasDogs = data['hasDogs'];
+      });
+    }
   }
 
   Future<void> _submit() async {
@@ -44,6 +63,17 @@ class _ProfilePageState extends State<ProfilePage> {
       );
 
       if (updated != null) {
+        await http.put(
+          Uri.parse('http://10.0.2.2:5205/UserPreference'),
+          headers: await AuthService.getAuthHeaders(),
+          body: jsonEncode({
+            'numberOfPeople': int.parse(_numberOfPeople.text),
+            'hasSmallChildren': _hasSmallChildren,
+            'hasSeniorTravelers': _hasSeniorTravelers,
+            'carLength': _carLength,
+            'hasDogs': _hasDogs,
+          }),
+        );
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text("Profile updated")));
@@ -56,6 +86,10 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  void _toggleEdit() {
+    setState(() => _isEditing = !_isEditing);
+  }
+
   @override
   void dispose() {
     _username.dispose();
@@ -63,6 +97,7 @@ class _ProfilePageState extends State<ProfilePage> {
     _phone.dispose();
     _password.dispose();
     _confirmPassword.dispose();
+    _numberOfPeople.dispose();
     super.dispose();
   }
 
@@ -124,6 +159,53 @@ class _ProfilePageState extends State<ProfilePage> {
                               : null,
                 ),
               ],
+              const SizedBox(height: 20),
+              const Text(
+                "Tell us about yourself",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              TextFormField(
+                controller: _numberOfPeople,
+                decoration: const InputDecoration(
+                  labelText: 'Number of People',
+                ),
+                keyboardType: TextInputType.number,
+                readOnly: readOnly,
+                validator: (v) => v!.isEmpty ? 'Required' : null,
+              ),
+              CheckboxListTile(
+                title: const Text("Traveling with small children"),
+                value: _hasSmallChildren,
+                onChanged:
+                    readOnly
+                        ? null
+                        : (v) => setState(() => _hasSmallChildren = v!),
+              ),
+              CheckboxListTile(
+                title: const Text("Traveling with senior travelers"),
+                value: _hasSeniorTravelers,
+                onChanged:
+                    readOnly
+                        ? null
+                        : (v) => setState(() => _hasSeniorTravelers = v!),
+              ),
+              DropdownButtonFormField<String>(
+                decoration: const InputDecoration(labelText: 'Car Length'),
+                value: _carLength,
+                items:
+                    ['Small', 'Medium', 'Large']
+                        .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                        .toList(),
+                onChanged:
+                    readOnly ? null : (v) => setState(() => _carLength = v),
+                validator: (v) => v == null ? 'Required' : null,
+              ),
+              CheckboxListTile(
+                title: const Text("Traveling with dogs"),
+                value: _hasDogs,
+                onChanged:
+                    readOnly ? null : (v) => setState(() => _hasDogs = v!),
+              ),
               const SizedBox(height: 20),
               if (_isEditing)
                 ElevatedButton(

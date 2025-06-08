@@ -63,6 +63,8 @@ public partial class _200012Context : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
+    public virtual DbSet<UserPreference> UserPreferences { get; set; }
+
     public virtual DbSet<UserType> UserTypes { get; set; }
 
     public virtual DbSet<Vehicle> Vehicles { get; set; }
@@ -407,6 +409,20 @@ public partial class _200012Context : DbContext
                 .HasForeignKey(d => d.UserTypeId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Users__UserTypeI__ABCDEF12");
+        });
+
+        modelBuilder.Entity<UserPreference>(entity =>
+        {
+            entity.HasKey(e => e.UserPreferenceId).HasName("PK__UserPref__25771DD8E0E3763F");
+
+            entity.ToTable("UserPreference");
+
+            entity.Property(e => e.CarLength).HasMaxLength(50);
+
+            entity.HasOne(d => d.User).WithMany(p => p.UserPreferences)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_UserPreference_User");
         });
 
         modelBuilder.Entity<UserType>(entity =>

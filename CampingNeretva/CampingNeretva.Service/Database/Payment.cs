@@ -19,7 +19,7 @@ public partial class Payment
 
     public string? PayPalPaymentId { get; set; }
 
-    public string? Status { get; set; } = "PENDING";
+    public string? Status { get; set; }
 
     public virtual Reservation Reservation { get; set; } = null!;
 
