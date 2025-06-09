@@ -38,15 +38,13 @@ class _PayPalWebViewState extends State<PayPalWebView> {
             NavigationDelegate(
               onNavigationRequest: (NavigationRequest request) {
                 final url = request.url;
-
                 if (url.startsWith(widget.returnUrl)) {
-                  _checkForRedirect(url);
+                  _handleRedirect(url);
                   return NavigationDecision.prevent;
                 } else if (url.startsWith(widget.cancelUrl)) {
-                  _checkForRedirect(url);
+                  widget.onCancel();
                   return NavigationDecision.prevent;
                 }
-
                 return NavigationDecision.navigate;
               },
               onProgress: (int progress) {
@@ -56,12 +54,6 @@ class _PayPalWebViewState extends State<PayPalWebView> {
                   });
                 }
               },
-              onPageStarted: (String url) {
-                _checkForRedirect(url);
-              },
-              onPageFinished: (String url) {
-                _checkForRedirect(url);
-              },
               onWebResourceError: (WebResourceError error) {
                 widget.onError('WebView error: ${error.description}');
               },
@@ -70,40 +62,14 @@ class _PayPalWebViewState extends State<PayPalWebView> {
           ..loadRequest(Uri.parse(widget.approvalUrl));
   }
 
-  void _checkForRedirect(String url) {
-    print('WebView URL: $url'); // Add this for debugging
+  void _handleRedirect(String url) {
+    final uri = Uri.parse(url);
+    final token = uri.queryParameters['token'];
 
-    // Check for PayPal success parameters in URL
-    if (url.contains('token=') &&
-        (url.contains('PayerID=') || url.contains('approval=true'))) {
-      final uri = Uri.parse(url);
-      final token = uri.queryParameters['token'];
-      final payerId = uri.queryParameters['PayerID'];
-
-      print('Success detected - Token: $token, PayerID: $payerId');
-
-      if (token != null) {
-        Future.delayed(const Duration(seconds: 1), () {
-          widget.onSuccess(token);
-        });
-      } else {
-        widget.onError('No token found in success URL');
-      }
-    } else if (url.startsWith('myapp://paypal-success')) {
-      final uri = Uri.parse(url);
-      final token =
-          uri.queryParameters['token'] ?? uri.queryParameters['PayerID'];
-
-      if (token != null) {
-        Future.delayed(const Duration(seconds: 1), () {
-          widget.onSuccess(token);
-        });
-      } else {
-        widget.onError('No token found in return URL');
-      }
-    } else if (url.startsWith('myapp://paypal-cancel') ||
-        url.contains('cancel=true')) {
-      widget.onCancel();
+    if (token != null) {
+      widget.onSuccess(token);
+    } else {
+      widget.onError('No token found in redirect URL');
     }
   }
 

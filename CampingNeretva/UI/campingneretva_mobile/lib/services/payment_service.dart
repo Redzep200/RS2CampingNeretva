@@ -15,35 +15,31 @@ class PaymentService {
       final user = AuthService.currentUser;
       if (user == null) throw Exception('User not authenticated');
 
-      print(
-        'Creating PayPal order for reservation: $reservationId, amount: $amount',
-      );
-
-      final response = await http.post(
-        Uri.parse('$baseUrl/Payment/create-paypal-order'),
-        headers: headers,
-        body: jsonEncode({
-          'reservationId': reservationId,
-          'userId': user.id,
-          'amount': amount,
-          'currency': currency,
-          'returnUrl': 'myapp://paypal-success',
-          'cancelUrl': 'myapp://paypal-cancel',
-        }),
-      );
-
-      print('Create order response status: ${response.statusCode}');
-      print('Create order response body: ${response.body}');
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/Payment/create-paypal-order'),
+            headers: headers,
+            body: jsonEncode({
+              'reservationId': reservationId,
+              'userId': user.id,
+              'amount': amount,
+              'currency': currency,
+              'returnUrl': 'myapp://paypal-success',
+              'cancelUrl': 'myapp://paypal-cancel',
+            }),
+          )
+          .timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
-        return jsonDecode(response.body) as Map<String, dynamic>;
+        final result = jsonDecode(response.body) as Map<String, dynamic>;
+        if (result['orderId'] == null || result['approvalUrl'] == null) {
+          throw Exception('Invalid PayPal order response');
+        }
+        return result;
       } else {
-        throw Exception(
-          'Failed to create PayPal order: ${response.statusCode} - ${response.body}',
-        );
+        throw Exception('Failed to create PayPal order: ${response.body}');
       }
     } catch (e) {
-      print('Error creating PayPal order: $e');
       rethrow;
     }
   }
@@ -57,8 +53,6 @@ class PaymentService {
       final headers = await AuthService.getAuthHeaders();
       if (user == null) throw Exception('User not authenticated');
 
-      print('Capturing PayPal order: $orderId for reservation: $reservationId');
-
       final response = await http
           .post(
             Uri.parse('$baseUrl/Payment/capture-paypal-order'),
@@ -69,27 +63,18 @@ class PaymentService {
               'userId': user.id,
             }),
           )
-          .timeout(
-            const Duration(seconds: 30), // Add timeout
-            onTimeout: () {
-              throw Exception('Payment capture request timed out');
-            },
-          );
-
-      print('Capture response status: ${response.statusCode}');
-      print('Capture response body: ${response.body}');
+          .timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
         final result = jsonDecode(response.body) as Map<String, dynamic>;
-        print('Payment capture result: $result');
+        if (result['status'] == null) {
+          throw Exception('Invalid capture response');
+        }
         return result;
       } else {
-        throw Exception(
-          'Failed to capture PayPal payment: ${response.statusCode} - ${response.body}',
-        );
+        throw Exception('Failed to capture PayPal payment: ${response.body}');
       }
     } catch (e) {
-      print('Error capturing PayPal payment: $e');
       rethrow;
     }
   }

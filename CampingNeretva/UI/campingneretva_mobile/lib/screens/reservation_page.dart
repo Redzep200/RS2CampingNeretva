@@ -1,6 +1,4 @@
 import 'package:campingneretva_mobile/models/acommodation_model.dart';
-import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:campingneretva_mobile/models/parcel_model.dart';
 import 'package:campingneretva_mobile/models/person_model.dart';
 import 'package:campingneretva_mobile/models/rentable_item_model.dart';
@@ -15,9 +13,11 @@ import 'package:campingneretva_mobile/services/vehicle_service.dart';
 import 'package:campingneretva_mobile/services/reservation_service.dart';
 import 'package:campingneretva_mobile/services/auth_service.dart';
 import 'package:campingneretva_mobile/widgets/app_scaffold.dart';
-import '../services/payment_service.dart';
-import 'paypal_webview.dart';
-import '../screens/reservation_history_page.dart';
+import 'package:campingneretva_mobile/services/payment_service.dart';
+import 'package:campingneretva_mobile/screens/paypal_webview.dart';
+import 'package:campingneretva_mobile/screens/reservation_history_page.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class ReservationPage extends StatefulWidget {
   const ReservationPage({super.key});
@@ -29,7 +29,6 @@ class ReservationPage extends StatefulWidget {
 class _ReservationPageState extends State<ReservationPage> {
   DateTime? startDate;
   DateTime? endDate;
-
   List<Parcel> parcels = [];
   List<Accommodation> accommodations = [];
   List<Activity> activities = [];
@@ -44,16 +43,25 @@ class _ReservationPageState extends State<ReservationPage> {
   Map<int, int> selectedRentItems = {};
   Set<int> selectedActivities = {};
 
+  bool _isLoading = false;
   bool _isProcessingPayment = false;
   int? _currentReservationId;
+  String? _errorMessage;
 
   bool get _datesSelected => startDate != null && endDate != null;
 
   Future<void> _submitReservation() async {
     if (!_datesSelected ||
         selectedParcel == null ||
-        selectedAccommodation == null)
+        selectedAccommodation == null) {
+      _showSnackBar('Please select dates, parcel, and accommodation.');
       return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
     final payload = {
       'userId': AuthService.currentUser!.id,
@@ -82,49 +90,36 @@ class _ReservationPageState extends State<ReservationPage> {
 
     try {
       final reservation = await ReservationService.insert(payload);
-
-      // Extract reservation ID (adjust based on your ReservationService response structure)
       final reservationId = reservation['id'] ?? reservation['reservationId'];
 
       if (reservationId != null) {
         setState(() {
           _currentReservationId = reservationId;
+          _isLoading = false;
         });
-
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Reservation created! Proceed to payment.'),
-            ),
-          );
-        }
-
-        // Automatically start payment process
+        _showSnackBar('Reservation created! Proceed to payment.');
         await _startPayPalPayment();
       } else {
         throw Exception('Failed to get reservation ID');
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to make reservation: $e')),
-        );
-      }
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Failed to make reservation: $e';
+      });
+      _showSnackBar(_errorMessage!);
     }
   }
 
   Future<void> _startPayPalPayment() async {
     if (_currentReservationId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No reservation found. Please try again.'),
-        ),
-      );
+      _showSnackBar('No reservation found. Please try again.');
       return;
     }
 
     setState(() {
       _isProcessingPayment = true;
+      _errorMessage = null;
     });
 
     try {
@@ -138,7 +133,7 @@ class _ReservationPageState extends State<ReservationPage> {
       final orderId = orderResponse['orderId'] as String;
 
       if (mounted) {
-        Navigator.of(context).push(
+        final result = await Navigator.of(context).push(
           MaterialPageRoute(
             builder:
                 (context) => PayPalWebView(
@@ -146,40 +141,37 @@ class _ReservationPageState extends State<ReservationPage> {
                   returnUrl: 'myapp://paypal-success',
                   cancelUrl: 'myapp://paypal-cancel',
                   onSuccess: (returnedOrderId) async {
-                    Navigator.of(context).pop();
-                    await _capturePayment(orderId);
+                    await _capturePayment(returnedOrderId);
                   },
                   onCancel: () {
-                    Navigator.of(context).pop();
                     setState(() {
                       _isProcessingPayment = false;
                     });
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Payment cancelled')),
-                    );
+                    _showSnackBar('Payment cancelled');
                   },
                   onError: (error) {
-                    Navigator.of(context).pop();
                     setState(() {
                       _isProcessingPayment = false;
+                      _errorMessage = 'Payment error: $error';
                     });
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Payment error: $error')),
-                    );
+                    _showSnackBar(_errorMessage!);
                   },
                 ),
           ),
         );
+
+        if (result == null) {
+          setState(() {
+            _isProcessingPayment = false;
+          });
+        }
       }
     } catch (e) {
       setState(() {
         _isProcessingPayment = false;
+        _errorMessage = 'Failed to start payment: $e';
       });
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to start payment: $e')));
-      }
+      _showSnackBar(_errorMessage!);
     }
   }
 
@@ -195,16 +187,11 @@ class _ReservationPageState extends State<ReservationPage> {
       });
 
       if (captureResponse['status'] == 'COMPLETED') {
+        _showSnackBar(
+          'Payment successful! Your reservation is confirmed.',
+          backgroundColor: Colors.green,
+        );
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Payment successful! Your reservation is confirmed.',
-              ),
-              backgroundColor: Colors.green,
-            ),
-          );
-
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(
               builder: (context) => const ReservationHistoryPage(),
@@ -218,40 +205,51 @@ class _ReservationPageState extends State<ReservationPage> {
     } catch (e) {
       setState(() {
         _isProcessingPayment = false;
+        _errorMessage = 'Failed to complete payment: $e';
       });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to complete payment: $e')),
-        );
-      }
+      _showSnackBar(_errorMessage!);
     }
   }
 
   Future<void> _loadAll() async {
     if (!_datesSelected) return;
 
-    parcels = await ParcelService.getParcels(from: startDate, to: endDate);
-    parcels = parcels.where((p) => p.isAvailable).toList();
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
-    accommodations = await AccommodationService.getAccommodations();
-    activities = await ActivityService.getByDateRange(
-      startDate!.toIso8601String(),
-      endDate!.toIso8601String(),
-    );
-    activities =
-        activities
-            .where(
-              (a) => !a.date.isBefore(startDate!) && !a.date.isAfter(endDate!),
-            )
-            .toList();
-
-    rentItems = await RentableItemService.getAvailable(
-      startDate!.toIso8601String(),
-      endDate!.toIso8601String(),
-    );
-    persons = await PersonService.getPersons();
-    vehicles = await VehicleService.getVehicles();
-    setState(() {});
+    try {
+      parcels = await ParcelService.getParcels(from: startDate, to: endDate);
+      parcels = parcels.where((p) => p.isAvailable).toList();
+      accommodations = await AccommodationService.getAccommodations();
+      activities = await ActivityService.getByDateRange(
+        startDate!.toIso8601String(),
+        endDate!.toIso8601String(),
+      );
+      activities =
+          activities
+              .where(
+                (a) =>
+                    !a.date.isBefore(startDate!) && !a.date.isAfter(endDate!),
+              )
+              .toList();
+      rentItems = await RentableItemService.getAvailable(
+        startDate!.toIso8601String(),
+        endDate!.toIso8601String(),
+      );
+      persons = await PersonService.getPersons();
+      vehicles = await VehicleService.getVehicles();
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Failed to load data: $e';
+      });
+      _showSnackBar(_errorMessage!);
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _pickDateRange() async {
@@ -272,8 +270,17 @@ class _ReservationPageState extends State<ReservationPage> {
         selectedRentItems.clear();
         selectedActivities.clear();
         _currentReservationId = null;
+        _errorMessage = null;
       });
       await _loadAll();
+    }
+  }
+
+  void _showSnackBar(String message, {Color? backgroundColor}) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message), backgroundColor: backgroundColor),
+      );
     }
   }
 
@@ -281,152 +288,169 @@ class _ReservationPageState extends State<ReservationPage> {
   Widget build(BuildContext context) {
     return AppScaffold(
       title: 'Make your reservation',
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: ListView(
-          children: [
-            ElevatedButton(
-              onPressed: _pickDateRange,
-              child: Text(
-                _datesSelected
-                    ? 'From: ${DateFormat.yMd().format(startDate!)} - To: ${DateFormat.yMd().format(endDate!)}'
-                    : 'Select reservation dates',
-              ),
-            ),
-            const SizedBox(height: 16),
-            _buildDropdown<Parcel>(
-              label: 'Select Parcel',
-              value: selectedParcel,
-              items: parcels,
-              itemBuilder: (p) => 'Parcel ${p.number}',
-              onChanged:
-                  _datesSelected
-                      ? (p) => setState(() => selectedParcel = p)
-                      : null,
-            ),
-            _buildDropdown<Accommodation>(
-              label: 'Select Accommodation',
-              value: selectedAccommodation,
-              items: accommodations,
-              itemBuilder: (a) => a.type,
-              onChanged:
-                  _datesSelected
-                      ? (a) => setState(() => selectedAccommodation = a)
-                      : null,
-            ),
-            _buildDropdown<Vehicle>(
-              label: 'Select Vehicle',
-              value: selectedVehicle,
-              items: vehicles,
-              itemBuilder: (v) => v.type,
-              onChanged:
-                  _datesSelected
-                      ? (v) => setState(() => selectedVehicle = v)
-                      : null,
-            ),
-            const SizedBox(height: 16),
-            if (_datesSelected)
-              _buildCounterSection('Guests:', persons, selectedPersons),
-            if (_datesSelected)
-              _buildCounterSection(
-                'Renting:',
-                rentItems,
-                selectedRentItems,
-                isRentItem: true,
-              ),
-            if (_datesSelected) _buildActivitySection(),
-            const SizedBox(height: 24),
-            if (_datesSelected)
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.blue[50],
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.blue[200]!),
-                ),
-                child: Column(
+      body:
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ListView(
                   children: [
-                    Text(
-                      'Total Amount: ${estimatedTotal.toStringAsFixed(2)} KM',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'MochiyPop',
+                    if (_errorMessage != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: Text(
+                          _errorMessage!,
+                          style: TextStyle(color: Colors.red[700]),
+                        ),
+                      ),
+                    ElevatedButton(
+                      onPressed: _pickDateRange,
+                      child: Text(
+                        _datesSelected
+                            ? 'From: ${DateFormat.yMd().format(startDate!)} - To: ${DateFormat.yMd().format(endDate!)}'
+                            : 'Select reservation dates',
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    if (_currentReservationId != null)
-                      Text(
-                        'Reservation ID: $_currentReservationId',
-                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                      ),
-                  ],
-                ),
-              ),
-            const SizedBox(height: 16),
-            if (_datesSelected && _currentReservationId == null)
-              ElevatedButton(
-                onPressed: _submitReservation,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: Colors.green[600],
-                  foregroundColor: Colors.white,
-                ),
-                child: const Text(
-                  'Create Reservation',
-                  style: TextStyle(fontSize: 16),
-                ),
-              ),
-            if (_currentReservationId != null && !_isProcessingPayment)
-              Column(
-                children: [
-                  ElevatedButton(
-                    onPressed: _startPayPalPayment,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: Colors.blue[600],
-                      foregroundColor: Colors.white,
+                    const SizedBox(height: 16),
+                    _buildDropdown<Parcel>(
+                      label: 'Select Parcel',
+                      value: selectedParcel,
+                      items: parcels,
+                      itemBuilder: (p) => 'Parcel ${p.number}',
+                      onChanged:
+                          _datesSelected
+                              ? (p) => setState(() => selectedParcel = p)
+                              : null,
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.payment),
-                        const SizedBox(width: 8),
-                        const Text(
-                          'Pay with PayPal',
+                    _buildDropdown<Accommodation>(
+                      label: 'Select Accommodation',
+                      value: selectedAccommodation,
+                      items: accommodations,
+                      itemBuilder: (a) => a.type,
+                      onChanged:
+                          _datesSelected
+                              ? (a) => setState(() => selectedAccommodation = a)
+                              : null,
+                    ),
+                    _buildDropdown<Vehicle>(
+                      label: 'Select Vehicle',
+                      value: selectedVehicle,
+                      items: vehicles,
+                      itemBuilder: (v) => v.type,
+                      onChanged:
+                          _datesSelected
+                              ? (v) => setState(() => selectedVehicle = v)
+                              : null,
+                    ),
+                    const SizedBox(height: 16),
+                    if (_datesSelected)
+                      _buildCounterSection('Guests:', persons, selectedPersons),
+                    if (_datesSelected)
+                      _buildCounterSection(
+                        'Renting:',
+                        rentItems,
+                        selectedRentItems,
+                        isRentItem: true,
+                      ),
+                    if (_datesSelected) _buildActivitySection(),
+                    const SizedBox(height: 24),
+                    if (_datesSelected)
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.blue[50],
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.blue[200]!),
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              'Total Amount: ${estimatedTotal.toStringAsFixed(2)} EUR',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'MochiyPop',
+                              ),
+                            ),
+                            if (_currentReservationId != null)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: Text(
+                                  'Reservation ID: $_currentReservationId',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    const SizedBox(height: 16),
+                    if (_datesSelected && _currentReservationId == null)
+                      ElevatedButton(
+                        onPressed:
+                            _isProcessingPayment ? null : _submitReservation,
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          backgroundColor: Colors.green[600],
+                          foregroundColor: Colors.white,
+                        ),
+                        child: const Text(
+                          'Create Reservation',
                           style: TextStyle(fontSize: 16),
                         ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        _currentReservationId = null;
-                      });
-                    },
-                    child: const Text('Cancel Reservation'),
-                  ),
-                ],
-              ),
-            if (_isProcessingPayment)
-              Container(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    const CircularProgressIndicator(),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Processing payment...',
-                      style: TextStyle(fontSize: 16),
-                    ),
+                      ),
+                    if (_currentReservationId != null && !_isProcessingPayment)
+                      Column(
+                        children: [
+                          ElevatedButton(
+                            onPressed: _startPayPalPayment,
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              backgroundColor: Colors.blue[600],
+                              foregroundColor: Colors.white,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.payment),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  'Pay with PayPal',
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          TextButton(
+                            onPressed: () {
+                              setState(() {
+                                _currentReservationId = null;
+                              });
+                            },
+                            child: const Text('Cancel Reservation'),
+                          ),
+                        ],
+                      ),
+                    if (_isProcessingPayment)
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            const CircularProgressIndicator(),
+                            const SizedBox(height: 16),
+                            const Text(
+                              'Processing payment...',
+                              style: TextStyle(fontSize: 16),
+                            ),
+                          ],
+                        ),
+                      ),
                   ],
                 ),
               ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -537,21 +561,17 @@ class _ReservationPageState extends State<ReservationPage> {
     if (selectedAccommodation != null) {
       total += selectedAccommodation!.price * nights;
     }
-
     if (selectedVehicle != null) {
       total += selectedVehicle!.price * nights;
     }
-
     selectedPersons.forEach((id, count) {
       final p = persons.firstWhere((x) => x.id == id);
       total += p.price * count * nights;
     });
-
     selectedRentItems.forEach((id, count) {
       final r = rentItems.firstWhere((x) => x.id == id);
       total += r.pricePerDay * count * nights;
     });
-
     selectedActivities.forEach((id) {
       final a = activities.firstWhere((x) => x.id == id);
       total += a.price;
