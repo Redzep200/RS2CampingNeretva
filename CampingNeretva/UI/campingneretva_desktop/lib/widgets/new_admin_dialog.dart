@@ -20,6 +20,7 @@ class _NewAdminDialogState extends State<NewAdminDialog> {
   final _email = TextEditingController();
   final _password = TextEditingController();
   final _confirmPassword = TextEditingController();
+  String? _error;
 
   @override
   void dispose() {
@@ -34,6 +35,8 @@ class _NewAdminDialogState extends State<NewAdminDialog> {
 
   Future<void> _createAdmin() async {
     if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _error = null);
 
     try {
       final userTypes = await UserTypeService().getUserTypes();
@@ -52,20 +55,7 @@ class _NewAdminDialogState extends State<NewAdminDialog> {
       widget.onUserCreated();
       if (mounted) Navigator.pop(context);
     } catch (e) {
-      showDialog(
-        context: context,
-        builder:
-            (ctx) => AlertDialog(
-              title: const Text('Greška'),
-              content: Text(e.toString()),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  child: const Text('OK'),
-                ),
-              ],
-            ),
-      );
+      setState(() => _error = e.toString().replaceAll('Exception: ', ''));
     }
   }
 
@@ -77,7 +67,10 @@ class _NewAdminDialogState extends State<NewAdminDialog> {
         key: _formKey,
         child: SingleChildScrollView(
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
+              if (_error != null)
+                Text(_error!, style: const TextStyle(color: Colors.red)),
               TextFormField(
                 controller: _firstName,
                 decoration: const InputDecoration(labelText: 'Ime'),

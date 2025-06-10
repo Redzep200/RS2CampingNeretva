@@ -3,16 +3,23 @@ import 'package:http/http.dart' as http;
 import '../models/reservation_model.dart';
 import 'package:campingneretva_desktop/services/auth_service.dart';
 
+// Updated ReservationService to support fetching all reservations
 class ReservationService {
   static const String _baseUrl = 'http://localhost:5205';
 
   static Future<List<Reservation>> fetchAll({
     DateTime? from,
     DateTime? to,
+    int page = 0, // Default to page 0
+    int pageSize = 10,
+    String? username,
+    String? reservationNumber,
+    String? vehicleType,
+    DateTime? date,
   }) async {
     final headers = await AuthService.getAuthHeaders();
 
-    final uri = Uri.http('localhost:5205', '/Reservation', {
+    final queryParams = {
       'IsPersonsIncluded': 'true',
       'IsVehicleIncluded': 'true',
       'IsAccommodationIncluded': 'true',
@@ -20,16 +27,24 @@ class ReservationService {
       'IsActivitiesIncluded': 'true',
       'IsParcelIncluded': 'true',
       'IsUserIncluded': 'true',
-      'PageSize': '1000',
+      'Page': page.toString(),
+      'PageSize': pageSize.toString(),
       if (from != null) 'CheckInDate': from.toIso8601String(),
       if (to != null) 'CheckOutDate': to.toIso8601String(),
-    });
+      if (username != null && username.isNotEmpty) 'Username': username,
+      if (reservationNumber != null && reservationNumber.isNotEmpty)
+        'ReservationNumber': reservationNumber,
+      if (vehicleType != null) 'VehicleType': vehicleType,
+      if (date != null) 'CheckInDate': date.toIso8601String(),
+    };
+
+    final uri = Uri.http('localhost:5205', '/Reservation', queryParams);
 
     final response = await http.get(uri, headers: headers);
     if (response.statusCode == 200) {
-      final jsonList = json.decode(response.body)['resultList'];
+      final jsonBody = json.decode(response.body);
       return List<Reservation>.from(
-        jsonList.map((x) => Reservation.fromJson(x)),
+        jsonBody['resultList'].map((x) => Reservation.fromJson(x)),
       );
     } else {
       throw Exception('Failed to fetch all reservations');

@@ -13,20 +13,27 @@ class ParcelService {
     bool? electricity,
     String? accommodation,
     String? type,
+    int page = 0,
+    int pageSize = 10,
   }) async {
+    final headers = await AuthService.getAuthHeaders();
     final uri = Uri.parse('$baseUrl/Parcel').replace(
       queryParameters: {
-        if (shade != null) 'shade': shade.toString(),
-        if (electricity != null) 'electricity': electricity.toString(),
+        if (shade != null) 'Shade': shade.toString(),
+        if (electricity != null) 'Electricity': electricity.toString(),
         if (accommodation != null && accommodation.isNotEmpty)
-          'parcelAccommodationName': accommodation,
-        if (type != null && type.isNotEmpty) 'parcelTypeName': type,
-        'isParcelAccommodationIncluded': 'true',
-        'isParcelTypeIncluded': 'true',
+          'ParcelAccommodationName': accommodation,
+        if (type != null && type.isNotEmpty) 'ParcelTypeName': type,
+        if (from != null) 'DateFrom': from.toIso8601String(),
+        if (to != null) 'DateTo': to.toIso8601String(),
+        'IsParcelAccommodationIncluded': 'true',
+        'IsParcelTypeIncluded': 'true',
+        'Page': page.toString(),
+        'PageSize': pageSize.toString(),
       },
     );
 
-    final response = await http.get(uri);
+    final response = await http.get(uri, headers: headers);
 
     if (response.statusCode == 200) {
       final jsonData = json.decode(response.body);
@@ -86,8 +93,8 @@ class ParcelService {
     final headers = await AuthService.getAuthHeaders();
     final uri = Uri.parse('$baseUrl/Parcel/unavailable').replace(
       queryParameters: {
-        'dateFrom': from.toIso8601String(),
-        'dateTo': to.toIso8601String(),
+        'DateFrom': from.toIso8601String(),
+        'DateTo': to.toIso8601String(),
       },
     );
 

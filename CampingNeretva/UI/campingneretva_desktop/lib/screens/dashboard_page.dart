@@ -54,7 +54,7 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   DateTimeRange _getDateRange(int year, int? month) {
-    final from = month != null ? DateTime(year, month) : DateTime(year, 1);
+    final from = month != null ? DateTime(year, month, 1) : DateTime(year, 1);
     final to =
         month != null
             ? DateTime(year, month + 1).subtract(const Duration(days: 1))
@@ -67,9 +67,11 @@ class _DashboardPageState extends State<DashboardPage> {
     final reservations = await ReservationService.fetchAll(
       from: range.start,
       to: range.end,
+      page: 0,
+      pageSize: 10000, // Fetch all reservations in a large batch
     );
     setState(() {
-      totalRevenue = reservations.fold(0, (sum, r) => sum + r.totalPrice);
+      totalRevenue = reservations.fold(0.0, (sum, r) => sum + r.totalPrice);
     });
   }
 
@@ -78,6 +80,8 @@ class _DashboardPageState extends State<DashboardPage> {
     final reservations = await ReservationService.fetchAll(
       from: range.start,
       to: range.end,
+      page: 0,
+      pageSize: 10000, // Fetch all reservations in a large batch
     );
     final parcelCounts = <int, int>{};
 
@@ -101,6 +105,8 @@ class _DashboardPageState extends State<DashboardPage> {
     final reservations = await ReservationService.fetchAll(
       from: range.start,
       to: range.end,
+      page: 0,
+      pageSize: 10000, // Fetch all reservations in a large batch
     );
     final activityCounts = <String, int>{};
     for (var res in reservations) {

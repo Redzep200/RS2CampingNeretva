@@ -20,7 +20,7 @@ class ParcelPage extends StatefulWidget {
 }
 
 class _ParcelPageState extends State<ParcelPage> {
-  List<Parcel> parcels = [];
+  late Future<List<Parcel>> _parcelsFuture;
   List<ParcelType> parcelTypes = [];
   List<ParcelAccommodation> accommodations = [];
 
@@ -34,6 +34,13 @@ class _ParcelPageState extends State<ParcelPage> {
   DateTime? endDate;
   bool loading = true;
 
+  // Pagination states - changed from 10 to 6
+  int _currentPage = 0;
+  final int _pageSize = 4; // Changed from 10 to 6
+  int _totalItems = 0;
+  List<Parcel> _allParcels = [];
+  List<Parcel> _filteredParcels = [];
+
   @override
   void initState() {
     super.initState();
@@ -44,30 +51,47 @@ class _ParcelPageState extends State<ParcelPage> {
     setState(() => loading = true);
     parcelTypes = await ParcelTypeService.fetchAll();
     accommodations = await ParcelAccommodationService.fetchAll();
-    await _loadParcels();
+    _fetchParcels();
     setState(() => loading = false);
   }
 
-  Future<void> _loadParcels() async {
-    parcels = await ParcelService.fetchAll(
-      shade: shade,
-      electricity: electricity,
-      accommodation: selectedAccommodation?.name,
-      type: selectedType?.name,
-    );
+  void _fetchParcels() {
+    setState(() {
+      _parcelsFuture = ParcelService.fetchAll(
+        shade: shade,
+        electricity: electricity,
+        accommodation: selectedAccommodation?.name,
+        type: selectedType?.name,
+        page: 0,
+        pageSize: 10000, // Fetch all parcels for client-side pagination
+      );
+    });
+  }
 
+  Future<void> _loadParcels() async {
     if (startDate != null && endDate != null) {
       final unavailableIds = await ParcelService.fetchUnavailableParcelIds(
         startDate!,
         endDate!,
       );
 
-      for (var parcel in parcels) {
+      for (var parcel in _allParcels) {
         parcel.isAvailable = !unavailableIds.contains(parcel.id);
       }
     }
 
     setState(() {});
+  }
+
+  List<Parcel> _applyFilters(List<Parcel> parcels) {
+    var filtered =
+        parcels.where((p) {
+          final numberMatch = p.number.toString().contains(_searchQuery);
+          return numberMatch;
+        }).toList();
+    _filteredParcels = filtered;
+    _totalItems = filtered.length;
+    return filtered;
   }
 
   Future<String?> _promptInput(String label) async {
@@ -106,14 +130,27 @@ class _ParcelPageState extends State<ParcelPage> {
     );
     bool shadeValue = parcel?.shade ?? false;
     bool electricityValue = parcel?.electricity ?? false;
-    ParcelType? typeValue = parcelTypes.firstWhere(
-      (t) => t.name == parcel?.parcelType,
-      orElse: () => parcelTypes.first,
-    );
-    ParcelAccommodation? accValue = accommodations.firstWhere(
-      (a) => a.name == parcel?.parcelAccommodation,
-      orElse: () => accommodations.first,
-    );
+
+    ParcelType? typeValue =
+        parcelTypes.isNotEmpty
+            ? (isEditing
+                ? parcelTypes.firstWhere(
+                  (t) => t.name == parcel?.parcelType.name,
+                  orElse: () => parcelTypes.first,
+                )
+                : parcelTypes.first)
+            : null;
+
+    ParcelAccommodation? accValue =
+        accommodations.isNotEmpty
+            ? (isEditing
+                ? accommodations.firstWhere(
+                  (a) => a.name == parcel?.parcelAccommodation.name,
+                  orElse: () => accommodations.first,
+                )
+                : accommodations.first)
+            : null;
+
     String? imageUrl = parcel?.imageUrl;
     int? imageId = parcel?.imageId;
 
@@ -240,8 +277,10 @@ class _ParcelPageState extends State<ParcelPage> {
                           electricity: electricityValue,
                           description: descriptionController.text.trim(),
                           isAvailable: true,
-                          parcelAccommodation: accValue!,
-                          parcelType: typeValue!,
+                          parcelAccommodation:
+                              accValue!, // Fixed: Pass object not string
+                          parcelType:
+                              typeValue!, // Fixed: Pass object not string
                           imageUrl: imageUrl ?? '',
                           imageId: imageId,
                         );
@@ -253,7 +292,7 @@ class _ParcelPageState extends State<ParcelPage> {
                             await ParcelService.create(newParcel);
                           }
                           Navigator.pop(context);
-                          _loadParcels();
+                          _fetchParcels();
                         } catch (_) {
                           _showError('Greška pri spašavanju parcele.');
                         }
@@ -301,11 +340,11 @@ class _ParcelPageState extends State<ParcelPage> {
 
     if (confirmed) {
       await ParcelService.delete(parcel.id);
-      _loadParcels();
+      _fetchParcels();
     }
   }
 
-  void _showDetailsDialog() async {
+  Future<void> _showDetailsDialog() async {
     await showDialog(
       context: context,
       builder: (context) {
@@ -424,19 +463,50 @@ class _ParcelPageState extends State<ParcelPage> {
     );
   }
 
+  Widget _buildPaginationControls() {
+    final totalPages = (_totalItems / _pageSize).ceil();
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed:
+                _currentPage > 0
+                    ? () {
+                      setState(() {
+                        _currentPage--;
+                      });
+                    }
+                    : null,
+          ),
+          Text('Stranica ${_currentPage + 1} od $totalPages'),
+          IconButton(
+            icon: const Icon(Icons.arrow_forward),
+            onPressed:
+                _currentPage < (totalPages - 1)
+                    ? () {
+                      setState(() {
+                        _currentPage++;
+                      });
+                    }
+                    : null,
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final filteredParcels =
-        parcels.where((p) {
-          return p.number.toString().contains(_searchQuery);
-        }).toList();
-
     return Scaffold(
       appBar: const CustomNavbar(),
       body:
           loading
               ? const Center(child: CircularProgressIndicator())
               : SingleChildScrollView(
+                // Added SingleChildScrollView to make entire body scrollable
                 child: Column(
                   children: [
                     const SizedBox(height: 24),
@@ -518,7 +588,7 @@ class _ParcelPageState extends State<ParcelPage> {
                                       }).toList(),
                                   onChanged: (value) {
                                     setState(() => selectedType = value);
-                                    _loadParcels();
+                                    _fetchParcels();
                                   },
                                 ),
                               ),
@@ -539,7 +609,7 @@ class _ParcelPageState extends State<ParcelPage> {
                                     setState(
                                       () => selectedAccommodation = value,
                                     );
-                                    _loadParcels();
+                                    _fetchParcels();
                                   },
                                 ),
                               ),
@@ -552,7 +622,7 @@ class _ParcelPageState extends State<ParcelPage> {
                                 value: shade ?? false,
                                 onChanged: (v) {
                                   setState(() => shade = v);
-                                  _loadParcels();
+                                  _fetchParcels();
                                 },
                               ),
                               const Text('Sjena'),
@@ -561,7 +631,7 @@ class _ParcelPageState extends State<ParcelPage> {
                                 value: electricity ?? false,
                                 onChanged: (v) {
                                   setState(() => electricity = v);
-                                  _loadParcels();
+                                  _fetchParcels();
                                 },
                               ),
                               const Text('Struja'),
@@ -598,8 +668,7 @@ class _ParcelPageState extends State<ParcelPage> {
                                         startDate = pickedStart;
                                         endDate = pickedEnd;
                                       });
-
-                                      _loadParcels();
+                                      _fetchParcels();
                                     }
                                   }
                                 },
@@ -620,8 +689,11 @@ class _ParcelPageState extends State<ParcelPage> {
                                     shade = null;
                                     startDate = null;
                                     endDate = null;
+                                    _searchQuery = '';
+                                    _searchController.clear();
+                                    _currentPage = 0;
                                   });
-                                  _loadParcels();
+                                  _fetchParcels();
                                 },
                                 child: const Text("Resetuj filtere"),
                               ),
@@ -630,61 +702,119 @@ class _ParcelPageState extends State<ParcelPage> {
                         ],
                       ),
                     ),
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: filteredParcels.length,
-                      itemBuilder: (_, index) {
-                        final parcel = filteredParcels[index];
-                        final imageUrl =
-                            "${ParcelPage.baseUrl}${parcel.imageUrl}";
+                    // Changed from Expanded to SizedBox with height constraint
+                    SizedBox(
+                      height:
+                          MediaQuery.of(context).size.height *
+                          0.6, // Take 60% of screen height
+                      child: FutureBuilder<List<Parcel>>(
+                        future: _parcelsFuture,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          } else if (snapshot.hasError) {
+                            return Center(
+                              child: Text('Error: ${snapshot.error}'),
+                            );
+                          } else if (!snapshot.hasData ||
+                              snapshot.data!.isEmpty) {
+                            return const Center(
+                              child: Text('Nije pronađena ni jedna parcela.'),
+                            );
+                          }
 
-                        return Card(
-                          color:
-                              parcel.isAvailable
-                                  ? Colors.green[50]
-                                  : Colors.red[50],
-                          margin: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          child: ListTile(
-                            leading: Image.network(
-                              imageUrl,
-                              width: 100,
-                              height: 100,
-                              fit: BoxFit.cover,
-                              errorBuilder:
-                                  (_, __, ___) =>
-                                      const Icon(Icons.broken_image, size: 40),
-                            ),
-                            title: Text("Parcela #${parcel.number}"),
-                            subtitle: Text(
-                              "${parcel.parcelType} - ${parcel.parcelAccommodation}",
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.edit,
-                                    color: Colors.orange,
+                          _allParcels = snapshot.data!;
+                          _loadParcels(); // Update availability based on date range
+                          final filteredParcels = _applyFilters(_allParcels);
+
+                          // Apply client-side pagination
+                          final startIndex = _currentPage * _pageSize;
+                          final endIndex =
+                              startIndex + _pageSize > _totalItems
+                                  ? _totalItems
+                                  : startIndex + _pageSize;
+                          final paginatedParcels = filteredParcels.sublist(
+                            startIndex,
+                            endIndex,
+                          );
+
+                          return Column(
+                            children: [
+                              Expanded(
+                                child: ListView.builder(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
                                   ),
-                                  onPressed:
-                                      () => _showParcelDialog(parcel: parcel),
+                                  itemCount: paginatedParcels.length,
+                                  itemBuilder: (_, index) {
+                                    final parcel = paginatedParcels[index];
+                                    final imageUrl =
+                                        "${ParcelPage.baseUrl}${parcel.imageUrl}";
+
+                                    return Card(
+                                      color:
+                                          parcel.isAvailable
+                                              ? Colors.green[50]
+                                              : Colors.red[50],
+                                      margin: const EdgeInsets.symmetric(
+                                        vertical: 8,
+                                      ),
+                                      child: ListTile(
+                                        leading: Image.network(
+                                          imageUrl,
+                                          width: 100,
+                                          height: 100,
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (_, __, ___) => const Icon(
+                                                Icons.broken_image,
+                                                size: 40,
+                                              ),
+                                        ),
+                                        title: Text(
+                                          "Parcela #${parcel.number}",
+                                        ),
+                                        subtitle: Text(
+                                          "${parcel.parcelType.name} - ${parcel.parcelAccommodation.name}",
+                                        ),
+                                        trailing: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            IconButton(
+                                              icon: const Icon(
+                                                Icons.edit,
+                                                color: Colors.orange,
+                                              ),
+                                              onPressed:
+                                                  () => _showParcelDialog(
+                                                    parcel: parcel,
+                                                  ),
+                                            ),
+                                            IconButton(
+                                              icon: const Icon(
+                                                Icons.delete,
+                                                color: Colors.red,
+                                              ),
+                                              onPressed:
+                                                  () => _showConfirmDelete(
+                                                    parcel,
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.delete,
-                                    color: Colors.red,
-                                  ),
-                                  onPressed: () => _showConfirmDelete(parcel),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
+                              ),
+                              _buildPaginationControls(),
+                            ],
+                          );
+                        },
+                      ),
                     ),
                     const SizedBox(height: 32),
                   ],

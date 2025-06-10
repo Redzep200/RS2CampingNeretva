@@ -29,32 +29,36 @@ class _RegisterPageState extends State<RegisterPage> {
 
   void _register() async {
     if (_formKey.currentState!.validate()) {
-      final user = await AuthService.register(
-        username: _username.text.trim(),
-        email: _email.text.trim(),
-        password: _password.text.trim(),
-        firstName: _firstName.text.trim(),
-        lastName: _lastName.text.trim(),
-        phoneNumber: _phoneNumber.text.trim(),
-        passwordConfirmation: _confirmPassword.text.trim(),
-      );
-
-      if (user != null) {
-        // Save user preferences
-        await http.post(
-          Uri.parse('http://10.0.2.2:5205/UserPreference'),
-          headers: await AuthService.getAuthHeaders(),
-          body: jsonEncode({
-            'numberOfPeople': int.parse(_numberOfPeople.text),
-            'hasSmallChildren': _hasSmallChildren,
-            'hasSeniorTravelers': _hasSeniorTravelers,
-            'carLength': _carLength,
-            'hasDogs': _hasDogs,
-          }),
+      try {
+        final user = await AuthService.register(
+          username: _username.text.trim(),
+          email: _email.text.trim(),
+          password: _password.text.trim(),
+          firstName: _firstName.text.trim(),
+          lastName: _lastName.text.trim(),
+          phoneNumber: _phoneNumber.text.trim(),
+          passwordConfirmation: _confirmPassword.text.trim(),
         );
-        if (mounted) Navigator.pop(context);
-      } else {
-        setState(() => error = "Registration failed. Try again.");
+
+        if (user != null) {
+          // Save user preferences
+          await http.post(
+            Uri.parse('http://10.0.2.2:5205/UserPreference'),
+            headers: await AuthService.getAuthHeaders(),
+            body: jsonEncode({
+              'numberOfPeople': int.parse(_numberOfPeople.text),
+              'hasSmallChildren': _hasSmallChildren,
+              'hasSeniorTravelers': _hasSeniorTravelers,
+              'carLength': _carLength,
+              'hasDogs': _hasDogs,
+            }),
+          );
+          if (mounted) Navigator.pop(context);
+        } else {
+          setState(() => error = "An unexpected error occurred");
+        }
+      } catch (e) {
+        setState(() => error = e.toString().replaceAll('Exception: ', ''));
       }
     }
   }
@@ -74,13 +78,14 @@ class _RegisterPageState extends State<RegisterPage> {
               TextFormField(
                 controller: _username,
                 decoration: const InputDecoration(labelText: 'Username'),
-                validator: (v) => v!.isEmpty ? 'Username required' : null,
+                validator:
+                    (v) => v!.trim().isEmpty ? 'Username required' : null,
               ),
               TextFormField(
                 controller: _email,
                 decoration: const InputDecoration(labelText: 'Email'),
                 validator: (v) {
-                  if (v == null || v.isEmpty) return 'Email required';
+                  if (v == null || v.trim().isEmpty) return 'Email required';
                   final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
                   return emailRegex.hasMatch(v) ? null : 'Enter a valid email';
                 },
@@ -89,7 +94,8 @@ class _RegisterPageState extends State<RegisterPage> {
                 controller: _firstName,
                 decoration: const InputDecoration(labelText: 'First Name'),
                 validator: (v) {
-                  if (v == null || v.isEmpty) return 'First name required';
+                  if (v == null || v.trim().isEmpty)
+                    return 'First name required';
                   final nameRegex = RegExp(r'^[a-zA-Z]+$');
                   return nameRegex.hasMatch(v) ? null : 'Only letters allowed';
                 },
@@ -98,7 +104,8 @@ class _RegisterPageState extends State<RegisterPage> {
                 controller: _lastName,
                 decoration: const InputDecoration(labelText: 'Last Name'),
                 validator: (v) {
-                  if (v == null || v.isEmpty) return 'Last name required';
+                  if (v == null || v.trim().isEmpty)
+                    return 'Last name required';
                   final nameRegex = RegExp(r'^[a-zA-Z]+$');
                   return nameRegex.hasMatch(v) ? null : 'Only letters allowed';
                 },
@@ -107,7 +114,8 @@ class _RegisterPageState extends State<RegisterPage> {
                 controller: _phoneNumber,
                 decoration: const InputDecoration(labelText: 'Phone Number'),
                 validator: (v) {
-                  if (v == null || v.isEmpty) return 'Phone number required';
+                  if (v == null || v.trim().isEmpty)
+                    return 'Phone number required';
                   final phoneRegex = RegExp(r'^\d+$');
                   return phoneRegex.hasMatch(v) ? null : 'Only digits allowed';
                 },
@@ -143,7 +151,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   labelText: 'Number of People',
                 ),
                 keyboardType: TextInputType.number,
-                validator: (v) => v!.isEmpty ? 'Required' : null,
+                validator: (v) => v!.trim().isEmpty ? 'Required' : null,
               ),
               CheckboxListTile(
                 title: const Text("Traveling with small children"),

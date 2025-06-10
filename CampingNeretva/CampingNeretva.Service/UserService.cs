@@ -1,24 +1,59 @@
-﻿using MapsterMapper;
-using CampingNeretva.Model;
+﻿using CampingNeretva.Model;
+using CampingNeretva.Model.SearchObjects;
 using CampingNeretva.Service.Database;
+using MapsterMapper;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CampingNeretva.Model.SearchObjects;
 using CampingNeretva.Model.Requests;
 using System.Security.Cryptography;
-using Microsoft.EntityFrameworkCore;
-using Mapster;
 
 namespace CampingNeretva.Service
 {
     public class UserService : BaseCRUDService<UserModel, UserSearchObject, User, UserInsertRequest, UserUpdateRequest>, IUserService
     {
-
         public UserService(_200012Context context, IMapper mapper)
-        :base(context, mapper){
+            : base(context, mapper)
+        {
+        }
+
+        public override void beforeInsert(UserInsertRequest request, User entity)
+        {
+            if (_context.Users.Any(u => u.UserName == request.UserName))
+            {
+                throw new Exception("Username is already taken");
+            }
+
+            if (_context.Users.Any(u => u.Email == request.Email))
+            {
+                throw new Exception("Email is already in use");
+            }
+
+            if (request.UserTypeId.HasValue)
+            {
+                var type = _context.UserTypes.FirstOrDefault(x => x.UserTypeId == request.UserTypeId.Value);
+                if (type == null)
+                    throw new Exception("Korisnička uloga ne postoji");
+
+                entity.UserType = type;
+            }
+            else
+            {
+                var guestType = _context.UserTypes.FirstOrDefault(x => x.TypeName == "Guest");
+                if (guestType != null)
+                    entity.UserType = guestType;
+                else
+                    throw new Exception("Role *Guest* has been removed");
+            }
+
+            if (request.Password != request.PasswordConfirmation)
+                throw new Exception("Password and PasswordConfirmation are different");
+
+            entity.PasswordSalt = GenerateSalt();
+            entity.PasswordHash = GenerateHash(entity.PasswordSalt, request.Password);
         }
 
         public override IQueryable<User> AddFilter(UserSearchObject search, IQueryable<User> query)
@@ -53,37 +88,9 @@ namespace CampingNeretva.Service
             return filteredQuery;
         }
 
-        public override void beforeInsert(UserInsertRequest request, User entity)
-        {
-            if (request.UserTypeId.HasValue)
-            {
-                var type = _context.UserTypes.FirstOrDefault(x => x.UserTypeId == request.UserTypeId.Value);
-                if (type == null)
-                    throw new Exception("Korisnička uloga ne postoji");
-
-                entity.UserType = type;
-            }
-            else
-            {
-                var guestType = _context.UserTypes.FirstOrDefault(x => x.TypeName == "Guest");
-                if (guestType != null)
-                    entity.UserType = guestType;
-                else
-                    throw new Exception("Role *Guest* has been removed");
-            }
-
-            if (request.Password != request.PasswordConfirmation)
-                throw new Exception("Password and PasswordConfirmation are different");
-
-            entity.PasswordSalt = GenerateSalt();
-            entity.PasswordHash = GenerateHash(entity.PasswordSalt, request.Password);
-
-        }
-
         public static string GenerateSalt()
         {
             var byteArray = RNGCryptoServiceProvider.GetBytes(16);
-
             return Convert.ToBase64String(byteArray);
         }
 
@@ -103,16 +110,16 @@ namespace CampingNeretva.Service
 
         public UserModel Login(string username, string password)
         {
-            var entity = _context.Users.Include(x=> x.UserType).FirstOrDefault(x => x.UserName == username);
+            var entity = _context.Users.Include(x => x.UserType).FirstOrDefault(x => x.UserName == username);
 
-            if(entity == null)
+            if (entity == null)
             {
                 return null;
             }
 
             var hash = GenerateHash(entity.PasswordSalt, password);
 
-            if(hash != entity.PasswordHash)
+            if (hash != entity.PasswordHash)
             {
                 return null;
             }
@@ -141,16 +148,24 @@ namespace CampingNeretva.Service
         public async Task<UserModel> UpdateOwnProfile(string username, UserUpdateRequest request)
         {
             var user = _context.Users.Include(u => u.UserType)
-                                     .FirstOrDefault(u => u.UserName == username);
+                                    .FirstOrDefault(u => u.UserName == username);
 
             if (user == null)
                 throw new Exception("User not found");
 
-            if (!string.IsNullOrWhiteSpace(request.UserName))
+            if (!string.IsNullOrWhiteSpace(request.UserName) && request.UserName != username)
+            {
+                if (_context.Users.Any(u => u.UserName == request.UserName))
+                    throw new Exception("Username is already taken");
                 user.UserName = request.UserName;
+            }
 
-            if (!string.IsNullOrWhiteSpace(request.Email))
+            if (!string.IsNullOrWhiteSpace(request.Email) && request.Email != user.Email)
+            {
+                if (_context.Users.Any(u => u.Email == request.Email))
+                    throw new Exception("Email is already in use");
                 user.Email = request.Email;
+            }
 
             if (!string.IsNullOrWhiteSpace(request.PhoneNumber))
                 user.PhoneNumber = request.PhoneNumber;
@@ -167,6 +182,5 @@ namespace CampingNeretva.Service
             await _context.SaveChangesAsync();
             return Mapper.Map<UserModel>(user);
         }
-
     }
 }

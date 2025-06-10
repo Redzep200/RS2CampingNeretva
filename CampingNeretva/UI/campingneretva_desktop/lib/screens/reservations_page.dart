@@ -15,6 +15,13 @@ class _ReservationsPageState extends State<ReservationsPage> {
   late Future<List<Reservation>> _reservationsFuture;
   final DateFormat _dateFormat = DateFormat('yyyy-MM-dd');
 
+  // Pagination states
+  int _currentPage = 0; // Start at page 0
+  final int _pageSize = 10;
+  int _totalItems = 0;
+  List<Reservation> _allReservations = [];
+  List<Reservation> _filteredReservations = [];
+
   // Filter states
   String _usernameFilter = '';
   String _reservationNumberFilter = '';
@@ -29,7 +36,10 @@ class _ReservationsPageState extends State<ReservationsPage> {
 
   void _fetchReservations() {
     setState(() {
-      _reservationsFuture = ReservationService.fetchAll();
+      _reservationsFuture = ReservationService.fetchAll(
+        page: 0, // Start at page 0, but fetch a large batch
+        pageSize: 10000, // Large number to fetch all reservations
+      );
     });
   }
 
@@ -41,31 +51,37 @@ class _ReservationsPageState extends State<ReservationsPage> {
   }
 
   List<Reservation> _applyFilters(List<Reservation> reservations) {
-    return reservations.where((r) {
-      final usernameMatch = '${r.user.firstName} ${r.user.lastName}'
-          .toLowerCase()
-          .contains(_usernameFilter.toLowerCase());
-      final reservationNumberMatch = r.reservationId.toString().contains(
-        _reservationNumberFilter.toLowerCase(),
-      );
-      final vehicleMatch =
-          _vehicleTypeFilter == null ||
-          r.vehicles.any(
-            (v) =>
-                v.vehicle.type.toLowerCase() ==
-                _vehicleTypeFilter!.toLowerCase(),
+    var filtered =
+        reservations.where((r) {
+          final usernameMatch = '${r.user.firstName} ${r.user.lastName}'
+              .toLowerCase()
+              .contains(_usernameFilter.toLowerCase());
+          final reservationNumberMatch = r.reservationId.toString().contains(
+            _reservationNumberFilter.toLowerCase(),
           );
-      final dateMatch =
-          _selectedDate == null ||
-          (_selectedDate!.isAfter(
-                r.startDate.subtract(const Duration(days: 1)),
-              ) &&
-              _selectedDate!.isBefore(r.endDate.add(const Duration(days: 1))));
-      return usernameMatch &&
-          reservationNumberMatch &&
-          vehicleMatch &&
-          dateMatch;
-    }).toList();
+          final vehicleMatch =
+              _vehicleTypeFilter == null ||
+              r.vehicles.any(
+                (v) =>
+                    v.vehicle.type.toLowerCase() ==
+                    _vehicleTypeFilter!.toLowerCase(),
+              );
+          final dateMatch =
+              _selectedDate == null ||
+              (_selectedDate!.isAfter(
+                    r.startDate.subtract(const Duration(days: 1)),
+                  ) &&
+                  _selectedDate!.isBefore(
+                    r.endDate.add(const Duration(days: 1)),
+                  ));
+          return usernameMatch &&
+              reservationNumberMatch &&
+              vehicleMatch &&
+              dateMatch;
+        }).toList();
+    _filteredReservations = filtered;
+    _totalItems = filtered.length;
+    return filtered;
   }
 
   @override
@@ -89,7 +105,8 @@ class _ReservationsPageState extends State<ReservationsPage> {
                   );
                 }
 
-                final filteredReservations = _applyFilters(snapshot.data!);
+                _allReservations = snapshot.data!;
+                final filteredReservations = _applyFilters(_allReservations);
 
                 final sorted = {
                   'Aktivne': <Reservation>[],
@@ -101,25 +118,45 @@ class _ReservationsPageState extends State<ReservationsPage> {
                   sorted[_getCategory(r)]!.add(r);
                 }
 
-                return ListView(
-                  padding: const EdgeInsets.all(16),
-                  children:
-                      sorted.entries.expand<Widget>((entry) {
-                        if (entry.value.isEmpty)
-                          return const Iterable<Widget>.empty();
-                        return [
-                          Text(
-                            entry.key,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          ...entry.value.map(_buildReservationCard),
-                          const SizedBox(height: 20),
-                        ];
-                      }).toList(),
+                // Apply client-side pagination
+                final startIndex = _currentPage * _pageSize;
+                final endIndex =
+                    startIndex + _pageSize > _totalItems
+                        ? _totalItems
+                        : startIndex + _pageSize;
+                final paginatedReservations = filteredReservations.sublist(
+                  startIndex,
+                  endIndex,
+                );
+
+                return Column(
+                  children: [
+                    Expanded(
+                      child: ListView(
+                        padding: const EdgeInsets.all(16),
+                        children:
+                            sorted.entries.expand<Widget>((entry) {
+                              if (entry.value.isEmpty)
+                                return const Iterable<Widget>.empty();
+                              return [
+                                Text(
+                                  entry.key,
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                ...paginatedReservations
+                                    .where((r) => _getCategory(r) == entry.key)
+                                    .map(_buildReservationCard),
+                                const SizedBox(height: 20),
+                              ];
+                            }).toList(),
+                      ),
+                    ),
+                    _buildPaginationControls(),
+                  ],
                 );
               },
             ),
@@ -146,6 +183,7 @@ class _ReservationsPageState extends State<ReservationsPage> {
               onChanged: (value) {
                 setState(() {
                   _usernameFilter = value;
+                  _currentPage = 0; // Reset to page 0 on filter change
                 });
               },
             ),
@@ -161,6 +199,7 @@ class _ReservationsPageState extends State<ReservationsPage> {
               onChanged: (value) {
                 setState(() {
                   _reservationNumberFilter = value;
+                  _currentPage = 0; // Reset to page 0 on filter change
                 });
               },
             ),
@@ -178,6 +217,7 @@ class _ReservationsPageState extends State<ReservationsPage> {
               onChanged: (value) {
                 setState(() {
                   _vehicleTypeFilter = value;
+                  _currentPage = 0; // Reset to page 0 on filter change
                 });
               },
               decoration: const InputDecoration(
@@ -205,6 +245,7 @@ class _ReservationsPageState extends State<ReservationsPage> {
                 if (picked != null) {
                   setState(() {
                     _selectedDate = picked;
+                    _currentPage = 0; // Reset to page 0 on filter change
                   });
                 }
               },
@@ -215,6 +256,7 @@ class _ReservationsPageState extends State<ReservationsPage> {
               onPressed: () {
                 setState(() {
                   _selectedDate = null;
+                  _currentPage = 0; // Reset to page 0 on filter change
                 });
               },
               icon: const Icon(Icons.clear),
@@ -292,6 +334,41 @@ class _ReservationsPageState extends State<ReservationsPage> {
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
           ),
           Expanded(child: Text(content, style: const TextStyle(fontSize: 14))),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPaginationControls() {
+    final totalPages = (_totalItems / _pageSize).ceil();
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed:
+                _currentPage > 0
+                    ? () {
+                      setState(() {
+                        _currentPage--;
+                      });
+                    }
+                    : null,
+          ),
+          Text('Stranica ${_currentPage + 1} od $totalPages'),
+          IconButton(
+            icon: const Icon(Icons.arrow_forward),
+            onPressed:
+                _currentPage < (totalPages - 1)
+                    ? () {
+                      setState(() {
+                        _currentPage++;
+                      });
+                    }
+                    : null,
+          ),
         ],
       ),
     );
