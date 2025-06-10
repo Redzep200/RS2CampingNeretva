@@ -101,6 +101,28 @@ class _ActivitiesRentablesPageState extends State<ActivitiesRentablesPage> {
     }
   }
 
+  List<RentableItem> _getSortedRentableItems() {
+    final recommendedIds = recommendedRentableItems.map((ri) => ri.id).toSet();
+    final recommended =
+        rentableItems
+            .where((item) => recommendedIds.contains(item.id))
+            .toList();
+    final nonRecommended =
+        rentableItems
+            .where((item) => !recommendedIds.contains(item.id))
+            .toList();
+    return [...recommended, ...nonRecommended];
+  }
+
+  List<Activity> _getSortedActivities() {
+    final recommendedIds = recommendedActivities.map((ra) => ra.id).toSet();
+    final recommended =
+        activities.where((a) => recommendedIds.contains(a.id)).toList();
+    final nonRecommended =
+        activities.where((a) => !recommendedIds.contains(a.id)).toList();
+    return [...recommended, ...nonRecommended];
+  }
+
   Widget _buildItemTile({
     required String name,
     required String? imageUrl,
@@ -171,6 +193,9 @@ class _ActivitiesRentablesPageState extends State<ActivitiesRentablesPage> {
 
   @override
   Widget build(BuildContext context) {
+    final sortedRentableItems = _getSortedRentableItems();
+    final sortedActivities = _getSortedActivities();
+
     return Scaffold(
       appBar: AppBar(title: const Text("Activities & Rentables")),
       body: Padding(
@@ -204,7 +229,7 @@ class _ActivitiesRentablesPageState extends State<ActivitiesRentablesPage> {
                       ? const Center(child: CircularProgressIndicator())
                       : ListView(
                         children: [
-                          if (rentableItems.isNotEmpty) ...[
+                          if (sortedRentableItems.isNotEmpty) ...[
                             const Text(
                               "Available Items",
                               style: TextStyle(
@@ -213,7 +238,7 @@ class _ActivitiesRentablesPageState extends State<ActivitiesRentablesPage> {
                               ),
                             ),
                             const SizedBox(height: 8),
-                            ...rentableItems.map(
+                            ...sortedRentableItems.map(
                               (item) => _buildItemTile(
                                 name: item.name,
                                 imageUrl: item.imageUrl,
@@ -226,7 +251,7 @@ class _ActivitiesRentablesPageState extends State<ActivitiesRentablesPage> {
                             ),
                             const SizedBox(height: 24),
                           ],
-                          if (activities.isNotEmpty) ...[
+                          if (sortedActivities.isNotEmpty) ...[
                             const Text(
                               "Activities",
                               style: TextStyle(
@@ -235,7 +260,7 @@ class _ActivitiesRentablesPageState extends State<ActivitiesRentablesPage> {
                               ),
                             ),
                             const SizedBox(height: 8),
-                            ...activities.map(
+                            ...sortedActivities.map(
                               (a) => _buildItemTile(
                                 name: a.name,
                                 imageUrl: a.imageUrl,

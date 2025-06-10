@@ -6,34 +6,40 @@ import '../services/auth_service.dart';
 class ReviewService {
   static const String baseUrl = "http://10.0.2.2:5205";
 
-  static Future<List<Review>> getAll({int? workerId, int? userId}) async {
+  static Future<List<Review>> getAll({
+    int? workerId,
+    int? userId,
+    int page = 0, // 0-based pagination
+    int pageSize = 4,
+  }) async {
     try {
       final queryParameters = {
         if (workerId != null) 'WorkerId': '$workerId',
         if (userId != null) 'UserId': '$userId',
         'IsUserIncluded': 'true',
         'IsWorkerIncluded': 'true',
+        'Page': page.toString(),
+        'PageSize': pageSize.toString(),
+        'OrderBy': 'DatePosted desc', // Sort by newest first
       };
 
       final uri = Uri.parse(
         '$baseUrl/Review',
       ).replace(queryParameters: queryParameters);
+      print('Request URL: $uri'); // Debug log
+
       final response = await http.get(uri);
 
       if (response.statusCode == 200) {
         final bodyRaw = response.body;
+        final body = json.decode(bodyRaw);
+        print('GetAll response: $body'); // Debug log
 
-        if (response.statusCode == 200 && bodyRaw.isNotEmpty) {
-          final body = json.decode(bodyRaw);
-          if (body is Map && body.containsKey('resultList')) {
-            final List results = body['resultList'];
-            return results.map((e) => Review.fromJson(e)).toList();
-          } else {
-            print('Unexpected body format: $body');
-            return [];
-          }
+        if (body is Map && body.containsKey('resultList')) {
+          final List results = body['resultList'];
+          return results.map((e) => Review.fromJson(e)).toList();
         } else {
-          print('Failed to fetch reviews: ${response.statusCode} - $bodyRaw');
+          print('Unexpected body format: $body');
           return [];
         }
       } else {

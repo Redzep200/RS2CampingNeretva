@@ -32,6 +32,8 @@ class _ParcelsPageState extends State<ParcelsPage> {
   DateTime? _dateTo;
   bool? _shade;
   bool? _electricity;
+  int _currentPage = 0; // 0-based pagination
+  final int _pageSize = 6;
 
   Future<void> _loadParcels() async {
     setState(() => isLoading = true);
@@ -44,6 +46,8 @@ class _ParcelsPageState extends State<ParcelsPage> {
         electricity: _electricity,
         accommodation: _selectedAccommodation?.name,
         type: _selectedType?.name,
+        page: _currentPage,
+        pageSize: _pageSize,
       );
       setState(() {
         parcels = data;
@@ -51,6 +55,7 @@ class _ParcelsPageState extends State<ParcelsPage> {
       });
     } catch (e) {
       debugPrint("Error loading parcels: $e");
+      setState(() => isLoading = false);
     }
   }
 
@@ -63,6 +68,18 @@ class _ParcelsPageState extends State<ParcelsPage> {
     } catch (e) {
       debugPrint("Error loading recommended parcels: $e");
     }
+  }
+
+  List<Parcel> _getDisplayedParcels() {
+    // Combine recommended and regular parcels, prioritizing recommended
+    final recommendedIds = recommendedParcels.map((p) => p.id).toSet();
+    final recommendedInPage =
+        parcels.where((p) => recommendedIds.contains(p.id)).toList();
+    final nonRecommendedInPage =
+        parcels.where((p) => !recommendedIds.contains(p.id)).toList();
+
+    // Recommended parcels first, then non-recommended
+    return [...recommendedInPage, ...nonRecommendedInPage];
   }
 
   @override
@@ -84,6 +101,7 @@ class _ParcelsPageState extends State<ParcelsPage> {
       setState(() {
         _dateFrom = picked.start;
         _dateTo = picked.end;
+        _currentPage = 0; // Reset to first page
       });
       _loadParcels();
     }
@@ -114,12 +132,15 @@ class _ParcelsPageState extends State<ParcelsPage> {
       _electricity = null;
       _selectedAccommodation = null;
       _selectedType = null;
+      _currentPage = 0; // Reset to first page
     });
     _loadParcels();
   }
 
   @override
   Widget build(BuildContext context) {
+    final displayedParcels = _getDisplayedParcels();
+
     return AppScaffold(
       title: 'Parcels',
       body: Column(
@@ -166,7 +187,10 @@ class _ParcelsPageState extends State<ParcelsPage> {
                         ),
                         value: _selectedAccommodation,
                         onChanged: (value) {
-                          setState(() => _selectedAccommodation = value);
+                          setState(() {
+                            _selectedAccommodation = value;
+                            _currentPage = 0; // Reset to first page
+                          });
                           _loadParcels();
                         },
                         items:
@@ -193,7 +217,10 @@ class _ParcelsPageState extends State<ParcelsPage> {
                         ),
                         value: _selectedType,
                         onChanged: (value) {
-                          setState(() => _selectedType = value);
+                          setState(() {
+                            _selectedType = value;
+                            _currentPage = 0; // Reset to first page
+                          });
                           _loadParcels();
                         },
                         items:
@@ -219,7 +246,10 @@ class _ParcelsPageState extends State<ParcelsPage> {
                         label: const Text("Shade"),
                         selected: _shade == true,
                         onSelected: (selected) {
-                          setState(() => _shade = selected ? true : null);
+                          setState(() {
+                            _shade = selected ? true : null;
+                            _currentPage = 0; // Reset to first page
+                          });
                           _loadParcels();
                         },
                       ),
@@ -227,7 +257,10 @@ class _ParcelsPageState extends State<ParcelsPage> {
                         label: const Text("Electricity"),
                         selected: _electricity == true,
                         onSelected: (selected) {
-                          setState(() => _electricity = selected ? true : null);
+                          setState(() {
+                            _electricity = selected ? true : null;
+                            _currentPage = 0; // Reset to first page
+                          });
                           _loadParcels();
                         },
                       ),
@@ -241,97 +274,155 @@ class _ParcelsPageState extends State<ParcelsPage> {
           isLoading
               ? const Center(child: CircularProgressIndicator())
               : Expanded(
-                child: GridView.builder(
-                  padding: const EdgeInsets.all(12),
-                  itemCount: parcels.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 0.9,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                  ),
-                  itemBuilder: (context, index) {
-                    final parcel = parcels[index];
-                    final isRecommended = recommendedParcels.any(
-                      (rp) => rp.id == parcel.id,
-                    );
-                    final imageUrl =
-                        parcel.imageUrl != null &&
-                                parcel.imageUrl!.startsWith('/')
-                            ? "http://10.0.2.2:5205${parcel.imageUrl}"
-                            : parcel.imageUrl ?? '';
-
-                    return Card(
-                      elevation: 3,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        side:
-                            isRecommended
-                                ? const BorderSide(
-                                  color: Colors.green,
-                                  width: 2,
-                                )
-                                : BorderSide.none,
-                      ),
-                      child: Stack(
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Expanded(
-                                child: ClipRRect(
-                                  borderRadius: const BorderRadius.vertical(
-                                    top: Radius.circular(16),
-                                  ),
-                                  child:
-                                      imageUrl.isNotEmpty
-                                          ? Image.network(
-                                            imageUrl,
-                                            fit: BoxFit.cover,
-                                            errorBuilder:
-                                                (_, __, ___) => const Icon(
-                                                  Icons.broken_image,
-                                                ),
-                                          )
-                                          : const Icon(Icons.broken_image),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Center(
-                                  child: Text(
-                                    "Parcel #${parcel.number}",
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
+                child: Column(
+                  children: [
+                    Expanded(
+                      child:
+                          displayedParcels.isEmpty
+                              ? const Center(child: Text('No parcels found.'))
+                              : GridView.builder(
+                                padding: const EdgeInsets.all(12),
+                                itemCount: displayedParcels.length,
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: 2,
+                                      childAspectRatio: 0.9,
+                                      crossAxisSpacing: 12,
+                                      mainAxisSpacing: 12,
                                     ),
-                                  ),
-                                ),
+                                itemBuilder: (context, index) {
+                                  final parcel = displayedParcels[index];
+                                  final isRecommended = recommendedParcels.any(
+                                    (rp) => rp.id == parcel.id,
+                                  );
+                                  final imageUrl =
+                                      parcel.imageUrl != null &&
+                                              parcel.imageUrl!.startsWith('/')
+                                          ? "http://10.0.2.2:5205${parcel.imageUrl}"
+                                          : parcel.imageUrl ?? '';
+
+                                  return Card(
+                                    elevation: 3,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                      side:
+                                          isRecommended
+                                              ? const BorderSide(
+                                                color: Colors.green,
+                                                width: 2,
+                                              )
+                                              : BorderSide.none,
+                                    ),
+                                    child: Stack(
+                                      children: [
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.stretch,
+                                          children: [
+                                            Expanded(
+                                              child: ClipRRect(
+                                                borderRadius:
+                                                    const BorderRadius.vertical(
+                                                      top: Radius.circular(16),
+                                                    ),
+                                                child:
+                                                    imageUrl.isNotEmpty
+                                                        ? Image.network(
+                                                          imageUrl,
+                                                          fit: BoxFit.cover,
+                                                          errorBuilder:
+                                                              (
+                                                                _,
+                                                                __,
+                                                                ___,
+                                                              ) => const Icon(
+                                                                Icons
+                                                                    .broken_image,
+                                                              ),
+                                                        )
+                                                        : const Icon(
+                                                          Icons
+                                                              .image_not_supported,
+                                                        ),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.all(
+                                                8.0,
+                                              ),
+                                              child: Center(
+                                                child: Text(
+                                                  "Parcel #${parcel.number}",
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        if (isRecommended)
+                                          Positioned(
+                                            top: 8,
+                                            left: 8,
+                                            child: Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 4,
+                                                  ),
+                                              color: Colors.green,
+                                              child: const Text(
+                                                "Recommended",
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  );
+                                },
                               ),
-                            ],
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          ElevatedButton(
+                            onPressed:
+                                _currentPage > 0
+                                    ? () {
+                                      setState(() {
+                                        _currentPage--;
+                                        _loadParcels();
+                                      });
+                                    }
+                                    : null,
+                            child: const Text('Previous'),
                           ),
-                          if (isRecommended)
-                            Positioned(
-                              top: 8,
-                              left: 8,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                color: Colors.green,
-                                child: const Text(
-                                  "Recommended",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ),
-                            ),
+                          Text(
+                            'Page ${_currentPage + 1}',
+                          ), // Display 1-based page number
+                          ElevatedButton(
+                            onPressed:
+                                parcels.length == _pageSize
+                                    ? () {
+                                      setState(() {
+                                        _currentPage++;
+                                        _loadParcels();
+                                      });
+                                    }
+                                    : null,
+                            child: const Text('Next'),
+                          ),
                         ],
                       ),
-                    );
-                  },
+                    ),
+                  ],
                 ),
               ),
         ],
