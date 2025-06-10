@@ -6,6 +6,11 @@ import '../services/reservation_service.dart';
 import '../services/review_service.dart';
 import '../services/image_service.dart';
 import '../models/image_model.dart';
+import 'dart:typed_data';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:file_picker/file_picker.dart';
+import 'dart:io';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -68,7 +73,7 @@ class _DashboardPageState extends State<DashboardPage> {
       from: range.start,
       to: range.end,
       page: 0,
-      pageSize: 10000, // Fetch all reservations in a large batch
+      pageSize: 10000,
     );
     setState(() {
       totalRevenue = reservations.fold(0.0, (sum, r) => sum + r.totalPrice);
@@ -81,7 +86,7 @@ class _DashboardPageState extends State<DashboardPage> {
       from: range.start,
       to: range.end,
       page: 0,
-      pageSize: 10000, // Fetch all reservations in a large batch
+      pageSize: 10000,
     );
     final parcelCounts = <int, int>{};
 
@@ -106,7 +111,7 @@ class _DashboardPageState extends State<DashboardPage> {
       from: range.start,
       to: range.end,
       page: 0,
-      pageSize: 10000, // Fetch all reservations in a large batch
+      pageSize: 10000,
     );
     final activityCounts = <String, int>{};
     for (var res in reservations) {
@@ -147,6 +152,138 @@ class _DashboardPageState extends State<DashboardPage> {
     setState(() {
       topWorkers = sorted.take(3).toList();
     });
+  }
+
+  Future<Uint8List> _generatePdf(String title, String content) async {
+    final pdf = pw.Document();
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text(title, style: const pw.TextStyle(fontSize: 24)),
+              pw.SizedBox(height: 20),
+              pw.Text(content, style: const pw.TextStyle(fontSize: 16)),
+            ],
+          );
+        },
+      ),
+    );
+    return pdf.save();
+  }
+
+  Future<void> _downloadPdf(String fileName, Uint8List pdfBytes) async {
+    try {
+      // Prompt user to choose save location
+      final result = await FilePicker.platform.saveFile(
+        dialogTitle: 'Save PDF',
+        fileName: fileName,
+        allowedExtensions: ['pdf'],
+        type: FileType.custom,
+      );
+
+      if (result != null) {
+        final file = File(result);
+        await file.writeAsBytes(pdfBytes);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('PDF saved to: $result'),
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      } else {
+        // User canceled the save dialog
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('PDF save canceled'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error saving PDF: $e')));
+    }
+  }
+
+  Future<void> _generateRevenueReport() async {
+    final period =
+        monthRevenue != null
+            ? '${months[monthRevenue! - 1]} $yearRevenue'
+            : 'Cijela godina $yearRevenue';
+    final content =
+        'Ukupna zarada za $period: € ${totalRevenue.toStringAsFixed(2)}';
+    final pdfBytes = await _generatePdf('Izvještaj o zaradi', content);
+    await _downloadPdf(
+      'revenue_report_$yearRevenue${monthRevenue != null ? '_${monthRevenue}' : ''}.pdf',
+      pdfBytes,
+    );
+  }
+
+  Future<void> _generateParcelReport() async {
+    final period =
+        monthParcel != null
+            ? '${months[monthParcel! - 1]} $yearParcel'
+            : 'Cijela godina $yearParcel';
+    final content =
+        mostPopularParcel > 0
+            ? 'Najpopularnija parcela za $period: Parcela #$mostPopularParcel'
+            : 'Nema podataka o parcelama za $period';
+    final pdfBytes = await _generatePdf('Izvještaj o parcelama', content);
+    await _downloadPdf(
+      'parcel_report_$yearParcel${monthParcel != null ? '_${monthParcel}' : ''}.pdf',
+      pdfBytes,
+    );
+  }
+
+  Future<void> _generateActivityReport() async {
+    final period =
+        monthActivity != null
+            ? '${months[monthActivity! - 1]} $yearActivity'
+            : 'Cijela godina $yearActivity';
+    final content =
+        topActivities.isNotEmpty
+            ? 'Top 3 aktivnosti za $period:\n' +
+                topActivities
+                    .asMap()
+                    .entries
+                    .map(
+                      (e) =>
+                          '${e.key + 1}. ${e.value.key}: ${e.value.value} puta',
+                    )
+                    .join('\n')
+            : 'Nema podataka o aktivnostima za $period';
+    final pdfBytes = await _generatePdf('Izvještaj o aktivnostima', content);
+    await _downloadPdf(
+      'activity_report_$yearActivity${monthActivity != null ? '_${monthActivity}' : ''}.pdf',
+      pdfBytes,
+    );
+  }
+
+  Future<void> _generateReviewReport() async {
+    final period =
+        monthReview != null
+            ? '${months[monthReview! - 1]} $yearReview'
+            : 'Cijela godina $yearReview';
+    final content =
+        topWorkers.isNotEmpty
+            ? 'Top 3 radnika po recenzijama za $period:\n' +
+                topWorkers
+                    .asMap()
+                    .entries
+                    .map(
+                      (e) =>
+                          '${e.key + 1}. ${e.value.key}: ${e.value.value} recenzija',
+                    )
+                    .join('\n')
+            : 'Nema podataka o recenzijama za $period';
+    final pdfBytes = await _generatePdf('Izvještaj o recenzijama', content);
+    await _downloadPdf(
+      'review_report_$yearReview${monthReview != null ? '_${monthReview}' : ''}.pdf',
+      pdfBytes,
+    );
   }
 
   void _showImagesDialog() async {
@@ -220,7 +357,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                     try {
                                       await ImageService.delete(img.imageId);
                                       Navigator.of(context).pop();
-                                      _showImagesDialog(); // Refresh the dialog
+                                      _showImagesDialog();
                                     } catch (e) {
                                       ScaffoldMessenger.of(
                                         context,
@@ -375,19 +512,28 @@ class _DashboardPageState extends State<DashboardPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text("Ukupna zarada:", style: TextStyle(fontSize: 18)),
-                _yearMonthPicker(
-                  year: yearRevenue,
-                  month: monthRevenue,
-                  onYearChanged:
-                      (v) => setState(() {
-                        yearRevenue = v ?? DateTime.now().year;
-                        _loadRevenueStats();
-                      }),
-                  onMonthChanged:
-                      (v) => setState(() {
-                        monthRevenue = v;
-                        _loadRevenueStats();
-                      }),
+                Row(
+                  children: [
+                    _yearMonthPicker(
+                      year: yearRevenue,
+                      month: monthRevenue,
+                      onYearChanged:
+                          (v) => setState(() {
+                            yearRevenue = v ?? DateTime.now().year;
+                            _loadRevenueStats();
+                          }),
+                      onMonthChanged:
+                          (v) => setState(() {
+                            monthRevenue = v;
+                            _loadRevenueStats();
+                          }),
+                    ),
+                    const SizedBox(width: 16),
+                    ElevatedButton(
+                      onPressed: _generateRevenueReport,
+                      child: const Text('Izvještaj'),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -409,19 +555,28 @@ class _DashboardPageState extends State<DashboardPage> {
                   "Najpopularnija parcela:",
                   style: TextStyle(fontSize: 18),
                 ),
-                _yearMonthPicker(
-                  year: yearParcel,
-                  month: monthParcel,
-                  onYearChanged:
-                      (v) => setState(() {
-                        yearParcel = v ?? DateTime.now().year;
-                        _loadParcelStats();
-                      }),
-                  onMonthChanged:
-                      (v) => setState(() {
-                        monthParcel = v;
-                        _loadParcelStats();
-                      }),
+                Row(
+                  children: [
+                    _yearMonthPicker(
+                      year: yearParcel,
+                      month: monthParcel,
+                      onYearChanged:
+                          (v) => setState(() {
+                            yearParcel = v ?? DateTime.now().year;
+                            _loadParcelStats();
+                          }),
+                      onMonthChanged:
+                          (v) => setState(() {
+                            monthParcel = v;
+                            _loadParcelStats();
+                          }),
+                    ),
+                    const SizedBox(width: 16),
+                    ElevatedButton(
+                      onPressed: _generateParcelReport,
+                      child: const Text('Izvještaj'),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -442,19 +597,28 @@ class _DashboardPageState extends State<DashboardPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text("Top 3 aktivnosti:", style: TextStyle(fontSize: 18)),
-                _yearMonthPicker(
-                  year: yearActivity,
-                  month: monthActivity,
-                  onYearChanged:
-                      (v) => setState(() {
-                        yearActivity = v ?? DateTime.now().year;
-                        _loadActivityStats();
-                      }),
-                  onMonthChanged:
-                      (v) => setState(() {
-                        monthActivity = v;
-                        _loadActivityStats();
-                      }),
+                Row(
+                  children: [
+                    _yearMonthPicker(
+                      year: yearActivity,
+                      month: monthActivity,
+                      onYearChanged:
+                          (v) => setState(() {
+                            yearActivity = v ?? DateTime.now().year;
+                            _loadActivityStats();
+                          }),
+                      onMonthChanged:
+                          (v) => setState(() {
+                            monthActivity = v;
+                            _loadActivityStats();
+                          }),
+                    ),
+                    const SizedBox(width: 16),
+                    ElevatedButton(
+                      onPressed: _generateActivityReport,
+                      child: const Text('Izvještaj'),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -468,19 +632,28 @@ class _DashboardPageState extends State<DashboardPage> {
                   "Top 3 radnika (recenzije):",
                   style: TextStyle(fontSize: 18),
                 ),
-                _yearMonthPicker(
-                  year: yearReview,
-                  month: monthReview,
-                  onYearChanged:
-                      (v) => setState(() {
-                        yearReview = v ?? DateTime.now().year;
-                        _loadReviewStats();
-                      }),
-                  onMonthChanged:
-                      (v) => setState(() {
-                        monthReview = v;
-                        _loadReviewStats();
-                      }),
+                Row(
+                  children: [
+                    _yearMonthPicker(
+                      year: yearReview,
+                      month: monthReview,
+                      onYearChanged:
+                          (v) => setState(() {
+                            yearReview = v ?? DateTime.now().year;
+                            _loadReviewStats();
+                          }),
+                      onMonthChanged:
+                          (v) => setState(() {
+                            monthReview = v;
+                            _loadReviewStats();
+                          }),
+                    ),
+                    const SizedBox(width: 16),
+                    ElevatedButton(
+                      onPressed: _generateReviewReport,
+                      child: const Text('Izvještaj'),
+                    ),
+                  ],
                 ),
               ],
             ),
