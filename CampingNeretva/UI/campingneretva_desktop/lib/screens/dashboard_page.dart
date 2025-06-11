@@ -7,7 +7,6 @@ import '../services/review_service.dart';
 import '../services/image_service.dart';
 import '../models/image_model.dart';
 import 'dart:typed_data';
-import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
@@ -175,7 +174,6 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Future<void> _downloadPdf(String fileName, Uint8List pdfBytes) async {
     try {
-      // Prompt user to choose save location
       final result = await FilePicker.platform.saveFile(
         dialogTitle: 'Save PDF',
         fileName: fileName,
@@ -193,7 +191,6 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
         );
       } else {
-        // User canceled the save dialog
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('PDF save canceled'),

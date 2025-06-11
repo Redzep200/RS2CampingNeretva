@@ -23,7 +23,7 @@ class _ReviewPageState extends State<ReviewPage> {
   String? errorMessage;
 
   Map<int, Review> userReviewsByWorker = {};
-  int _currentPage = 0; // 0-based pagination
+  int _currentPage = 0;
   final int _pageSize = 4;
 
   @override

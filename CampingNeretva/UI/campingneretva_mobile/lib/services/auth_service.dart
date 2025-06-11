@@ -9,10 +9,8 @@ class AuthService {
   static const storage = FlutterSecureStorage();
   static const String baseUrl = 'http://10.0.2.2:5205';
 
-  // Login method
   static Future<User?> login(String username, String password) async {
     try {
-      // Create basic auth header
       final basicAuth =
           'Basic ${base64Encode(utf8.encode('$username:$password'))}';
 
@@ -28,10 +26,9 @@ class AuthService {
       if (response.statusCode == 200) {
         currentUser = User.fromJson(jsonDecode(response.body));
 
-        // Store credentials securely
         await storage.write(key: 'username', value: username);
         await storage.write(key: 'password', value: password);
-        _password = password; // Keep in memory for current session
+        _password = password;
 
         return currentUser;
       } else {
@@ -44,7 +41,6 @@ class AuthService {
     }
   }
 
-  // Register method
   static Future<User?> register({
     required String username,
     required String email,
@@ -70,7 +66,6 @@ class AuthService {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        // Auto-login after successful registration
         return await login(username, password);
       } else {
         print('Registration failed: ${response.statusCode} - ${response.body}');
@@ -82,7 +77,6 @@ class AuthService {
     }
   }
 
-  // Get auth headers for API calls
   static Future<Map<String, String>> getAuthHeaders() async {
     if (currentUser == null) {
       final username = await storage.read(key: 'username');
@@ -95,7 +89,6 @@ class AuthService {
       }
     }
 
-    // Use stored password or get it from secure storage
     String? password = _password;
     if (password == null) {
       password = await storage.read(key: 'password');
@@ -108,7 +101,6 @@ class AuthService {
     return {'Content-Type': 'application/json', 'Authorization': basicAuth};
   }
 
-  // Try to restore session from secure storage
   static Future<bool> tryRestoreSession() async {
     try {
       final username = await storage.read(key: 'username');
@@ -125,13 +117,11 @@ class AuthService {
     }
   }
 
-  // Logout
   static Future<void> logout() async {
     currentUser = null;
     _password = null;
     await storage.deleteAll();
   }
 
-  // Check if logged in
   static bool isLoggedIn() => currentUser != null;
 }

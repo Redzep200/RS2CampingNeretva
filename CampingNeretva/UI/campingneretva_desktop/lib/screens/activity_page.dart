@@ -275,9 +275,6 @@ class _ActivityPageState extends State<ActivityPage> {
     );
   }
 
-  // Edit Activity Dialog
-  // Updated _showEditActivityDialog method
-  // Fixed _showEditActivityDialog method
   Future<void> _showEditActivityDialog(Activity activity) async {
     final facilities = await FacilityService.fetchAll();
     Facility? selectedFacility = activity.facility;
@@ -288,10 +285,8 @@ class _ActivityPageState extends State<ActivityPage> {
     );
     DateTime selectedDate = activity.date;
 
-    // Variables to handle image updates - FIXED: Initialize with current values
-    String? newImageUrl =
-        activity.imageUrl; // Initialize with current image URL
-    int? newImageId = activity.imageId; // Initialize with current image ID
+    String? newImageUrl = activity.imageUrl;
+    int? newImageId = activity.imageId;
     bool shouldUpdateImage = false;
 
     await showDialog(
@@ -400,7 +395,6 @@ class _ActivityPageState extends State<ActivityPage> {
                                       errorBuilder:
                                           (_, __, ___) =>
                                               const Icon(Icons.broken_image),
-                                      // ADDED: Loading builder for better UX
                                       loadingBuilder: (
                                         context,
                                         child,
@@ -591,11 +585,9 @@ class _ActivityPageState extends State<ActivityPage> {
                         );
 
                         try {
-                          await ActivityService.update(
-                            updatedActivity,
-                          ); // <- MISSING LINE
-                          Navigator.pop(context); // Close dialog
-                          _loadActivities(); // Refresh UI
+                          await ActivityService.update(updatedActivity);
+                          Navigator.pop(context);
+                          _loadActivities();
                         } catch (e) {
                           _showError('Greška pri spašavanju izmjena.');
                         }

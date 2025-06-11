@@ -41,7 +41,6 @@ class _RegisterPageState extends State<RegisterPage> {
         );
 
         if (user != null) {
-          // Save user preferences
           await http.post(
             Uri.parse('http://10.0.2.2:5205/UserPreference'),
             headers: await AuthService.getAuthHeaders(),

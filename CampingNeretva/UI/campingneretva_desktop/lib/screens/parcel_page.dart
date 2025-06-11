@@ -34,9 +34,8 @@ class _ParcelPageState extends State<ParcelPage> {
   DateTime? endDate;
   bool loading = true;
 
-  // Pagination states - changed from 10 to 6
   int _currentPage = 0;
-  final int _pageSize = 4; // Changed from 10 to 6
+  final int _pageSize = 4;
   int _totalItems = 0;
   List<Parcel> _allParcels = [];
   List<Parcel> _filteredParcels = [];
@@ -63,7 +62,7 @@ class _ParcelPageState extends State<ParcelPage> {
         accommodation: selectedAccommodation?.name,
         type: selectedType?.name,
         page: 0,
-        pageSize: 10000, // Fetch all parcels for client-side pagination
+        pageSize: 10000,
       );
     });
   }
@@ -277,10 +276,8 @@ class _ParcelPageState extends State<ParcelPage> {
                           electricity: electricityValue,
                           description: descriptionController.text.trim(),
                           isAvailable: true,
-                          parcelAccommodation:
-                              accValue!, // Fixed: Pass object not string
-                          parcelType:
-                              typeValue!, // Fixed: Pass object not string
+                          parcelAccommodation: accValue!,
+                          parcelType: typeValue!,
                           imageUrl: imageUrl ?? '',
                           imageId: imageId,
                         );
@@ -403,7 +400,6 @@ class _ParcelPageState extends State<ParcelPage> {
                       ),
                     ),
                     const SizedBox(width: 16),
-                    // Parcel Accommodations
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -506,7 +502,6 @@ class _ParcelPageState extends State<ParcelPage> {
           loading
               ? const Center(child: CircularProgressIndicator())
               : SingleChildScrollView(
-                // Added SingleChildScrollView to make entire body scrollable
                 child: Column(
                   children: [
                     const SizedBox(height: 24),
@@ -702,11 +697,8 @@ class _ParcelPageState extends State<ParcelPage> {
                         ],
                       ),
                     ),
-                    // Changed from Expanded to SizedBox with height constraint
                     SizedBox(
-                      height:
-                          MediaQuery.of(context).size.height *
-                          0.6, // Take 60% of screen height
+                      height: MediaQuery.of(context).size.height * 0.6,
                       child: FutureBuilder<List<Parcel>>(
                         future: _parcelsFuture,
                         builder: (context, snapshot) {
@@ -727,10 +719,9 @@ class _ParcelPageState extends State<ParcelPage> {
                           }
 
                           _allParcels = snapshot.data!;
-                          _loadParcels(); // Update availability based on date range
+                          _loadParcels();
                           final filteredParcels = _applyFilters(_allParcels);
 
-                          // Apply client-side pagination
                           final startIndex = _currentPage * _pageSize;
                           final endIndex =
                               startIndex + _pageSize > _totalItems

@@ -23,7 +23,7 @@ class _LoginPageState extends State<LoginPage> {
     );
 
     if (user != null) {
-      if (mounted) Navigator.pop(context); // close login dialog
+      if (mounted) Navigator.pop(context);
     } else {
       setState(() => error = "Login failed. Check credentials.");
     }

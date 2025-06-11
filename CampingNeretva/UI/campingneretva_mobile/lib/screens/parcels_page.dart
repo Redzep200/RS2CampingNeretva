@@ -16,7 +16,6 @@ class ParcelsPage extends StatefulWidget {
 }
 
 class _ParcelsPageState extends State<ParcelsPage> {
-  final ParcelService _parcelService = ParcelService();
   final _accommodationService = ParcelAccommodationService();
   final _typeService = ParcelTypeService();
   List<Parcel> parcels = [];
@@ -32,7 +31,7 @@ class _ParcelsPageState extends State<ParcelsPage> {
   DateTime? _dateTo;
   bool? _shade;
   bool? _electricity;
-  int _currentPage = 0; // 0-based pagination
+  int _currentPage = 0;
   final int _pageSize = 6;
 
   Future<void> _loadParcels() async {
@@ -71,14 +70,12 @@ class _ParcelsPageState extends State<ParcelsPage> {
   }
 
   List<Parcel> _getDisplayedParcels() {
-    // Combine recommended and regular parcels, prioritizing recommended
     final recommendedIds = recommendedParcels.map((p) => p.id).toSet();
     final recommendedInPage =
         parcels.where((p) => recommendedIds.contains(p.id)).toList();
     final nonRecommendedInPage =
         parcels.where((p) => !recommendedIds.contains(p.id)).toList();
 
-    // Recommended parcels first, then non-recommended
     return [...recommendedInPage, ...nonRecommendedInPage];
   }
 
@@ -101,7 +98,7 @@ class _ParcelsPageState extends State<ParcelsPage> {
       setState(() {
         _dateFrom = picked.start;
         _dateTo = picked.end;
-        _currentPage = 0; // Reset to first page
+        _currentPage = 0;
       });
       _loadParcels();
     }
@@ -132,7 +129,7 @@ class _ParcelsPageState extends State<ParcelsPage> {
       _electricity = null;
       _selectedAccommodation = null;
       _selectedType = null;
-      _currentPage = 0; // Reset to first page
+      _currentPage = 0;
     });
     _loadParcels();
   }
@@ -189,7 +186,7 @@ class _ParcelsPageState extends State<ParcelsPage> {
                         onChanged: (value) {
                           setState(() {
                             _selectedAccommodation = value;
-                            _currentPage = 0; // Reset to first page
+                            _currentPage = 0;
                           });
                           _loadParcels();
                         },
@@ -219,7 +216,7 @@ class _ParcelsPageState extends State<ParcelsPage> {
                         onChanged: (value) {
                           setState(() {
                             _selectedType = value;
-                            _currentPage = 0; // Reset to first page
+                            _currentPage = 0;
                           });
                           _loadParcels();
                         },
@@ -248,7 +245,7 @@ class _ParcelsPageState extends State<ParcelsPage> {
                         onSelected: (selected) {
                           setState(() {
                             _shade = selected ? true : null;
-                            _currentPage = 0; // Reset to first page
+                            _currentPage = 0;
                           });
                           _loadParcels();
                         },
@@ -259,7 +256,7 @@ class _ParcelsPageState extends State<ParcelsPage> {
                         onSelected: (selected) {
                           setState(() {
                             _electricity = selected ? true : null;
-                            _currentPage = 0; // Reset to first page
+                            _currentPage = 0;
                           });
                           _loadParcels();
                         },
@@ -404,9 +401,7 @@ class _ParcelsPageState extends State<ParcelsPage> {
                                     : null,
                             child: const Text('Previous'),
                           ),
-                          Text(
-                            'Page ${_currentPage + 1}',
-                          ), // Display 1-based page number
+                          Text('Page ${_currentPage + 1}'),
                           ElevatedButton(
                             onPressed:
                                 parcels.length == _pageSize

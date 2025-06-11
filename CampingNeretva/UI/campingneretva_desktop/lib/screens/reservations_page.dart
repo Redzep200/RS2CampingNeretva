@@ -15,14 +15,12 @@ class _ReservationsPageState extends State<ReservationsPage> {
   late Future<List<Reservation>> _reservationsFuture;
   final DateFormat _dateFormat = DateFormat('yyyy-MM-dd');
 
-  // Pagination states
-  int _currentPage = 0; // Start at page 0
+  int _currentPage = 0;
   final int _pageSize = 10;
   int _totalItems = 0;
   List<Reservation> _allReservations = [];
   List<Reservation> _filteredReservations = [];
 
-  // Filter states
   String _usernameFilter = '';
   String _reservationNumberFilter = '';
   String? _vehicleTypeFilter;
@@ -37,8 +35,8 @@ class _ReservationsPageState extends State<ReservationsPage> {
   void _fetchReservations() {
     setState(() {
       _reservationsFuture = ReservationService.fetchAll(
-        page: 0, // Start at page 0, but fetch a large batch
-        pageSize: 10000, // Large number to fetch all reservations
+        page: 0,
+        pageSize: 10000,
       );
     });
   }
@@ -118,7 +116,6 @@ class _ReservationsPageState extends State<ReservationsPage> {
                   sorted[_getCategory(r)]!.add(r);
                 }
 
-                // Apply client-side pagination
                 final startIndex = _currentPage * _pageSize;
                 final endIndex =
                     startIndex + _pageSize > _totalItems
@@ -183,7 +180,7 @@ class _ReservationsPageState extends State<ReservationsPage> {
               onChanged: (value) {
                 setState(() {
                   _usernameFilter = value;
-                  _currentPage = 0; // Reset to page 0 on filter change
+                  _currentPage = 0;
                 });
               },
             ),
@@ -199,7 +196,7 @@ class _ReservationsPageState extends State<ReservationsPage> {
               onChanged: (value) {
                 setState(() {
                   _reservationNumberFilter = value;
-                  _currentPage = 0; // Reset to page 0 on filter change
+                  _currentPage = 0;
                 });
               },
             ),
@@ -217,7 +214,7 @@ class _ReservationsPageState extends State<ReservationsPage> {
               onChanged: (value) {
                 setState(() {
                   _vehicleTypeFilter = value;
-                  _currentPage = 0; // Reset to page 0 on filter change
+                  _currentPage = 0;
                 });
               },
               decoration: const InputDecoration(
@@ -245,7 +242,7 @@ class _ReservationsPageState extends State<ReservationsPage> {
                 if (picked != null) {
                   setState(() {
                     _selectedDate = picked;
-                    _currentPage = 0; // Reset to page 0 on filter change
+                    _currentPage = 0;
                   });
                 }
               },
@@ -256,7 +253,7 @@ class _ReservationsPageState extends State<ReservationsPage> {
               onPressed: () {
                 setState(() {
                   _selectedDate = null;
-                  _currentPage = 0; // Reset to page 0 on filter change
+                  _currentPage = 0;
                 });
               },
               icon: const Icon(Icons.clear),

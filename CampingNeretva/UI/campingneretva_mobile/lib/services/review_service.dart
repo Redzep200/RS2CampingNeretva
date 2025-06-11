@@ -9,7 +9,7 @@ class ReviewService {
   static Future<List<Review>> getAll({
     int? workerId,
     int? userId,
-    int page = 0, // 0-based pagination
+    int page = 0,
     int pageSize = 4,
   }) async {
     try {
@@ -20,20 +20,20 @@ class ReviewService {
         'IsWorkerIncluded': 'true',
         'Page': page.toString(),
         'PageSize': pageSize.toString(),
-        'OrderBy': 'DatePosted desc', // Sort by newest first
+        'OrderBy': 'DatePosted desc',
       };
 
       final uri = Uri.parse(
         '$baseUrl/Review',
       ).replace(queryParameters: queryParameters);
-      print('Request URL: $uri'); // Debug log
+      print('Request URL: $uri');
 
       final response = await http.get(uri);
 
       if (response.statusCode == 200) {
         final bodyRaw = response.body;
         final body = json.decode(bodyRaw);
-        print('GetAll response: $body'); // Debug log
+        print('GetAll response: $body');
 
         if (body is Map && body.containsKey('resultList')) {
           final List results = body['resultList'];

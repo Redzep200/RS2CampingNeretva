@@ -39,12 +39,11 @@ class _UserPageState extends State<UsersPage> {
     setState(() => _isLoading = true);
     try {
       final users = await _userService.getAllPaginated(
-        page: _currentPage,
+        page: _currentPage + 1,
         pageSize: _pageSize,
         username: _firstNameController.text,
       );
 
-      // Group users by UserType
       final grouped = <String, List<User>>{};
       for (var user in users) {
         final type = user.userType.typeName;

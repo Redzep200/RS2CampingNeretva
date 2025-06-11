@@ -3,14 +3,13 @@ import 'package:http/http.dart' as http;
 import '../models/reservation_model.dart';
 import 'package:campingneretva_desktop/services/auth_service.dart';
 
-// Updated ReservationService to support fetching all reservations
 class ReservationService {
   static const String _baseUrl = 'http://localhost:5205';
 
   static Future<List<Reservation>> fetchAll({
     DateTime? from,
     DateTime? to,
-    int page = 0, // Default to page 0
+    int page = 0,
     int pageSize = 10,
     String? username,
     String? reservationNumber,

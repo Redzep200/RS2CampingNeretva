@@ -18,7 +18,7 @@ class RentableItemsPage extends StatefulWidget {
 class _RentableItemsPageState extends State<RentableItemsPage> {
   bool loading = true;
   List<RentableItem> items = [];
-  List<RentableItem> filteredItems = []; // Add this for display
+  List<RentableItem> filteredItems = [];
   String sortMode = 'none';
   String nameFilter = '';
   DateTime? fromDate;
@@ -54,7 +54,7 @@ class _RentableItemsPageState extends State<RentableItemsPage> {
   }
 
   void _applyFilters() {
-    List<RentableItem> filtered = [...items]; // Work with a copy
+    List<RentableItem> filtered = [...items];
 
     if (nameFilter.isNotEmpty) {
       filtered =
@@ -77,7 +77,6 @@ class _RentableItemsPageState extends State<RentableItemsPage> {
         break;
     }
 
-    // Update filteredItems instead of items
     setState(() => filteredItems = filtered);
   }
 
@@ -430,10 +429,9 @@ class _RentableItemsPageState extends State<RentableItemsPage> {
                     ListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: filteredItems.length, // Use filteredItems here
+                      itemCount: filteredItems.length,
                       itemBuilder: (_, index) {
-                        final item =
-                            filteredItems[index]; // Use filteredItems here
+                        final item = filteredItems[index];
                         return Card(
                           margin: const EdgeInsets.symmetric(
                             horizontal: 16,
