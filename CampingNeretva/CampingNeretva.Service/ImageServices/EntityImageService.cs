@@ -31,15 +31,12 @@ namespace CampingNeretva.Service.ImageServices
         protected abstract Image GetImage(TJoinEntity join);
         protected abstract Task<bool> LinkExistsAsync(int entityId, int imageId);
 
-        // Add this new abstract method to get join entities for a specific entity
         protected abstract Task<List<TJoinEntity>> GetJoinEntitiesForEntityAsync(int entityId);
 
         public async Task<List<ImageModel>> GetImages(int entityId)
         {
-            // Use the new abstract method that will be implemented with direct property access
             var joinEntities = await GetJoinEntitiesForEntityAsync(entityId);
 
-            // Now that entities are loaded, we can safely use GetImage
             var images = joinEntities.Select(j => GetImage(j)).ToList();
 
             return _mapper.Map<List<ImageModel>>(images);

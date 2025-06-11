@@ -80,19 +80,14 @@ namespace CampingNeretva.Service
 
         public override async void beforeUpdate(WorkerUpdateRequest request, Worker entity)
         {
-            // Load current roles to make sure EF is tracking them
-            // Load the current roles so EF tracks them
             _context.Entry(entity).Collection(w => w.Roles).Load();
 
-            // Clear the current roles
             entity.Roles.Clear();
 
-            // Fetch only the needed roles from the DB — they will be tracked and have RoleName
             var roles = _context.Roles
                 .Where(r => request.Roles.Contains(r.RoleId))
                 .ToList();
 
-            // Assign them — no attaching, no new objects, no inserts
             foreach (var role in roles)
             {
                 entity.Roles.Add(role);
@@ -105,11 +100,9 @@ namespace CampingNeretva.Service
             if (entity == null)
                 throw new Exception("Worker not found");
 
-            // Only map fields we want
             entity.PhoneNumber = request.PhoneNumber;
             entity.Email = request.Email;
 
-            // Manually assign roles properly
             _context.Entry(entity).Collection(w => w.Roles).Load();
             entity.Roles.Clear();
 

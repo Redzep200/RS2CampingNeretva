@@ -15,12 +15,12 @@ namespace CampingNeretva.API.Controllers;
 public class UserPreferenceController : ControllerBase
 {
     private readonly IUserPreferenceService _service;
-    private readonly _200012Context _context; // Inject context if needed for user lookup
+    private readonly _200012Context _context; 
 
     public UserPreferenceController(IUserPreferenceService service, _200012Context context)
     {
         _service = service;
-        _context = context; // Add context to constructor
+        _context = context;
     }
 
     [HttpPost]

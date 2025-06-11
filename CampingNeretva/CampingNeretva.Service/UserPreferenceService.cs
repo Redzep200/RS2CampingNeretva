@@ -85,9 +85,8 @@ namespace CampingNeretva.Service
 
         private double CalculateSimilarity(UserPreference target, UserPreference other)
         {
-            // Simple cosine similarity based on preferences
             int matches = 0;
-            int total = 5; // Number of preference fields
+            int total = 5; 
 
             if (target.NumberOfPeople == other.NumberOfPeople) matches++;
             if (target.HasSmallChildren == other.HasSmallChildren) matches++;

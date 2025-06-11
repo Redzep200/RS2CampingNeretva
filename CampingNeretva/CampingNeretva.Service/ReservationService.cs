@@ -94,7 +94,6 @@ namespace CampingNeretva.Service
                 throw new Exception("Parcel is already reserved for the selected dates.");
             }
 
-            // Rentable items
             if (request.RentableItems != null && request.RentableItems.Any())
             {
                 foreach (var ri in request.RentableItems)
@@ -107,7 +106,6 @@ namespace CampingNeretva.Service
                 }
             }
 
-            // Accommodations
             foreach (var acc in request.Accommodations)
             {
                 var accommodation = _context.Accommodations.Find(acc.AccommodationId);
@@ -117,7 +115,6 @@ namespace CampingNeretva.Service
                 }
             }
 
-            // People
             foreach (var person in request.Persons)
             {
                 var p = _context.Persons.Find(person.PersonId);
@@ -127,7 +124,6 @@ namespace CampingNeretva.Service
                 }
             }
 
-            // Vehicles
             foreach (var vehicle in request.Vehicles)
             {
                 var v = _context.Vehicles.Find(vehicle.VehicleId);
@@ -137,7 +133,6 @@ namespace CampingNeretva.Service
                 }
             }
 
-            // Activities (charged once per activity per reservation)
             if (request.Activities != null && request.Activities.Any())
             {
                 foreach (var activity in request.Activities)

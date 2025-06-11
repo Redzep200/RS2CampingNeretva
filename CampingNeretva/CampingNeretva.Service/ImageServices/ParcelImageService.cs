@@ -24,7 +24,6 @@ namespace CampingNeretva.Service.ImageServices
             new ParcelImage { ParcelId = entityId, ImageId = imageId };
         protected override Image GetImage(ParcelImage join) => join.Image;
 
-        // Implement the new abstract method with direct property access
         protected override async Task<bool> LinkExistsAsync(int entityId, int imageId)
         {
             return await _context.ParcelImages

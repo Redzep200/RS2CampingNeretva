@@ -55,7 +55,6 @@ namespace CampingNeretva.API.Controllers
                 return Ok(result);
             }
 
-            // No filter - return all rentable items with full availability
             var search = new RentableItemSearchObject();
             var resultPaged = await _rentableItemService.GetPaged(search);
 
