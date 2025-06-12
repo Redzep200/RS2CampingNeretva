@@ -10,6 +10,7 @@ import '../services/parcel_type_service.dart';
 import '../services/parcel_accommodation_service.dart';
 import '../services/image_service.dart';
 import '../widgets/navbar.dart';
+import '../widgets/app_theme.dart';
 
 class ParcelPage extends StatefulWidget {
   const ParcelPage({super.key});
@@ -106,12 +107,13 @@ class _ParcelPageState extends State<ParcelPage> {
             ),
             actions: [
               TextButton(
-                child: const Text("Odustani"),
+                style: AppTheme.greenTextButtonStyle,
                 onPressed: () => Navigator.pop(context),
+                child: const Text("Odustani"),
               ),
               ElevatedButton(
-                child: const Text("Dodaj"),
                 onPressed: () => Navigator.pop(context, controller.text.trim()),
+                child: const Text("Dodaj"),
               ),
             ],
           ),
@@ -196,28 +198,38 @@ class _ParcelPageState extends State<ParcelPage> {
                           isExpanded: true,
                           hint: const Text("Tip parcele"),
                           items:
-                              parcelTypes.map((t) {
-                                return DropdownMenuItem(
-                                  value: t,
-                                  child: Text(t.name),
-                                );
-                              }).toList(),
+                              parcelTypes
+                                  .map(
+                                    (t) => DropdownMenuItem(
+                                      value: t,
+                                      child: Text(t.name),
+                                    ),
+                                  )
+                                  .toList(),
                           onChanged:
                               (value) => setState(() => typeValue = value),
+                          style: const TextStyle(color: Colors.black87),
+                          dropdownColor: Colors.white,
+                          underline: Container(height: 1, color: Colors.green),
                         ),
                         DropdownButton<ParcelAccommodation>(
                           value: accValue,
                           isExpanded: true,
                           hint: const Text("Smještaj"),
                           items:
-                              accommodations.map((a) {
-                                return DropdownMenuItem(
-                                  value: a,
-                                  child: Text(a.name),
-                                );
-                              }).toList(),
+                              accommodations
+                                  .map(
+                                    (a) => DropdownMenuItem(
+                                      value: a,
+                                      child: Text(a.name),
+                                    ),
+                                  )
+                                  .toList(),
                           onChanged:
                               (value) => setState(() => accValue = value),
+                          style: const TextStyle(color: Colors.black87),
+                          dropdownColor: Colors.white,
+                          underline: Container(height: 1, color: Colors.green),
                         ),
                         ElevatedButton.icon(
                           onPressed: () async {
@@ -254,6 +266,7 @@ class _ParcelPageState extends State<ParcelPage> {
                   ),
                   actions: [
                     TextButton(
+                      style: AppTheme.greenTextButtonStyle,
                       onPressed: () => Navigator.pop(context),
                       child: const Text('Odustani'),
                     ),
@@ -320,15 +333,13 @@ class _ParcelPageState extends State<ParcelPage> {
                 ),
                 actions: [
                   TextButton(
-                    child: const Text('Odustani'),
+                    style: AppTheme.greenTextButtonStyle,
                     onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text('Odustani'),
                   ),
                   ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                    ),
-                    child: const Text('Obriši'),
                     onPressed: () => Navigator.of(context).pop(true),
+                    child: const Text('Obriši'),
                   ),
                 ],
               ),
@@ -366,10 +377,8 @@ class _ParcelPageState extends State<ParcelPage> {
                             (t) => ListTile(
                               title: Text(t.name),
                               trailing: IconButton(
-                                icon: const Icon(
-                                  Icons.delete,
-                                  color: Colors.red,
-                                ),
+                                style: AppTheme.greenIconButtonStyle,
+                                icon: const Icon(Icons.delete),
                                 onPressed: () async {
                                   await ParcelTypeService.delete(t.id);
                                   parcelTypes =
@@ -380,6 +389,7 @@ class _ParcelPageState extends State<ParcelPage> {
                             ),
                           ),
                           TextButton.icon(
+                            style: AppTheme.greenTextButtonStyle,
                             onPressed: () async {
                               final name = await _promptInput(
                                 "Novi tip parcele",
@@ -412,10 +422,8 @@ class _ParcelPageState extends State<ParcelPage> {
                             (a) => ListTile(
                               title: Text(a.name),
                               trailing: IconButton(
-                                icon: const Icon(
-                                  Icons.delete,
-                                  color: Colors.red,
-                                ),
+                                style: AppTheme.greenIconButtonStyle,
+                                icon: const Icon(Icons.delete),
                                 onPressed: () async {
                                   await ParcelAccommodationService.delete(a.id);
                                   accommodations =
@@ -426,6 +434,7 @@ class _ParcelPageState extends State<ParcelPage> {
                             ),
                           ),
                           TextButton.icon(
+                            style: AppTheme.greenTextButtonStyle,
                             onPressed: () async {
                               final name = await _promptInput("Novi smještaj");
                               if (name != null && name.isNotEmpty) {
@@ -448,8 +457,9 @@ class _ParcelPageState extends State<ParcelPage> {
               ),
               actions: [
                 TextButton(
-                  child: const Text("Zatvori"),
+                  style: AppTheme.greenTextButtonStyle,
                   onPressed: () => Navigator.pop(context),
+                  child: const Text("Zatvori"),
                 ),
               ],
             );
@@ -467,6 +477,7 @@ class _ParcelPageState extends State<ParcelPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           IconButton(
+            style: AppTheme.greenIconButtonStyle,
             icon: const Icon(Icons.arrow_back),
             onPressed:
                 _currentPage > 0
@@ -479,6 +490,7 @@ class _ParcelPageState extends State<ParcelPage> {
           ),
           Text('Stranica ${_currentPage + 1} od $totalPages'),
           IconButton(
+            style: AppTheme.greenIconButtonStyle,
             icon: const Icon(Icons.arrow_forward),
             onPressed:
                 _currentPage < (totalPages - 1)
@@ -519,7 +531,8 @@ class _ParcelPageState extends State<ParcelPage> {
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.add, color: Colors.green),
+                            style: AppTheme.greenIconButtonStyle,
+                            icon: const Icon(Icons.add),
                             onPressed: () => _showParcelDialog(),
                           ),
                           ElevatedButton.icon(
@@ -549,6 +562,8 @@ class _ParcelPageState extends State<ParcelPage> {
                                     suffixIcon:
                                         _searchQuery.isNotEmpty
                                             ? IconButton(
+                                              style:
+                                                  AppTheme.greenIconButtonStyle,
                                               icon: const Icon(Icons.clear),
                                               onPressed: () {
                                                 _searchController.clear();
@@ -575,16 +590,24 @@ class _ParcelPageState extends State<ParcelPage> {
                                   isExpanded: true,
                                   hint: const Text("Tip parcele"),
                                   items:
-                                      parcelTypes.map((t) {
-                                        return DropdownMenuItem(
-                                          value: t,
-                                          child: Text(t.name),
-                                        );
-                                      }).toList(),
+                                      parcelTypes
+                                          .map(
+                                            (t) => DropdownMenuItem(
+                                              value: t,
+                                              child: Text(t.name),
+                                            ),
+                                          )
+                                          .toList(),
                                   onChanged: (value) {
                                     setState(() => selectedType = value);
                                     _fetchParcels();
                                   },
+                                  style: const TextStyle(color: Colors.black87),
+                                  dropdownColor: Colors.white,
+                                  underline: Container(
+                                    height: 1,
+                                    color: Colors.green,
+                                  ),
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -594,18 +617,26 @@ class _ParcelPageState extends State<ParcelPage> {
                                   isExpanded: true,
                                   hint: const Text("Smještaj"),
                                   items:
-                                      accommodations.map((a) {
-                                        return DropdownMenuItem(
-                                          value: a,
-                                          child: Text(a.name),
-                                        );
-                                      }).toList(),
+                                      accommodations
+                                          .map(
+                                            (a) => DropdownMenuItem(
+                                              value: a,
+                                              child: Text(a.name),
+                                            ),
+                                          )
+                                          .toList(),
                                   onChanged: (value) {
                                     setState(
                                       () => selectedAccommodation = value,
                                     );
                                     _fetchParcels();
                                   },
+                                  style: const TextStyle(color: Colors.black87),
+                                  dropdownColor: Colors.white,
+                                  underline: Container(
+                                    height: 1,
+                                    color: Colors.green,
+                                  ),
                                 ),
                               ),
                             ],
@@ -748,7 +779,9 @@ class _ParcelPageState extends State<ParcelPage> {
                                     return Card(
                                       color:
                                           parcel.isAvailable
-                                              ? Colors.green[50]
+                                              ? Theme.of(
+                                                context,
+                                              ).colorScheme.surface
                                               : Colors.red[50],
                                       margin: const EdgeInsets.symmetric(
                                         vertical: 8,
@@ -775,20 +808,18 @@ class _ParcelPageState extends State<ParcelPage> {
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
                                             IconButton(
-                                              icon: const Icon(
-                                                Icons.edit,
-                                                color: Colors.orange,
-                                              ),
+                                              style:
+                                                  AppTheme.greenIconButtonStyle,
+                                              icon: const Icon(Icons.edit),
                                               onPressed:
                                                   () => _showParcelDialog(
                                                     parcel: parcel,
                                                   ),
                                             ),
                                             IconButton(
-                                              icon: const Icon(
-                                                Icons.delete,
-                                                color: Colors.red,
-                                              ),
+                                              style:
+                                                  AppTheme.greenIconButtonStyle,
+                                              icon: const Icon(Icons.delete),
                                               onPressed:
                                                   () => _showConfirmDelete(
                                                     parcel,

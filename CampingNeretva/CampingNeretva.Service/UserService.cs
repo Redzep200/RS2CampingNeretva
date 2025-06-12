@@ -95,7 +95,7 @@ namespace CampingNeretva.Service
 
             if (!string.IsNullOrWhiteSpace(search.UserName))
             {
-                filteredQuery = filteredQuery.Where(x => x.UserName.StartsWith(search.UserName));
+                filteredQuery = filteredQuery.Where(x => x.UserName.Contains(search.UserName));
             }
 
             if (!string.IsNullOrWhiteSpace(search.Email))

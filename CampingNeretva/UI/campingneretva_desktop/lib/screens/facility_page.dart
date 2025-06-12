@@ -5,6 +5,7 @@ import '../models/facility_model.dart';
 import '../services/facility_service.dart';
 import '../services/image_service.dart';
 import '../widgets/navbar.dart';
+import '../widgets/app_theme.dart';
 
 class FacilityPage extends StatefulWidget {
   const FacilityPage({super.key});
@@ -49,15 +50,13 @@ class _FacilityPageState extends State<FacilityPage> {
                 ),
                 actions: [
                   TextButton(
-                    child: const Text('Izlaz'),
+                    style: AppTheme.greenTextButtonStyle,
                     onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text('Izlaz'),
                   ),
                   ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                    ),
-                    child: const Text('Obriši'),
                     onPressed: () => Navigator.of(context).pop(true),
+                    child: const Text('Obriši'),
                   ),
                 ],
               ),
@@ -134,6 +133,7 @@ class _FacilityPageState extends State<FacilityPage> {
                   ),
                   actions: [
                     TextButton(
+                      style: AppTheme.greenTextButtonStyle,
                       onPressed: () => Navigator.pop(context),
                       child: const Text('Izlaz'),
                     ),
@@ -230,7 +230,8 @@ class _FacilityPageState extends State<FacilityPage> {
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.add, color: Colors.green),
+                            style: AppTheme.greenIconButtonStyle,
+                            icon: const Icon(Icons.add),
                             onPressed: () => _showFacilityDialog(),
                           ),
                         ],
@@ -246,9 +247,6 @@ class _FacilityPageState extends State<FacilityPage> {
                         decoration: InputDecoration(
                           labelText: 'Potraga po nazivu',
                           prefixIcon: const Icon(Icons.search),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
                           suffixIcon:
                               _searchQuery.isNotEmpty
                                   ? IconButton(
@@ -300,20 +298,16 @@ class _FacilityPageState extends State<FacilityPage> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 IconButton(
-                                  icon: const Icon(
-                                    Icons.edit,
-                                    color: Colors.orange,
-                                  ),
+                                  style: AppTheme.greenIconButtonStyle,
+                                  icon: const Icon(Icons.edit),
                                   onPressed:
                                       () => _showFacilityDialog(
                                         facility: facility,
                                       ),
                                 ),
                                 IconButton(
-                                  icon: const Icon(
-                                    Icons.delete,
-                                    color: Colors.red,
-                                  ),
+                                  style: AppTheme.greenIconButtonStyle,
+                                  icon: const Icon(Icons.delete),
                                   onPressed: () async {
                                     final confirm =
                                         await _showConfirmDeleteDialog();

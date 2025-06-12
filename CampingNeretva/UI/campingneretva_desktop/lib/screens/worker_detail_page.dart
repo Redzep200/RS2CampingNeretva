@@ -6,6 +6,7 @@ import '../services/review_service.dart';
 import '../services/worker_service.dart';
 import '../services/role_service.dart';
 import '../widgets/navbar.dart';
+import '../widgets/app_theme.dart';
 
 class WorkerDetailPage extends StatefulWidget {
   final Worker worker;
@@ -54,12 +55,12 @@ class _WorkerDetailPageState extends State<WorkerDetailPage> {
             ),
             actions: [
               TextButton(
+                style: AppTheme.greenTextButtonStyle,
                 onPressed: () => Navigator.pop(context, false),
                 child: const Text('Odustani'),
               ),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context, true),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                 child: const Text('Obriši'),
               ),
             ],
@@ -72,7 +73,10 @@ class _WorkerDetailPageState extends State<WorkerDetailPage> {
         if (mounted) Navigator.pop(context);
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Greška pri brisanju radnika: $e')),
+          SnackBar(
+            content: Text('Greška pri brisanju radnika: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -114,6 +118,7 @@ class _WorkerDetailPageState extends State<WorkerDetailPage> {
                   ),
                   actions: [
                     TextButton(
+                      style: AppTheme.greenTextButtonStyle,
                       onPressed: () => Navigator.pop(context),
                       child: const Text('Odustani'),
                     ),
@@ -149,7 +154,10 @@ class _WorkerDetailPageState extends State<WorkerDetailPage> {
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Greška pri učitavanju uloga: $e')),
+        SnackBar(
+          content: Text('Greška pri učitavanju uloga: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -167,13 +175,15 @@ class _WorkerDetailPageState extends State<WorkerDetailPage> {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(review.comment),
+            Text(review.comment, style: Theme.of(context).textTheme.bodyMedium),
             const SizedBox(height: 4),
             Text(
               review.user != null
                   ? '${review.user!.firstName} ${review.user!.lastName}'
                   : 'Nepoznat korisnik',
-              style: const TextStyle(fontStyle: FontStyle.italic, fontSize: 12),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(fontStyle: FontStyle.italic),
             ),
           ],
         ),
@@ -194,14 +204,18 @@ class _WorkerDetailPageState extends State<WorkerDetailPage> {
           children: [
             Text(
               '${w.firstName} ${w.lastName}',
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
               'Uloge: ${w.roles?.map((r) => r.roleName).join(', ') ?? 'Nema uloga'}',
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
             Text(
               'Prosječna ocjena: ${w.averageRating?.toStringAsFixed(1) ?? 'N/A'}',
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 16),
             Row(
@@ -216,14 +230,15 @@ class _WorkerDetailPageState extends State<WorkerDetailPage> {
                   onPressed: _confirmDelete,
                   icon: const Icon(Icons.delete),
                   label: const Text('Obriši'),
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                 ),
               ],
             ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'Recenzije',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Expanded(

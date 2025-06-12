@@ -6,6 +6,7 @@ import '../services/role_service.dart';
 import 'worker_detail_page.dart';
 import '../widgets/navbar.dart';
 import '../models/role_model.dart';
+import '../widgets/app_theme.dart';
 
 class WorkersPage extends StatefulWidget {
   const WorkersPage({super.key});
@@ -259,131 +260,145 @@ class _WorkersPageState extends State<WorkersPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const CustomNavbar(),
-      body:
-          _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.only(bottom: 12),
-                      child: Text(
-                        '👨‍🌾 Upravljanje radnicima',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
+    return Theme(
+      data: AppTheme.greenTheme,
+      child: Scaffold(
+        appBar: const CustomNavbar(),
+        body:
+            _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Text(
+                          '👨‍🌾 Upravljanje radnicima',
+                          style: Theme.of(context).textTheme.titleLarge,
                         ),
                       ),
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _searchController,
-                            decoration: const InputDecoration(
-                              hintText: 'Pretraži po imenu',
-                              prefixIcon: Icon(Icons.search),
-                            ),
-                            onChanged: (_) => _applyFilters(),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        DropdownButton<String>(
-                          value: _selectedSort,
-                          items:
-                              [
-                                    'Bez sortiranja',
-                                    'Najviša ocjena',
-                                    'Najniža ocjena',
-                                  ]
-                                  .map(
-                                    (e) => DropdownMenuItem(
-                                      value: e,
-                                      child: Text(e),
-                                    ),
-                                  )
-                                  .toList(),
-                          onChanged: (val) {
-                            setState(() {
-                              _selectedSort = val!;
-                            });
-                            _applyFilters();
-                          },
-                        ),
-                        const SizedBox(width: 16),
-                        DropdownButton<Role?>(
-                          value: _selectedRole,
-                          hint: const Text('Filtriraj po ulozi'),
-                          items: [
-                            const DropdownMenuItem<Role?>(
-                              value: null,
-                              child: Text('Sve'),
-                            ),
-                            ..._roles.map(
-                              (r) => DropdownMenuItem(
-                                value: r,
-                                child: Text(r.roleName),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _searchController,
+                              decoration: InputDecoration(
+                                hintText: 'Pretraži po imenu',
+                                prefixIcon: const Icon(Icons.search),
+                                border:
+                                    Theme.of(
+                                      context,
+                                    ).inputDecorationTheme.border,
+                                enabledBorder:
+                                    Theme.of(
+                                      context,
+                                    ).inputDecorationTheme.enabledBorder,
+                                focusedBorder:
+                                    Theme.of(
+                                      context,
+                                    ).inputDecorationTheme.focusedBorder,
                               ),
+                              onChanged: (_) => _applyFilters(),
                             ),
-                          ],
-                          onChanged: (val) {
-                            setState(() {
-                              _selectedRole = val;
-                            });
-                            _applyFilters();
+                          ),
+                          const SizedBox(width: 16),
+                          DropdownButton<String>(
+                            value: _selectedSort,
+                            items:
+                                [
+                                      'Bez sortiranja',
+                                      'Najviša ocjena',
+                                      'Najniža ocjena',
+                                    ]
+                                    .map(
+                                      (e) => DropdownMenuItem(
+                                        value: e,
+                                        child: Text(e),
+                                      ),
+                                    )
+                                    .toList(),
+                            onChanged: (val) {
+                              setState(() {
+                                _selectedSort = val!;
+                              });
+                              _applyFilters();
+                            },
+                          ),
+                          const SizedBox(width: 16),
+                          DropdownButton<Role?>(
+                            value: _selectedRole,
+                            hint: const Text('Filtriraj po ulozi'),
+                            items: [
+                              const DropdownMenuItem<Role?>(
+                                value: null,
+                                child: Text('Sve'),
+                              ),
+                              ..._roles.map(
+                                (r) => DropdownMenuItem(
+                                  value: r,
+                                  child: Text(r.roleName),
+                                ),
+                              ),
+                            ],
+                            onChanged: (val) {
+                              setState(() {
+                                _selectedRole = val;
+                              });
+                              _applyFilters();
+                            },
+                          ),
+                          const Spacer(),
+                          ElevatedButton(
+                            onPressed: _showAddWorkerDialog,
+                            child: const Text('Novi radnik'),
+                          ),
+                          const SizedBox(width: 8),
+                          OutlinedButton(
+                            onPressed: _showRolesDialog,
+                            child: const Text('Pregled uloga'),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: _filteredWorkers.length,
+                          itemBuilder: (context, index) {
+                            final worker = _filteredWorkers[index];
+                            return ListTile(
+                              title: Text(worker.fullName),
+                              subtitle: Text(
+                                worker.roles!.map((e) => e.roleName).join(', '),
+                              ),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.star, color: Colors.amber),
+                                  Text(
+                                    worker.averageRating!.toStringAsFixed(1),
+                                  ),
+                                ],
+                              ),
+                              onTap: () async {
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (_) => WorkerDetailPage(worker: worker),
+                                  ),
+                                );
+                                _loadData();
+                              },
+                            );
                           },
                         ),
-                        const Spacer(),
-                        ElevatedButton(
-                          onPressed: _showAddWorkerDialog,
-                          child: const Text('Novi radnik'),
-                        ),
-                        const SizedBox(width: 8),
-                        OutlinedButton(
-                          onPressed: _showRolesDialog,
-                          child: const Text('Pregled uloga'),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: _filteredWorkers.length,
-                        itemBuilder: (context, index) {
-                          final worker = _filteredWorkers[index];
-                          return ListTile(
-                            title: Text(worker.fullName),
-                            subtitle: Text(
-                              worker.roles!.map((e) => e.roleName).join(', '),
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.star, color: Colors.amber),
-                                Text(worker.averageRating!.toStringAsFixed(1)),
-                              ],
-                            ),
-                            onTap: () async {
-                              await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder:
-                                      (_) => WorkerDetailPage(worker: worker),
-                                ),
-                              );
-                              _loadData();
-                            },
-                          );
-                        },
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
+      ),
     );
   }
 }

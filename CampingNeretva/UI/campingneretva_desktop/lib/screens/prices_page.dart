@@ -9,6 +9,7 @@ import 'package:campingneretva_desktop/services/vehicle_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import '../widgets/navbar.dart';
+import '../widgets/app_theme.dart';
 
 class PricePage extends StatefulWidget {
   const PricePage({super.key});
@@ -55,15 +56,13 @@ class _PricePageState extends State<PricePage> {
                 ),
                 actions: [
                   TextButton(
-                    child: const Text('Izlaz'),
+                    style: AppTheme.greenTextButtonStyle,
                     onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text('Izlaz'),
                   ),
                   ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                    ),
-                    child: const Text('Obriši'),
                     onPressed: () => Navigator.of(context).pop(true),
+                    child: const Text('Obriši'),
                   ),
                 ],
               ),
@@ -149,6 +148,7 @@ class _PricePageState extends State<PricePage> {
                   ),
                   actions: [
                     TextButton(
+                      style: AppTheme.greenTextButtonStyle,
                       onPressed: () => Navigator.pop(context),
                       child: const Text('Izlaz'),
                     ),
@@ -177,6 +177,7 @@ class _PricePageState extends State<PricePage> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text("Greška pri spremanju: $e"),
+                                backgroundColor: Colors.red,
                               ),
                             );
                           }
@@ -221,7 +222,8 @@ class _PricePageState extends State<PricePage> {
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.add, color: Colors.green),
+                style: AppTheme.greenIconButtonStyle,
+                icon: const Icon(Icons.add),
                 onPressed:
                     () => _showItemDialog<T>(
                       title: title,
@@ -258,7 +260,8 @@ class _PricePageState extends State<PricePage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.edit, color: Colors.orange),
+                      style: AppTheme.greenIconButtonStyle,
+                      icon: const Icon(Icons.edit),
                       onPressed:
                           () => _showItemDialog<T>(
                             title: title,
@@ -268,7 +271,8 @@ class _PricePageState extends State<PricePage> {
                           ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
+                      style: AppTheme.greenIconButtonStyle,
+                      icon: const Icon(Icons.delete),
                       onPressed: () async {
                         final confirm = await _showConfirmDeleteDialog();
                         if (confirm) {
@@ -304,12 +308,9 @@ class _PricePageState extends State<PricePage> {
                       ),
                       child: TextField(
                         controller: _searchController,
-                        decoration: InputDecoration(
-                          prefixIcon: const Icon(Icons.search),
-                          hintText: 'Pretraga po nazivu...',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
+                        decoration: const InputDecoration(
+                          prefixIcon: Icon(Icons.search),
+                          labelText: 'Pretraga po nazivu...',
                         ),
                       ),
                     ),

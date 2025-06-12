@@ -7,6 +7,7 @@ import '../services/image_service.dart';
 import '../widgets/navbar.dart';
 import '../models/facility_model.dart';
 import '../services/facility_service.dart';
+import '../widgets/app_theme.dart';
 
 class ActivityPage extends StatefulWidget {
   const ActivityPage({super.key});
@@ -130,6 +131,7 @@ class _ActivityPageState extends State<ActivityPage> {
                             const Text('Datum:'),
                             const SizedBox(width: 10),
                             TextButton(
+                              style: AppTheme.greenTextButtonStyle,
                               onPressed: () async {
                                 final now = DateTime.now();
                                 final picked = await showDatePicker(
@@ -219,6 +221,7 @@ class _ActivityPageState extends State<ActivityPage> {
                   ),
                   actions: [
                     TextButton(
+                      style: AppTheme.greenTextButtonStyle,
                       onPressed: () => Navigator.pop(context),
                       child: const Text('Izlaz'),
                     ),
@@ -231,7 +234,7 @@ class _ActivityPageState extends State<ActivityPage> {
                         );
 
                         if (name.isEmpty || desc.isEmpty || price == null) {
-                          _showError('Svako polje more biti tačno popunjeno.');
+                          _showError('Svako polje mora biti tačno popunjeno.');
                           return;
                         }
 
@@ -244,7 +247,7 @@ class _ActivityPageState extends State<ActivityPage> {
                         );
 
                         if (selected.isBefore(today)) {
-                          _showError('Ne može se unijeti prosli datum.');
+                          _showError('Ne može se unijeti prošli datum.');
                           return;
                         }
 
@@ -284,7 +287,6 @@ class _ActivityPageState extends State<ActivityPage> {
       text: activity.price.toString(),
     );
     DateTime selectedDate = activity.date;
-
     String? newImageUrl = activity.imageUrl;
     int? newImageId = activity.imageId;
     bool shouldUpdateImage = false;
@@ -326,6 +328,7 @@ class _ActivityPageState extends State<ActivityPage> {
                             const Text('Datum:'),
                             const SizedBox(width: 10),
                             TextButton(
+                              style: AppTheme.greenTextButtonStyle,
                               onPressed: () async {
                                 final now = DateTime.now();
                                 final initialDate =
@@ -374,7 +377,6 @@ class _ActivityPageState extends State<ActivityPage> {
                           },
                         ),
                         const SizedBox(height: 8),
-
                         if (activity.imageUrl.isNotEmpty && !shouldUpdateImage)
                           Padding(
                             padding: const EdgeInsets.only(bottom: 12.0),
@@ -395,30 +397,6 @@ class _ActivityPageState extends State<ActivityPage> {
                                       errorBuilder:
                                           (_, __, ___) =>
                                               const Icon(Icons.broken_image),
-                                      loadingBuilder: (
-                                        context,
-                                        child,
-                                        loadingProgress,
-                                      ) {
-                                        if (loadingProgress == null)
-                                          return child;
-                                        return Container(
-                                          height: 100,
-                                          child: Center(
-                                            child: CircularProgressIndicator(
-                                              value:
-                                                  loadingProgress
-                                                              .expectedTotalBytes !=
-                                                          null
-                                                      ? loadingProgress
-                                                              .cumulativeBytesLoaded /
-                                                          loadingProgress
-                                                              .expectedTotalBytes!
-                                                      : null,
-                                            ),
-                                          ),
-                                        );
-                                      },
                                     ),
                                   ),
                                 ),
@@ -431,15 +409,10 @@ class _ActivityPageState extends State<ActivityPage> {
                                   },
                                   icon: const Icon(Icons.edit),
                                   label: const Text('Promijeni sliku'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.orange,
-                                    foregroundColor: Colors.white,
-                                  ),
                                 ),
                               ],
                             ),
                           ),
-
                         if (shouldUpdateImage)
                           Column(
                             children: [
@@ -469,6 +442,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                     MainAxisAlignment.spaceEvenly,
                                 children: [
                                   TextButton(
+                                    style: AppTheme.greenTextButtonStyle,
                                     onPressed: () {
                                       setState(() {
                                         shouldUpdateImage = false;
@@ -502,30 +476,6 @@ class _ActivityPageState extends State<ActivityPage> {
                                                 (_, __, ___) => const Icon(
                                                   Icons.broken_image,
                                                 ),
-                                            loadingBuilder: (
-                                              context,
-                                              child,
-                                              loadingProgress,
-                                            ) {
-                                              if (loadingProgress == null)
-                                                return child;
-                                              return Container(
-                                                height: 100,
-                                                child: Center(
-                                                  child: CircularProgressIndicator(
-                                                    value:
-                                                        loadingProgress
-                                                                    .expectedTotalBytes !=
-                                                                null
-                                                            ? loadingProgress
-                                                                    .cumulativeBytesLoaded /
-                                                                loadingProgress
-                                                                    .expectedTotalBytes!
-                                                            : null,
-                                                  ),
-                                                ),
-                                              );
-                                            },
                                           ),
                                         ),
                                       ),
@@ -539,6 +489,7 @@ class _ActivityPageState extends State<ActivityPage> {
                   ),
                   actions: [
                     TextButton(
+                      style: AppTheme.greenTextButtonStyle,
                       onPressed: () => Navigator.pop(context),
                       child: const Text('Izlaz'),
                     ),
@@ -551,7 +502,7 @@ class _ActivityPageState extends State<ActivityPage> {
                         );
 
                         if (name.isEmpty || desc.isEmpty || price == null) {
-                          _showError('Svako polje more biti tačno popunjeno.');
+                          _showError('Svako polje mora biti tačno popunjeno.');
                           return;
                         }
 
@@ -564,7 +515,7 @@ class _ActivityPageState extends State<ActivityPage> {
                         );
 
                         if (selected.isBefore(today)) {
-                          _showError('Ne može se unijeti prosli datum.');
+                          _showError('Ne može se unijeti prošli datum.');
                           return;
                         }
 
@@ -625,7 +576,6 @@ class _ActivityPageState extends State<ActivityPage> {
                 ),
               ),
             ),
-
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(12),
@@ -656,18 +606,19 @@ class _ActivityPageState extends State<ActivityPage> {
                 ),
               ),
             ),
-
             Container(
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.edit, color: Colors.orange),
+                    style: AppTheme.greenIconButtonStyle,
+                    icon: const Icon(Icons.edit),
                     onPressed: () => _showEditActivityDialog(activity),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
+                    style: AppTheme.greenIconButtonStyle,
+                    icon: const Icon(Icons.delete),
                     onPressed: () async {
                       final confirm = await showDialog<bool>(
                         context: context,
@@ -679,14 +630,12 @@ class _ActivityPageState extends State<ActivityPage> {
                               ),
                               actions: [
                                 TextButton(
+                                  style: AppTheme.greenTextButtonStyle,
                                   onPressed:
                                       () => Navigator.pop(context, false),
                                   child: const Text('Izlaz'),
                                 ),
                                 ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.red,
-                                  ),
                                   onPressed: () => Navigator.pop(context, true),
                                   child: const Text('Obriši'),
                                 ),
@@ -723,7 +672,6 @@ class _ActivityPageState extends State<ActivityPage> {
                     child: TextField(
                       decoration: const InputDecoration(
                         labelText: 'Pretraga po nazivu',
-                        border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.search),
                       ),
                       onChanged: (value) {
@@ -736,24 +684,24 @@ class _ActivityPageState extends State<ActivityPage> {
                   ),
                   const SizedBox(width: 10),
                   IconButton(
-                    icon: const Icon(Icons.add, color: Colors.green),
+                    style: AppTheme.greenIconButtonStyle,
+                    icon: const Icon(Icons.add),
                     tooltip: 'Nova aktivnost',
                     onPressed: () => _showAddActivityDialog(),
                   ),
                 ],
               ),
               const SizedBox(height: 16),
-
               Row(
                 children: [
                   IconButton(
+                    style: AppTheme.greenIconButtonStyle,
                     icon: Icon(
                       _sortMode == 1
                           ? Icons.arrow_upward
                           : _sortMode == 2
                           ? Icons.arrow_downward
                           : Icons.swap_vert,
-                      color: Colors.blueGrey,
                     ),
                     tooltip: 'Sortiraj po cijeni',
                     onPressed: () {
@@ -772,7 +720,8 @@ class _ActivityPageState extends State<ActivityPage> {
                   ),
                   const Spacer(),
                   IconButton(
-                    icon: const Icon(Icons.calendar_today, color: Colors.green),
+                    style: AppTheme.greenIconButtonStyle,
+                    icon: const Icon(Icons.calendar_today),
                     onPressed: () async {
                       final picked = await showDatePicker(
                         context: context,
@@ -790,6 +739,7 @@ class _ActivityPageState extends State<ActivityPage> {
                   ),
                   if (_selectedDate != null)
                     TextButton(
+                      style: AppTheme.greenTextButtonStyle,
                       onPressed: () {
                         setState(() {
                           _selectedDate = null;
@@ -801,7 +751,6 @@ class _ActivityPageState extends State<ActivityPage> {
                 ],
               ),
               const SizedBox(height: 16),
-
               Expanded(
                 child:
                     _filteredActivities.isEmpty

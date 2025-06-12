@@ -6,6 +6,7 @@ import '../models/rentable_item_model.dart';
 import '../services/rentable_item_service.dart';
 import '../services/image_service.dart';
 import '../widgets/navbar.dart';
+import '../widgets/app_theme.dart';
 
 class RentableItemsPage extends StatefulWidget {
   const RentableItemsPage({super.key});
@@ -71,7 +72,7 @@ class _RentableItemsPageState extends State<RentableItemsPage> {
         filtered.sort((a, b) => a.pricePerDay.compareTo(b.pricePerDay));
         break;
       case 'desc':
-        filtered.sort((a, b) => b.pricePerDay.compareTo(a.pricePerDay));
+        filtered.sort((a, b) => b.pricePerDay.compareTo(b.pricePerDay));
         break;
       default:
         break;
@@ -91,13 +92,11 @@ class _RentableItemsPageState extends State<RentableItemsPage> {
                 ),
                 actions: [
                   TextButton(
+                    style: AppTheme.greenTextButtonStyle,
                     onPressed: () => Navigator.pop(context, false),
                     child: const Text('Otkaži'),
                   ),
                   ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                    ),
                     onPressed: () => Navigator.pop(context, true),
                     child: const Text('Obriši'),
                   ),
@@ -199,6 +198,7 @@ class _RentableItemsPageState extends State<RentableItemsPage> {
                   ),
                   actions: [
                     TextButton(
+                      style: AppTheme.greenTextButtonStyle,
                       onPressed: () => Navigator.pop(context),
                       child: const Text('Izlaz'),
                     ),
@@ -325,10 +325,8 @@ class _RentableItemsPageState extends State<RentableItemsPage> {
                                 ),
                               ),
                               IconButton(
-                                icon: const Icon(
-                                  Icons.add,
-                                  color: Colors.green,
-                                ),
+                                style: AppTheme.greenIconButtonStyle,
+                                icon: const Icon(Icons.add),
                                 onPressed: () => _showItemDialog(),
                               ),
                             ],
@@ -368,12 +366,19 @@ class _RentableItemsPageState extends State<RentableItemsPage> {
                                     _applyFilters();
                                   });
                                 },
+                                style: const TextStyle(color: Colors.black87),
+                                dropdownColor: Colors.white,
+                                underline: Container(
+                                  height: 1,
+                                  color: Colors.green,
+                                ),
                               ),
                               const SizedBox(width: 16),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   TextButton.icon(
+                                    style: AppTheme.greenTextButtonStyle,
                                     icon: const Icon(Icons.date_range),
                                     label: Text(
                                       fromDate != null && toDate != null
@@ -404,6 +409,7 @@ class _RentableItemsPageState extends State<RentableItemsPage> {
                                   ),
                                   if (fromDate != null && toDate != null)
                                     TextButton(
+                                      style: AppTheme.greenTextButtonStyle,
                                       onPressed: () {
                                         setState(() {
                                           fromDate = null;
@@ -411,13 +417,7 @@ class _RentableItemsPageState extends State<RentableItemsPage> {
                                         });
                                         _loadItems();
                                       },
-                                      child: const Text(
-                                        "Obriši filter",
-                                        style: TextStyle(
-                                          color: Colors.red,
-                                          fontSize: 12,
-                                        ),
-                                      ),
+                                      child: const Text("Obriši filter"),
                                     ),
                                 ],
                               ),
@@ -457,17 +457,13 @@ class _RentableItemsPageState extends State<RentableItemsPage> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 IconButton(
-                                  icon: const Icon(
-                                    Icons.edit,
-                                    color: Colors.orange,
-                                  ),
+                                  style: AppTheme.greenIconButtonStyle,
+                                  icon: const Icon(Icons.edit),
                                   onPressed: () => _showItemDialog(item: item),
                                 ),
                                 IconButton(
-                                  icon: const Icon(
-                                    Icons.delete,
-                                    color: Colors.red,
-                                  ),
+                                  style: AppTheme.greenIconButtonStyle,
+                                  icon: const Icon(Icons.delete),
                                   onPressed: () async {
                                     final confirm =
                                         await _showConfirmDeleteDialog();

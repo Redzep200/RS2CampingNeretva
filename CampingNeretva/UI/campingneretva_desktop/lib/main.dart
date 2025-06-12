@@ -10,6 +10,7 @@ import 'package:campingneretva_desktop/screens/login_page.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:campingneretva_desktop/screens/parcel_page.dart';
 import 'package:campingneretva_desktop/screens/dashboard_page.dart';
+import 'package:campingneretva_desktop/widgets/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,6 +24,7 @@ class AdminDesktopApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Admin Panel',
+      theme: AppTheme.greenTheme,
       debugShowCheckedModeBanner: false,
       home: LoginPage(),
       routes: {

@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../models/reservation_model.dart';
 import '../services/reservation_service.dart';
 import '../widgets/navbar.dart';
+import '../widgets/app_theme.dart';
 
 class ReservationsPage extends StatefulWidget {
   const ReservationsPage({super.key});
@@ -85,7 +86,7 @@ class _ReservationsPageState extends State<ReservationsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomNavbar(),
+      appBar: const CustomNavbar(),
       body: Column(
         children: [
           _buildFilters(),
@@ -138,10 +139,8 @@ class _ReservationsPageState extends State<ReservationsPage> {
                               return [
                                 Text(
                                   entry.key,
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                  style: Theme.of(context).textTheme.titleLarge
+                                      ?.copyWith(fontWeight: FontWeight.bold),
                                 ),
                                 const SizedBox(height: 8),
                                 ...paginatedReservations
@@ -175,7 +174,6 @@ class _ReservationsPageState extends State<ReservationsPage> {
             child: TextField(
               decoration: const InputDecoration(
                 labelText: 'Pretraga po korisničkom imenu',
-                border: OutlineInputBorder(),
               ),
               onChanged: (value) {
                 setState(() {
@@ -188,10 +186,7 @@ class _ReservationsPageState extends State<ReservationsPage> {
           SizedBox(
             width: 200,
             child: TextField(
-              decoration: const InputDecoration(
-                labelText: 'Broj rezervacije',
-                border: OutlineInputBorder(),
-              ),
+              decoration: const InputDecoration(labelText: 'Broj rezervacije'),
               keyboardType: TextInputType.number,
               onChanged: (value) {
                 setState(() {
@@ -217,15 +212,15 @@ class _ReservationsPageState extends State<ReservationsPage> {
                   _currentPage = 0;
                 });
               },
-              decoration: const InputDecoration(
-                labelText: 'Tip vozila',
-                border: OutlineInputBorder(),
-              ),
+              decoration: const InputDecoration(labelText: 'Tip vozila'),
+              style: const TextStyle(color: Colors.black87),
+              dropdownColor: Colors.white,
             ),
           ),
           SizedBox(
             width: 200,
             child: OutlinedButton.icon(
+              style: Theme.of(context).outlinedButtonTheme.style,
               icon: const Icon(Icons.date_range),
               label: Text(
                 _selectedDate == null
@@ -250,6 +245,7 @@ class _ReservationsPageState extends State<ReservationsPage> {
           ),
           if (_selectedDate != null)
             TextButton.icon(
+              style: AppTheme.greenTextButtonStyle,
               onPressed: () {
                 setState(() {
                   _selectedDate = null;
@@ -268,14 +264,16 @@ class _ReservationsPageState extends State<ReservationsPage> {
     return Card(
       elevation: 4,
       margin: const EdgeInsets.symmetric(vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: Theme.of(context).cardTheme.shape,
       child: ExpansionTile(
         tilePadding: const EdgeInsets.symmetric(horizontal: 16),
         title: Text(
           'Rezervacija #${r.reservationId} - ${r.user.firstName} ${r.user.lastName}',
+          style: Theme.of(context).textTheme.titleMedium,
         ),
         subtitle: Text(
           '${_dateFormat.format(r.startDate)} → ${_dateFormat.format(r.endDate)}',
+          style: Theme.of(context).textTheme.bodyMedium,
         ),
         childrenPadding: const EdgeInsets.symmetric(
           horizontal: 16,
@@ -328,9 +326,13 @@ class _ReservationsPageState extends State<ReservationsPage> {
         children: [
           Text(
             '$label: ',
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
-          Expanded(child: Text(content, style: const TextStyle(fontSize: 14))),
+          Expanded(
+            child: Text(content, style: Theme.of(context).textTheme.bodyMedium),
+          ),
         ],
       ),
     );
@@ -344,6 +346,7 @@ class _ReservationsPageState extends State<ReservationsPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           IconButton(
+            style: AppTheme.greenIconButtonStyle,
             icon: const Icon(Icons.arrow_back),
             onPressed:
                 _currentPage > 0
@@ -356,6 +359,7 @@ class _ReservationsPageState extends State<ReservationsPage> {
           ),
           Text('Stranica ${_currentPage + 1} od $totalPages'),
           IconButton(
+            style: AppTheme.greenIconButtonStyle,
             icon: const Icon(Icons.arrow_forward),
             onPressed:
                 _currentPage < (totalPages - 1)

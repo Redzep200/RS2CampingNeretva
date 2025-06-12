@@ -16,6 +16,7 @@ class _UserPageState extends State<UsersPage> {
 
   Map<String, List<User>> _groupedUsers = {};
   bool _isLoading = false;
+  bool _hasNextPage = true;
 
   int _currentPage = 0;
   final int _pageSize = 5;
@@ -44,6 +45,8 @@ class _UserPageState extends State<UsersPage> {
         username: _firstNameController.text,
       );
 
+      _hasNextPage = users.length == _pageSize;
+
       final grouped = <String, List<User>>{};
       for (var user in users) {
         final type = user.userType.typeName;
@@ -60,8 +63,10 @@ class _UserPageState extends State<UsersPage> {
   }
 
   void _nextPage() {
-    setState(() => _currentPage++);
-    _fetchUsers();
+    if (_hasNextPage) {
+      setState(() => _currentPage++);
+      _fetchUsers();
+    }
   }
 
   void _prevPage() {
@@ -121,8 +126,7 @@ class _UserPageState extends State<UsersPage> {
         labelText: 'Pretraga po korisničkom imenu',
       ),
       onChanged: (_) {
-        _currentPage = 0;
-        _fetchUsers();
+        _applyFilters();
       },
     );
   }
@@ -188,10 +192,10 @@ class _UserPageState extends State<UsersPage> {
           child: const Text('Previous'),
         ),
         const SizedBox(width: 16),
-        Text('Page $_currentPage'),
+        Text('Page ${_currentPage + 1}'),
         const SizedBox(width: 16),
         ElevatedButton(
-          onPressed: _groupedUsers.isNotEmpty ? _nextPage : null,
+          onPressed: _hasNextPage ? _nextPage : null,
           child: const Text('Next'),
         ),
       ],
