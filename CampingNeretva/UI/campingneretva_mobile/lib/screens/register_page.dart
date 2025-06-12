@@ -41,7 +41,7 @@ class _RegisterPageState extends State<RegisterPage> {
         );
 
         if (user != null) {
-          await http.post(
+          final prefResponse = await http.post(
             Uri.parse('http://10.0.2.2:5205/UserPreference'),
             headers: await AuthService.getAuthHeaders(),
             body: jsonEncode({
@@ -52,9 +52,13 @@ class _RegisterPageState extends State<RegisterPage> {
               'hasDogs': _hasDogs,
             }),
           );
+          if (prefResponse.statusCode != 200 &&
+              prefResponse.statusCode != 201) {
+            throw Exception('Failed to save preferences');
+          }
           if (mounted) Navigator.pop(context);
         } else {
-          setState(() => error = "An unexpected error occurred");
+          setState(() => error = "Registration failed");
         }
       } catch (e) {
         setState(() => error = e.toString().replaceAll('Exception: ', ''));
@@ -115,8 +119,10 @@ class _RegisterPageState extends State<RegisterPage> {
                 validator: (v) {
                   if (v == null || v.trim().isEmpty)
                     return 'Phone number required';
-                  final phoneRegex = RegExp(r'^\d+$');
-                  return phoneRegex.hasMatch(v) ? null : 'Only digits allowed';
+                  final phoneRegex = RegExp(r'^\+?[\d\s-]{8,}$');
+                  return phoneRegex.hasMatch(v)
+                      ? null
+                      : 'Enter a valid phone number (min 8 digits)';
                 },
               ),
               TextFormField(

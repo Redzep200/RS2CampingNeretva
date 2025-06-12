@@ -30,6 +30,30 @@ namespace CampingNeretva.API.Controllers
             return user?.UserId ?? throw new NotFoundException("User not found");
         }
 
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> Get()
+        {
+            try
+            {
+                var userId = await GetCurrentUserId();
+                var response = await _service.GetByUserId(userId);
+                return Ok(response);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(ex.Message);
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> Insert([FromBody] UserPreferenceInsertRequest request)

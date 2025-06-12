@@ -24,6 +24,7 @@ class _ProfilePageState extends State<ProfilePage> {
   String? _carLength;
   bool _hasDogs = false;
   bool _isEditing = false;
+  String? _error;
 
   @override
   void initState() {
@@ -36,58 +37,88 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _loadPreferences() async {
-    final response = await http.get(
-      Uri.parse('http://10.0.2.2:5205/UserPreference'),
-      headers: await AuthService.getAuthHeaders(),
-    );
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      setState(() {
-        _numberOfPeople.text = data['numberOfPeople'].toString();
-        _hasSmallChildren = data['hasSmallChildren'];
-        _hasSeniorTravelers = data['hasSeniorTravelers'];
-        _carLength = data['carLength'];
-        _hasDogs = data['hasDogs'];
-      });
+    try {
+      final response = await http.get(
+        Uri.parse('http://10.0.2.2:5205/UserPreference'),
+        headers: await AuthService.getAuthHeaders(),
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          _numberOfPeople.text = (data['numberOfPeople'] ?? 0).toString();
+          _hasSmallChildren = data['hasSmallChildren'] ?? false;
+          _hasSeniorTravelers = data['hasSeniorTravelers'] ?? false;
+          _carLength = data['carLength'] ?? null;
+          _hasDogs = data['hasDogs'] ?? false;
+        });
+      } else if (response.statusCode == 404) {
+        // No preferences found, set defaults
+        setState(() {
+          _numberOfPeople.text = '0';
+          _hasSmallChildren = false;
+          _hasSeniorTravelers = false;
+          _carLength = null;
+          _hasDogs = false;
+        });
+      } else {
+        print(
+          'Failed to load preferences: ${response.statusCode} - ${response.body}',
+        );
+        setState(() => _error = 'Failed to load preferences');
+      }
+    } catch (e) {
+      print('Error loading preferences: $e');
+      setState(() => _error = 'Error loading preferences');
     }
   }
 
   Future<void> _submit() async {
     if (_formKey.currentState!.validate()) {
-      final updated = await UserService().updateOwnProfile(
-        username: _username.text,
-        email: _email.text,
-        phoneNumber: _phone.text,
-        password: _password.text,
-        passwordConfirmation: _confirmPassword.text,
-      );
-
-      if (updated != null) {
-        await http.put(
-          Uri.parse('http://10.0.2.2:5205/UserPreference'),
-          headers: await AuthService.getAuthHeaders(),
-          body: jsonEncode({
-            'numberOfPeople': int.parse(_numberOfPeople.text),
-            'hasSmallChildren': _hasSmallChildren,
-            'hasSeniorTravelers': _hasSeniorTravelers,
-            'carLength': _carLength,
-            'hasDogs': _hasDogs,
-          }),
+      try {
+        final updated = await UserService().updateOwnProfile(
+          username: _username.text,
+          email: _email.text,
+          phoneNumber: _phone.text,
+          password: _password.text.isNotEmpty ? _password.text : null,
+          passwordConfirmation:
+              _confirmPassword.text.isNotEmpty ? _confirmPassword.text : null,
         );
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text("Profile updated")));
-        _toggleEdit();
-      } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text("Update failed")));
+
+        if (updated != null) {
+          final prefResponse = await http.put(
+            Uri.parse('http://10.0.2.2:5205/UserPreference'),
+            headers: await AuthService.getAuthHeaders(),
+            body: jsonEncode({
+              'numberOfPeople': int.parse(_numberOfPeople.text),
+              'hasSmallChildren': _hasSmallChildren,
+              'hasSeniorTravelers': _hasSeniorTravelers,
+              'carLength': _carLength,
+              'hasDogs': _hasDogs,
+            }),
+          );
+          if (prefResponse.statusCode == 200) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text("Profile updated")));
+            _toggleEdit();
+            setState(() => _error = null);
+          } else {
+            throw Exception('Failed to save preferences');
+          }
+        } else {
+          throw Exception('Update failed');
+        }
+      } catch (e) {
+        setState(() => _error = e.toString().replaceAll('Exception: ', ''));
       }
     }
   }
 
   void _toggleEdit() {
-    setState(() => _isEditing = !_isEditing);
+    setState(() {
+      _isEditing = !_isEditing;
+      _error = null;
+    });
   }
 
   @override
@@ -121,23 +152,36 @@ class _ProfilePageState extends State<ProfilePage> {
           key: _formKey,
           child: ListView(
             children: [
+              if (_error != null)
+                Text(_error!, style: const TextStyle(color: Colors.red)),
               TextFormField(
                 controller: _username,
                 decoration: const InputDecoration(labelText: "Username"),
                 readOnly: readOnly,
-                validator: (value) => value!.isEmpty ? 'Required' : null,
+                validator: (v) => v!.trim().isEmpty ? 'Required' : null,
               ),
               TextFormField(
                 controller: _email,
                 decoration: const InputDecoration(labelText: "Email"),
                 readOnly: readOnly,
-                validator:
-                    (value) => value!.contains('@') ? null : 'Invalid email',
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return 'Required';
+                  final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+                  return emailRegex.hasMatch(v) ? null : 'Invalid email';
+                },
               ),
               TextFormField(
                 controller: _phone,
                 decoration: const InputDecoration(labelText: "Phone"),
                 readOnly: readOnly,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty)
+                    return 'Phone number required';
+                  final phoneRegex = RegExp(r'^\+?[\d\s-]{8,}$');
+                  return phoneRegex.hasMatch(v)
+                      ? null
+                      : 'Enter a valid phone number (min 8 digits)';
+                },
               ),
               if (_isEditing) ...[
                 const SizedBox(height: 20),
@@ -145,6 +189,11 @@ class _ProfilePageState extends State<ProfilePage> {
                   controller: _password,
                   decoration: const InputDecoration(labelText: "New Password"),
                   obscureText: true,
+                  validator:
+                      (v) =>
+                          v!.isNotEmpty && v.length < 6
+                              ? 'Password must be at least 6 characters'
+                              : null,
                 ),
                 TextFormField(
                   controller: _confirmPassword,
@@ -153,8 +202,8 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   obscureText: true,
                   validator:
-                      (value) =>
-                          value != _password.text
+                      (v) =>
+                          v != _password.text && v!.isNotEmpty
                               ? 'Passwords do not match'
                               : null,
                 ),

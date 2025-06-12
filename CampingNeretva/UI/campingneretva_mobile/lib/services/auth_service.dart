@@ -68,12 +68,23 @@ class AuthService {
       if (response.statusCode == 200 || response.statusCode == 201) {
         return await login(username, password);
       } else {
-        print('Registration failed: ${response.statusCode} - ${response.body}');
-        return null;
+        final errorBody = jsonDecode(response.body);
+        final errorMessage =
+            errorBody['message']?.toString() ?? 'Registration failed';
+        if (errorMessage.contains('Username is already taken')) {
+          throw Exception('Username already in use');
+        } else if (errorMessage.contains('Email is already in use')) {
+          throw Exception('Email already in use');
+        } else {
+          print(
+            'Registration failed: ${response.statusCode} - ${response.body}',
+          );
+          throw Exception(errorMessage);
+        }
       }
     } catch (e) {
       print('Registration error: $e');
-      return null;
+      rethrow;
     }
   }
 

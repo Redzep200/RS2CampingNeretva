@@ -38,7 +38,6 @@ namespace CampingNeretva.Service
             _context.Users.Add(entity);
             await _context.SaveChangesAsync();
 
-            // Generate recommendations for the new user
             await GenerateRecommendationsForUser(entity.UserId);
 
             return Mapper.Map<UserModel>(entity);
@@ -221,7 +220,6 @@ namespace CampingNeretva.Service
                 rentableItemModel = _rentableItemModel;
             }
 
-            // Check if models are trained, use fallback if not
             if (parcelModel == null || activityModel == null || rentableItemModel == null)
             {
                 await PopulateFallbackRecommendationsForUser(user, context, _userPreferenceService);
@@ -258,7 +256,7 @@ namespace CampingNeretva.Service
                     }).Score
                 })
                 .OrderByDescending(x => x.Score)
-                .Where(x => x.Score > 0) // Ensure positive scores
+                .Where(x => x.Score > 0) 
                 .Take(3)
                 .Select(x => x.ItemId)
                 .DefaultIfEmpty()
@@ -338,7 +336,6 @@ namespace CampingNeretva.Service
             var similarUsers = await userPreferenceService.FindSimilarUsers(user.UserId);
             if (!similarUsers.Any())
             {
-                // Fallback to most popular items if no similar users
                 recommendation.ParcelId1 = context.Reservations
                     .GroupBy(r => r.ParcelId)
                     .OrderByDescending(g => g.Count())

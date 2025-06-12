@@ -59,8 +59,16 @@ class UserService {
       AuthService.currentUser = user;
       return user;
     } else {
-      print('Update failed: ${response.statusCode} - ${response.body}');
-      return null;
+      final errorBody = jsonDecode(response.body);
+      final errorMessage = errorBody['message']?.toString() ?? 'Update failed';
+      if (errorMessage.contains('Username is already taken')) {
+        throw Exception('Username already in use');
+      } else if (errorMessage.contains('Email is already in use')) {
+        throw Exception('Email already in use');
+      } else {
+        print('Update failed: ${response.statusCode} - ${response.body}');
+        throw Exception(errorMessage);
+      }
     }
   }
 }
