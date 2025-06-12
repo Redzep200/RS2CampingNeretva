@@ -31,5 +31,7 @@ public partial class User
 
     public virtual ICollection<UserPreference> UserPreferences { get; set; } = new List<UserPreference>();
 
+    public virtual ICollection<UserRecommendation> UserRecommendations { get; set; } = new List<UserRecommendation>();
+
     public virtual UserType UserType { get; set; } = null!;
 }

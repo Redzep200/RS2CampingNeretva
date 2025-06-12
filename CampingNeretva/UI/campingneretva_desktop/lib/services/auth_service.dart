@@ -5,7 +5,7 @@ import 'package:hive/hive.dart';
 
 class AuthService {
   static User? currentUser;
-  static String? _password; // Store password temporarily for basic auth
+  static String? _password;
   static final Box _box = Hive.box('authBox');
   static const String baseUrl = 'http://localhost:5205';
 

@@ -65,6 +65,8 @@ public partial class _200012Context : DbContext
 
     public virtual DbSet<UserPreference> UserPreferences { get; set; }
 
+    public virtual DbSet<UserRecommendation> UserRecommendations { get; set; }
+
     public virtual DbSet<UserType> UserTypes { get; set; }
 
     public virtual DbSet<Vehicle> Vehicles { get; set; }
@@ -423,6 +425,16 @@ public partial class _200012Context : DbContext
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_UserPreference_User");
+        });
+
+        modelBuilder.Entity<UserRecommendation>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__UserReco__3214EC0709CF0DA9");
+
+            entity.HasOne(d => d.User).WithMany(p => p.UserRecommendations)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__UserRecom__UserI__625A9A57");
         });
 
         modelBuilder.Entity<UserType>(entity =>

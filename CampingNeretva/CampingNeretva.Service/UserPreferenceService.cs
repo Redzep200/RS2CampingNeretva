@@ -1,13 +1,12 @@
-﻿using CampingNeretva.Model.Requests;
-using CampingNeretva.Model;
+﻿using CampingNeretva.Model;
+using CampingNeretva.Model.Requests;
 using CampingNeretva.Service.Database;
 using MapsterMapper;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 
 namespace CampingNeretva.Service
 {
@@ -51,33 +50,96 @@ namespace CampingNeretva.Service
 
         public async Task<UserPreferenceModel> GetByUserId(int userId)
         {
-            var entity = await _context.UserPreferences.FirstOrDefaultAsync(up => up.UserId == userId);
+            var entity = await _context.UserPreferences
+                .OrderByDescending(up => up.UserPreferenceId)
+                .FirstOrDefaultAsync(up => up.UserId == userId);
             if (entity == null)
                 throw new Exception("User preference not found");
 
             return _mapper.Map<UserPreferenceModel>(entity);
         }
 
-        private async Task<List<int>> FindSimilarUsers(int userId)
+        public async Task<List<ParcelModel>> GetRecommendedParcels(int userId)
         {
-            var target = await _context.UserPreferences.FirstOrDefaultAsync(up => up.UserId == userId);
-            if (target == null)
-            {
-                Console.WriteLine($"No preferences found for user {userId}");
-                return new List<int>();
-            }
+            var recommendation = await _context.UserRecommendations
+                .FirstOrDefaultAsync(ur => ur.UserId == userId);
+            if (recommendation == null)
+                return new List<ParcelModel>();
 
-            var allPreferences = await _context.UserPreferences.Where(up => up.UserId != userId).ToListAsync();
+            var parcelIds = new[] { recommendation.ParcelId1, recommendation.ParcelId2, recommendation.ParcelId3 }
+                .Where(id => id.HasValue)
+                .Select(id => id.Value)
+                .ToList();
+
+            var parcels = await _context.Parcels
+                .Include(p => p.ParcelAccommodation)
+                .Include(p => p.ParcelType)
+                .Include(p => p.ParcelImages)
+                .Where(p => parcelIds.Contains(p.ParcelId))
+                .ToListAsync();
+
+            return _mapper.Map<List<ParcelModel>>(parcels);
+        }
+
+        public async Task<List<ActivityModel>> GetRecommendedActivities(int userId)
+        {
+            var recommendation = await _context.UserRecommendations
+                .FirstOrDefaultAsync(ur => ur.UserId == userId);
+            if (recommendation == null)
+                return new List<ActivityModel>();
+
+            var activityIds = new[] { recommendation.ActivityId1, recommendation.ActivityId2 }
+                .Where(id => id.HasValue)
+                .Select(id => id.Value)
+                .ToList();
+
+            var activities = await _context.Activities
+                .Include(a => a.Facility)
+                .Include(a => a.ActivityImages)
+                .Where(a => activityIds.Contains(a.ActivityId))
+                .ToListAsync();
+
+            return _mapper.Map<List<ActivityModel>>(activities);
+        }
+
+        public async Task<List<RentableItemModel>> GetRecommendedRentableItems(int userId)
+        {
+            var recommendation = await _context.UserRecommendations
+                .FirstOrDefaultAsync(ur => ur.UserId == userId);
+            if (recommendation == null)
+                return new List<RentableItemModel>();
+
+            var rentableItemIds = new[] { recommendation.RentableItemId1, recommendation.RentableItemId2 }
+                .Where(id => id.HasValue)
+                .Select(id => id.Value)
+                .ToList();
+
+            var rentableItems = await _context.RentableItems
+                .Include(ri => ri.RentableItemImages)
+                .Where(ri => rentableItemIds.Contains(ri.ItemId))
+                .ToListAsync();
+
+            return _mapper.Map<List<RentableItemModel>>(rentableItems);
+        }
+
+        public async Task<List<int>> FindSimilarUsers(int userId)
+        {
+            var target = await _context.UserPreferences
+                .OrderByDescending(up => up.UserPreferenceId)
+                .FirstOrDefaultAsync(up => up.UserId == userId);
+            if (target == null)
+                return new List<int>();
+
+            var allPreferences = await _context.UserPreferences
+                .Where(up => up.UserId != userId)
+                .ToListAsync();
             var similarUsers = new List<int>();
 
             foreach (var pref in allPreferences)
             {
                 double similarity = CalculateSimilarity(target, pref);
                 if (similarity > 0.6)
-                {
                     similarUsers.Add(pref.UserId);
-                    Console.WriteLine($"Similar user: {pref.UserId} (sim={similarity})");
-                }
             }
 
             return similarUsers;
@@ -86,7 +148,7 @@ namespace CampingNeretva.Service
         private double CalculateSimilarity(UserPreference target, UserPreference other)
         {
             int matches = 0;
-            int total = 5; 
+            int total = 5;
 
             if (target.NumberOfPeople == other.NumberOfPeople) matches++;
             if (target.HasSmallChildren == other.HasSmallChildren) matches++;
@@ -95,61 +157,6 @@ namespace CampingNeretva.Service
             if (target.HasDogs == other.HasDogs) matches++;
 
             return (double)matches / total;
-        }
-
-        public async Task<List<ParcelModel>> GetRecommendedParcels(int userId)
-        {
-            var similarUsers = await FindSimilarUsers(userId);
-            if (!similarUsers.Any())
-                return new List<ParcelModel>();
-
-            var parcels = await _context.Reservations
-                .Include(r => r.Parcel)
-                    .ThenInclude(p => p.ParcelAccommodation)
-                .Include(r => r.Parcel)
-                    .ThenInclude(p => p.ParcelType)
-                .Where(r => similarUsers.Contains(r.UserId))
-                .Select(r => r.Parcel)
-                .Distinct()
-                .ToListAsync();
-
-            return _mapper.Map<List<ParcelModel>>(parcels);
-        }
-
-        public async Task<List<ActivityModel>> GetRecommendedActivities(int userId)
-        {
-            var similarUsers = await FindSimilarUsers(userId);
-            if (!similarUsers.Any())
-                return new List<ActivityModel>();
-
-            var activities = await _context.Reservations
-                .Include(r => r.Activities)
-                    .ThenInclude(a => a.ActivityImages)
-                .Where(r => similarUsers.Contains(r.UserId))
-                .SelectMany(r => r.Activities)
-                .Distinct()
-                .ToListAsync();
-
-            return _mapper.Map<List<ActivityModel>>(activities);
-        }
-
-        public async Task<List<RentableItemModel>> GetRecommendedRentableItems(int userId)
-        {
-            var similarUsers = await FindSimilarUsers(userId);
-            if (!similarUsers.Any())
-                return new List<RentableItemModel>();
-
-            var rentableItems = await _context.ReservationRentables
-                .Include(rr => rr.Reservation)
-                .Include(rr => rr.Item)
-                    .ThenInclude(i => i.RentableItemImages)
-                .Where(rr => similarUsers.Contains(rr.Reservation.UserId))
-                .Select(rr => rr.Item)
-                .Distinct()
-                .ToListAsync();
-
-
-            return _mapper.Map<List<RentableItemModel>>(rentableItems);
         }
     }
 }

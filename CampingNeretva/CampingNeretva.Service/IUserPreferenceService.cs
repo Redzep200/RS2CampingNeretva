@@ -1,5 +1,5 @@
-﻿using CampingNeretva.Model.Requests;
-using CampingNeretva.Model;
+﻿using CampingNeretva.Model;
+using CampingNeretva.Model.Requests;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,5 +16,6 @@ namespace CampingNeretva.Service
         Task<List<ParcelModel>> GetRecommendedParcels(int userId);
         Task<List<ActivityModel>> GetRecommendedActivities(int userId);
         Task<List<RentableItemModel>> GetRecommendedRentableItems(int userId);
+        Task<List<int>> FindSimilarUsers(int userId);
     }
 }

@@ -41,6 +41,7 @@ builder.Services.AddTransient<IPaymentService, PaymentService>();
 builder.Services.AddSingleton<EmailService>();
 builder.Services.AddHostedService<ReservationNotificationSubscriber>();
 builder.Services.AddScoped<IUserPreferenceService, UserPreferenceService>();
+builder.Services.AddHostedService<RecommendationInitializer>();
 
 builder.Services.AddHttpClient();
 
