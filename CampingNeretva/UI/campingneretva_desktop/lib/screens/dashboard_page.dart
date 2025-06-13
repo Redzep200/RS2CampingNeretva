@@ -438,42 +438,133 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Widget _buildBarChart() {
-    return BarChart(
-      BarChartData(
-        barGroups:
-            topActivities.asMap().entries.map((entry) {
-              final i = entry.key;
-              final data = entry.value;
-              return BarChartGroupData(
-                x: i,
-                barRods: [
-                  BarChartRodData(
-                    toY: data.value.toDouble(),
-                    color: Colors.green,
-                  ),
-                ],
-              );
-            }).toList(),
-        titlesData: FlTitlesData(
-          leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true)),
-          bottomTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              getTitlesWidget: (value, meta) {
-                final index = value.toInt();
-                if (index >= 0 && index < topActivities.length) {
-                  return SideTitleWidget(
-                    axisSide: meta.axisSide,
-                    child: Text(
-                      topActivities[index].key,
-                      style: const TextStyle(fontSize: 10),
-                    ),
-                  );
-                }
-                return const SizedBox.shrink();
-              },
+    if (topActivities.isEmpty) {
+      return const Center(
+        child: Text(
+          'Nema podataka o aktivnostima',
+          style: TextStyle(fontSize: 16, color: Colors.grey),
+        ),
+      );
+    }
+
+    return Card(
+      elevation: 4,
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Top 3 Aktivnosti',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-          ),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 200,
+              child: BarChart(
+                BarChartData(
+                  alignment: BarChartAlignment.spaceEvenly,
+                  maxY:
+                      (topActivities
+                                  .map((e) => e.value)
+                                  .reduce((a, b) => a > b ? a : b) *
+                              1.2)
+                          .toDouble(), // Add 20% padding above max value
+                  barGroups:
+                      topActivities.asMap().entries.map((entry) {
+                        final i = entry.key;
+                        final data = entry.value;
+                        return BarChartGroupData(
+                          x: i,
+                          barRods: [
+                            BarChartRodData(
+                              toY: data.value.toDouble(),
+                              width: 30, // Thicker bars
+                              color:
+                                  [Colors.blue, Colors.green, Colors.orange][i %
+                                      3], // Distinct colors
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(4),
+                              ),
+                            ),
+                          ],
+                          showingTooltipIndicators: [0], // Show tooltip
+                        );
+                      }).toList(),
+                  titlesData: FlTitlesData(
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 40,
+                        getTitlesWidget: (value, meta) {
+                          return Text(
+                            value.toInt().toString(),
+                            style: const TextStyle(fontSize: 12),
+                          );
+                        },
+                      ),
+                    ),
+                    rightTitles: AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    topTitles: AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 60, // Increased for rotated labels
+                        getTitlesWidget: (value, meta) {
+                          final index = value.toInt();
+                          if (index >= 0 && index < topActivities.length) {
+                            return SideTitleWidget(
+                              axisSide: meta.axisSide,
+                              angle: 0.5, // Rotate labels slightly for fit
+                              child: Text(
+                                topActivities[index].key,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 2,
+                              ),
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                    ),
+                  ),
+                  gridData: FlGridData(
+                    show: true,
+                    drawVerticalLine: false,
+                    horizontalInterval:
+                        topActivities.isNotEmpty
+                            ? topActivities
+                                    .map((e) => e.value)
+                                    .reduce((a, b) => a > b ? a : b)
+                                    .toDouble() /
+                                5
+                            : 1,
+                  ),
+                  borderData: FlBorderData(show: false),
+                  barTouchData: BarTouchData(
+                    enabled: true,
+                    touchTooltipData: BarTouchTooltipData(
+                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                        return BarTooltipItem(
+                          '${topActivities[groupIndex].key}\n${rod.toY.toInt()} puta',
+                          const TextStyle(color: Colors.white),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -641,7 +732,8 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
               ],
             ),
-            SizedBox(height: 200, child: _buildBarChart()),
+            _buildBarChart(),
+            // _buildHorizontalBarChart(), // Uncomment to use horizontal bar chart
             const SizedBox(height: 24),
 
             Row(
