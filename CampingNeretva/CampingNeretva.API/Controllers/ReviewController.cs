@@ -17,17 +17,12 @@ namespace CampingNeretva.API.Controllers
         }
 
 
-        [AllowAnonymous]
+        [Authorize(Roles = "Guest,Admin")]
         public override async Task<PagedResult<ReviewModel>> GetList([FromQuery] ReviewSearchObject searchObject)
         {
             return await base.GetList(searchObject);
         }
 
-        [Authorize(Roles = "Admin")]
-        public override async Task<ReviewModel> GetById(int id)
-        {
-            return await base.GetById(id);
-        }
 
         [Authorize(Roles = "Guest")]
         public override async Task<ReviewModel> Insert(ReviewInsertRequest request)
@@ -42,7 +37,7 @@ namespace CampingNeretva.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Guest,Admin")]
         public override async Task<IActionResult> Delete(int id)
         {
             await base.Delete(id);

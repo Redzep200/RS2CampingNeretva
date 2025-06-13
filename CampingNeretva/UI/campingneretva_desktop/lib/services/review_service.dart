@@ -8,6 +8,7 @@ class ReviewService {
 
   static Future<List<Review>> getAll({int? workerId, int? userId}) async {
     try {
+      final headers = await AuthService.getAuthHeaders();
       final queryParameters = {
         if (workerId != null) 'WorkerId': '$workerId',
         if (userId != null) 'UserId': '$userId',
@@ -18,24 +19,13 @@ class ReviewService {
       final uri = Uri.parse(
         '$baseUrl/Review',
       ).replace(queryParameters: queryParameters);
-      final response = await http.get(uri);
+      final response = await http.get(uri, headers: headers);
 
       if (response.statusCode == 200) {
-        final bodyRaw = response.body;
-
-        if (response.statusCode == 200 && bodyRaw.isNotEmpty) {
-          final body = json.decode(bodyRaw);
-          if (body is Map && body.containsKey('resultList')) {
-            final List results = body['resultList'];
-            return results.map((e) => Review.fromJson(e)).toList();
-          } else {
-            print('Unexpected body format: $body');
-            return [];
-          }
-        } else {
-          print('Failed to fetch reviews: ${response.statusCode} - $bodyRaw');
-          return [];
-        }
+        final body = json.decode(response.body);
+        final List results = body['resultList'] ?? [];
+        print('Fetched ${results.length} reviews');
+        return results.map((e) => Review.fromJson(e)).toList();
       } else {
         print('API Error: ${response.statusCode} - ${response.body}');
         throw Exception('Failed to load reviews: ${response.statusCode}');

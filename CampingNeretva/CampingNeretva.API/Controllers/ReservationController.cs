@@ -16,7 +16,7 @@ namespace CampingNeretva.API.Controllers
         {
         }
 
-        [AllowAnonymous]
+        [Authorize(Roles = "Guest,Admin")]
         public override async Task<PagedResult<ReservationModel>> GetList([FromQuery] ReservationSearchObject search)
         {
             return await base.GetList(search);
@@ -34,14 +34,8 @@ namespace CampingNeretva.API.Controllers
             return await base.Update(id, request);
         }
 
-        [Authorize(Roles = "Admin")]
-        public override async Task<ReservationModel> GetById(int id)
-        {
-            return await base.GetById(id);
-        }
-
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Guest,Admin")]
         public override async Task<IActionResult> Delete(int id)
         {
             await base.Delete(id);

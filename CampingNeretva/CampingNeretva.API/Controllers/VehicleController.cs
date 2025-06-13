@@ -18,38 +18,12 @@ namespace CampingNeretva.API.Controllers
             _imageService = imageService;
         }
 
-        [Authorize(Roles = "Admin")]
-        public override async Task<VehicleModel> Update(int id, VehicleUpdateRequest request)
-        {
-            return await base.Update(id, request);
-        }
-
         [AllowAnonymous]
         public override async Task<PagedResult<VehicleModel>> GetList([FromQuery] VehicleSearchObject searchObject)
         {
             return await base.GetList(searchObject);
         }
-
-        [Authorize(Roles = "Admin")]
-        public override async Task<VehicleModel> GetById(int id)
-        {
-            return await base.GetById(id);
-        }
-
-        [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
-        public override async Task<IActionResult> Delete(int id)
-        {
-            await base.Delete(id);
-            return Ok();
-        }
-
-        [Authorize(Roles = "Admin")]
-        public override async Task<VehicleModel> Insert(VehicleInsertRequest request)
-        {
-            return await base.Insert(request);
-        }
-
+        
         [HttpPost("{vehicleId}/images/{imageId}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddImage(int vehicleId, int imageId)

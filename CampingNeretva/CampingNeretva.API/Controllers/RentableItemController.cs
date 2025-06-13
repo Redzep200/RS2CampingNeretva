@@ -27,24 +27,7 @@ namespace CampingNeretva.API.Controllers
             return await base.GetList(searchObject);
         }
 
-        [Authorize(Roles = "Admin")]
-        public override async Task<RentableItemModel> GetById(int id)
-        {
-            return await base.GetById(id);
-        }
-
-        [Authorize(Roles = "Admin")]
-        public override async Task<RentableItemModel> Insert(RentableItemInsertRequest request)
-        {
-            return await base.Insert(request);
-        }
-
-        [Authorize(Roles = "Admin")]
-        public override async Task<RentableItemModel> Update(int id, RentableItemsUpdateRequest request)
-        {
-            return await base.Update(id, request);
-        }
-
+       
         [HttpGet("available")]
         [AllowAnonymous]
         public async Task<IActionResult> GetAvailable([FromQuery] DateTime? from, [FromQuery] DateTime? to)
@@ -66,13 +49,6 @@ namespace CampingNeretva.API.Controllers
             return Ok(resultPaged.ResultList);
         }
 
-        [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
-        public override async Task<IActionResult> Delete(int id)
-        {
-            await base.Delete(id);
-            return Ok();
-        }
 
         [HttpPost("{rentableItemId}/images/{imageId}")]
         [Authorize(Roles = "Admin")]

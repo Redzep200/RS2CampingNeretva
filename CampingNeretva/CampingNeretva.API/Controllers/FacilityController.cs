@@ -26,31 +26,6 @@ namespace CampingNeretva.API.Controllers
             return await base.GetList(searchObject);
         }
 
-        [Authorize(Roles = "Admin")]
-        public override async Task<FacilityModel> GetById(int id)
-        {
-            return await base.GetById(id);
-        }
-
-        [Authorize(Roles = "Admin")]
-        public override async Task<FacilityModel> Insert(FacilityInsertRequest request)
-        {
-            return await base.Insert(request);
-        }
-
-        [Authorize(Roles = "Admin")]
-        public override async Task<FacilityModel> Update(int id, FacilityUpdateRequest request)
-        {
-            return await base.Update(id, request);
-        }
-
-        [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
-        public override async Task<IActionResult> Delete(int id)
-        {
-            await base.Delete(id);
-            return Ok();
-        }
 
         [HttpPost("{facilityId}/images/{imageId}")]
         [Authorize(Roles = "Admin")]

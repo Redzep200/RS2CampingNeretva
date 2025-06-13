@@ -10,6 +10,8 @@ import 'dart:typed_data';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
+import '../services/auth_service.dart';
+import 'login_page.dart'; // Adjust import based on your project structure
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -283,6 +285,15 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
+  Future<void> _logout() async {
+    await AuthService.logout();
+    if (mounted) {
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (context) => LoginPage()));
+    }
+  }
+
   void _showImagesDialog() async {
     showDialog(
       context: context,
@@ -497,10 +508,21 @@ class _DashboardPageState extends State<DashboardPage> {
           children: [
             Align(
               alignment: Alignment.centerRight,
-              child: ElevatedButton.icon(
-                onPressed: _showImagesDialog,
-                icon: const Icon(Icons.image),
-                label: const Text('Prikaži slike'),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: _showImagesDialog,
+                    icon: const Icon(Icons.image),
+                    label: const Text('Prikaži slike'),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton.icon(
+                    onPressed: _logout,
+                    icon: const Icon(Icons.logout),
+                    label: const Text('Odjava'),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 16),

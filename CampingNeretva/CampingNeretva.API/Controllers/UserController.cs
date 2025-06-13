@@ -22,25 +22,13 @@ namespace CampingNeretva.API.Controllers
             return (_service as IUserService).Login(request.Username, request.Password);
         }
 
-        [Authorize(Roles = "Admin")]
-        public override async Task<PagedResult<UserModel>> GetList([FromQuery] UserSearchObject searchObject)
-        {
-            return await base.GetList(searchObject);
-        }
-
-        [Authorize(Roles = "Admin")]
-        public override async Task<UserModel> GetById(int id)
-        {
-            return await base.GetById(id);
-        }
-
         [AllowAnonymous]
         public override async Task<UserModel> Insert(UserInsertRequest request)
         {
             return await base.Insert(request);
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Guest,Admin")]
         public override async Task<UserModel> Update(int id, UserUpdateRequest request)
         {
             return await base.Update(id, request);

@@ -15,36 +15,11 @@ namespace CampingNeretva.API.Controllers
         :base(service){
         }
 
-        [AllowAnonymous]
+        [Authorize(Roles = "Guest,Admin")]
         public override async Task<PagedResult<WorkerModel>> GetList([FromQuery] WorkerSearchObject searchObject)
         {
             return await base.GetList(searchObject);
         }
 
-        [Authorize(Roles = "Admin")]
-        public override async Task<WorkerModel> GetById(int id)
-        {
-            return await base.GetById(id);
-        }
-
-        [Authorize(Roles = "Admin")]
-        public override async Task<WorkerModel> Insert(WorkerInsertRequest request)
-        {
-            return await base.Insert(request);
-        }
-
-        [Authorize(Roles = "Admin")]
-        public override async Task<WorkerModel> Update(int id, WorkerUpdateRequest request)
-        {
-            return await base.Update(id, request);
-        }
-
-        [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
-        public override async Task<IActionResult> Delete(int id)
-        {
-            await base.Delete(id);
-            return Ok();
-        }
     }
 }
