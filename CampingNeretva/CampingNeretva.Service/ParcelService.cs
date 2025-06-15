@@ -150,6 +150,9 @@ namespace CampingNeretva.Service
             var parcelImages = await _context.ParcelImages.Where(x => x.ParcelId == id).ToListAsync();
             _context.ParcelImages.RemoveRange(parcelImages);
 
+            var relatedRecommendation = await _context.UserRecommendations.Where(x=> x.ParcelId1 ==  id || x.ParcelId2 == id || x.ParcelId3 == id).ToListAsync();
+            _context.UserRecommendations.RemoveRange(relatedRecommendation);
+
             _context.Parcels.Remove(parcel);
             await _context.SaveChangesAsync();
         }

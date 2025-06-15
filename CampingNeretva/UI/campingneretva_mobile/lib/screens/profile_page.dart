@@ -52,7 +52,6 @@ class _ProfilePageState extends State<ProfilePage> {
           _hasDogs = data['hasDogs'] ?? false;
         });
       } else if (response.statusCode == 404) {
-        // No preferences found, set defaults
         setState(() {
           _numberOfPeople.text = '0';
           _hasSmallChildren = false;

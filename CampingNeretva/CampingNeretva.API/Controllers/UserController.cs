@@ -43,7 +43,7 @@ namespace CampingNeretva.API.Controllers
         }
 
         [HttpPut("me")]
-        [Authorize]
+        [AllowAnonymous]
         public async Task<UserModel> UpdateOwnProfile([FromBody] UserUpdateRequest request)
         {
             var username = User.Identity?.Name;

@@ -4,8 +4,8 @@ using EasyNetQ;
 using EasyNetQ.DI;
 using System.Collections.Generic;
 
-var bus = RabbitHutch.CreateBus("host=localhost", x =>
-            x.Register<EasyNetQ.ISerializer>(_ => new EasyNetQ.Serialization.NewtonsoftJson.NewtonsoftJsonSerializer()));
+var bus = RabbitHutch.CreateBus("host=rabbitmq;username=guest;password=guest;timeout=60", x =>
+    x.Register<ISerializer>(_ => new EasyNetQ.Serialization.NewtonsoftJson.NewtonsoftJsonSerializer()));
 
 await bus.PubSub.SubscribeAsync<ReservationModel>("seminarski", msg => {
     Console.WriteLine($"Reservation created: {msg.CheckInDate} - {msg.CheckOutDate}");

@@ -18,6 +18,7 @@ import 'package:campingneretva_mobile/screens/paypal_webview.dart';
 import 'package:campingneretva_mobile/screens/reservation_history_page.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'dart:convert';
 
 class ReservationPage extends StatefulWidget {
   const ReservationPage({super.key});
@@ -51,10 +52,21 @@ class _ReservationPageState extends State<ReservationPage> {
   bool get _datesSelected => startDate != null && endDate != null;
 
   Future<void> _submitReservation() async {
+    final hasAdult = selectedPersons.entries.any((entry) {
+      final person = persons.firstWhere((p) => p.id == entry.key);
+      return (person.type.toLowerCase().contains('adult')) && entry.value > 0;
+    });
+
     if (!_datesSelected ||
         selectedParcel == null ||
-        selectedAccommodation == null) {
-      _showSnackBar('Please select dates, parcel, and accommodation.');
+        selectedAccommodation == null ||
+        !hasAdult) {
+      print(
+        'Validation Failed: Missing dates, selection, or no adult selected',
+      );
+      _showSnackBar(
+        'Please select dates, parcel, accommodation, and at least one adult.',
+      );
       return;
     }
 
@@ -88,9 +100,17 @@ class _ReservationPageState extends State<ReservationPage> {
       'activities': selectedActivities.map((id) => {'activityId': id}).toList(),
     };
 
+    // Log the constructed payload
+    print('Submitting Reservation Payload: ${jsonEncode(payload)}');
+
     try {
       final reservation = await ReservationService.insert(payload);
       final reservationId = reservation['id'] ?? reservation['reservationId'];
+
+      // Log the successful response
+      print(
+        'Reservation Created Successfully: ID=$reservationId, Response=$reservation',
+      );
 
       if (reservationId != null) {
         setState(() {
@@ -100,9 +120,12 @@ class _ReservationPageState extends State<ReservationPage> {
         _showSnackBar('Reservation created! Proceed to payment.');
         await _startPayPalPayment();
       } else {
+        print('Reservation Error: No reservation ID returned');
         throw Exception('Failed to get reservation ID');
       }
     } catch (e) {
+      // Log the error details
+      print('Reservation Creation Failed: Error=$e');
       setState(() {
         _isLoading = false;
         _errorMessage = 'Failed to make reservation: $e';
@@ -220,7 +243,7 @@ class _ReservationPageState extends State<ReservationPage> {
     });
 
     try {
-      parcels = await ParcelService.getParcels(from: startDate, to: endDate);
+      parcels = await ParcelService.getAllParcels(from: startDate, to: endDate);
       parcels = parcels.where((p) => p.isAvailable).toList();
       accommodations = await AccommodationService.getAccommodations();
       activities = await ActivityService.getByDateRange(
@@ -466,6 +489,7 @@ class _ReservationPageState extends State<ReservationPage> {
       child: DropdownButtonFormField<T>(
         value: value,
         isExpanded: true,
+        menuMaxHeight: 300,
         decoration: InputDecoration(
           labelText: label,
           border: const OutlineInputBorder(),

@@ -1,0 +1,83 @@
+services:
+  campingneretva-sql:
+    build: 
+      context: .
+      dockerfile: Dockerfile.sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=${SQL_SA_PASSWORD}
+      - MSSQL_PID=Developer
+    ports:
+      - "1401:1433"
+    expose:
+      - 1433
+    volumes:
+      - sql-data:/var/opt/mssql
+      - ./data.sql:/docker-entrypoint-initdb.d/data.sql
+    networks:
+      - campingneretva-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - campingneretva-network
+
+  campingneretva-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - API_HOST=${API_HOST}
+      - API_PORT=${API_PORT}
+      - ConnectionStrings__DefaultConnection=${SQL_CONNECTION_STRING}
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - RABBITMQ_USERNAME=${RABBITMQ_USERNAME}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+      - PAYPAL_CLIENT_ID=${PAYPAL_CLIENT_ID}
+      - PAYPAL_SECRET=${PAYPAL_SECRET}
+      - PAYPAL_BASE_URL=${PAYPAL_BASE_URL}
+      - SMTP_SERVER=${SMTP_SERVER}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "5205:5205"
+    depends_on:
+      - campingneretva-sql
+      - rabbitmq
+    volumes:
+      - ./.env:/app/.env  
+    networks:
+      - campingneretva-network
+    restart: unless-stopped
+
+  rabbitmq-service:
+    build:
+      context: .
+      dockerfile: CampingNeretva.Subscriber/Dockerfile
+    environment:
+      - ConnectionStrings__DefaultConnection=${SQL_CONNECTION_STRING}
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - RABBITMQ_USERNAME=${RABBITMQ_USERNAME}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+      - EmailSettings__SmtpHost=${SMTP_SERVER}
+      - EmailSettings__SmtpPort=${SMTP_PORT}
+      - EmailSettings__SmtpUser=${SMTP_USERNAME}
+      - EmailSettings__SmtpPass=${SMTP_PASSWORD}
+    depends_on:
+      - campingneretva-sql
+      - rabbitmq
+    networks:
+      - campingneretva-network
+    restart: unless-stopped
+
+volumes:
+  sql-data:
+
+networks:
+  campingneretva-network:
+    driver: bridge

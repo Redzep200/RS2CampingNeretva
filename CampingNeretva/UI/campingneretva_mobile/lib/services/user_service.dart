@@ -51,15 +51,27 @@ class UserService {
     final response = await http.put(
       Uri.parse('$baseUrl/User/me'),
       headers: headers,
-      body: jsonEncode(body),
+      body: jsonEncode(
+        body.isNotEmpty ? body : {'dummy': 'update'},
+      ), // Ensure non-empty body
     );
 
+    print(
+      'Update response: ${response.statusCode} - ${response.body}',
+    ); // Debug log
+
     if (response.statusCode == 200) {
-      final user = User.fromJson(jsonDecode(response.body));
-      AuthService.currentUser = user;
-      return user;
+      try {
+        final user = User.fromJson(jsonDecode(response.body));
+        AuthService.currentUser = user;
+        return user;
+      } catch (e) {
+        print('JSON decode error: $e, Response: ${response.body}');
+        throw Exception('Invalid response format');
+      }
     } else {
-      final errorBody = jsonDecode(response.body);
+      final errorBody =
+          response.body.isNotEmpty ? jsonDecode(response.body) : {};
       final errorMessage = errorBody['message']?.toString() ?? 'Update failed';
       if (errorMessage.contains('Username is already taken')) {
         throw Exception('Username already in use');

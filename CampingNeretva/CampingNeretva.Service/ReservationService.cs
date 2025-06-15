@@ -6,20 +6,23 @@ using MapsterMapper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using EasyNetQ;
 using EasyNetQ.DI;
 using EasyNetQ.Serialization.NewtonsoftJson;
+using Microsoft.Extensions.Logging;
 
 namespace CampingNeretva.Service
 {
     public class ReservationService : BaseCRUDService<ReservationModel, ReservationSearchObject, Reservation, ReservationInsertRequest, ReservationUpdateRequest>, IReservationService
     {
-        public ReservationService(_200012Context context, IMapper mapper)
+        private readonly ILogger<ReservationService> _logger;
+
+        public ReservationService(_200012Context context, IMapper mapper, ILogger<ReservationService> logger)
             : base(context, mapper)
         {
+            _logger = logger;
         }
 
         public override IQueryable<Reservation> AddFilter(ReservationSearchObject search, IQueryable<Reservation> query)
@@ -40,22 +43,22 @@ namespace CampingNeretva.Service
 
             if (search?.IsPersonsIncluded == true)
             {
-                filteredQuery = filteredQuery.Include(x => x.ReservationPeople).ThenInclude(rp=>rp.Person);
+                filteredQuery = filteredQuery.Include(x => x.ReservationPeople).ThenInclude(rp => rp.Person);
             }
 
             if (search?.IsVehicleIncluded == true)
             {
-                filteredQuery = filteredQuery.Include(x => x.ReservationVehicles).ThenInclude(rv=>rv.Vehicle);
+                filteredQuery = filteredQuery.Include(x => x.ReservationVehicles).ThenInclude(rv => rv.Vehicle);
             }
 
             if (search?.IsAccommodationIncluded == true)
             {
-                filteredQuery = filteredQuery.Include(x => x.ReservationAccommodations).ThenInclude(ra=>ra.Accommodation);
+                filteredQuery = filteredQuery.Include(x => x.ReservationAccommodations).ThenInclude(ra => ra.Accommodation);
             }
 
             if (search?.IsRentableItemsIncluded == true)
             {
-                filteredQuery = filteredQuery.Include(x => x.ReservationRentables).ThenInclude(rr=>rr.Item);
+                filteredQuery = filteredQuery.Include(x => x.ReservationRentables).ThenInclude(rr => rr.Item);
             }
 
             if (search?.IsActivitiesIncluded == true)
@@ -66,12 +69,12 @@ namespace CampingNeretva.Service
             if (search?.IsParcelIncluded == true)
             {
                 filteredQuery = filteredQuery.Include(x => x.Parcel).ThenInclude(p => p.ParcelAccommodation)
-                .Include(x => x.Parcel).ThenInclude(p => p.ParcelType); ;
+                .Include(x => x.Parcel).ThenInclude(p => p.ParcelType);
             }
 
             if (search?.IsUserIncluded == true)
             {
-                filteredQuery = filteredQuery.Include(x => x.User).ThenInclude(x=>x.UserType);
+                filteredQuery = filteredQuery.Include(x => x.User).ThenInclude(x => x.UserType);
             }
 
             return filteredQuery;
@@ -149,7 +152,6 @@ namespace CampingNeretva.Service
             entity.PaymentStatus = "Pending";
         }
 
-
         public override async Task<ReservationModel> Insert(ReservationInsertRequest request)
         {
             var entity = Mapper.Map<Reservation>(request);
@@ -159,13 +161,13 @@ namespace CampingNeretva.Service
             entity.Activities = new List<Activity>();
 
             _context.Reservations.Add(entity);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             if (request.RentableItems != null && request.RentableItems.Any())
             {
                 foreach (var ri in request.RentableItems)
                 {
-                    if (ri?.ItemId > 0)  
+                    if (ri?.ItemId > 0)
                     {
                         var rentableItem = _context.RentableItems.Find(ri.ItemId);
                         if (rentableItem != null)
@@ -193,7 +195,7 @@ namespace CampingNeretva.Service
             if (request.Activities != null && request.Activities.Any())
             {
                 foreach (var act in request.Activities)
-                    if (act?.ActivityId > 0) 
+                    if (act?.ActivityId > 0)
                     {
                         var existingActivity = _context.Activities.Find(act.ActivityId);
                         if (existingActivity != null)
@@ -207,7 +209,7 @@ namespace CampingNeretva.Service
 
             var mappedEntity = Mapper.Map<ReservationModel>(entity);
 
-            var bus = RabbitHutch.CreateBus("host=localhost", x =>
+            var bus = RabbitHutch.CreateBus("host=rabbitmq", x =>
             x.Register<EasyNetQ.ISerializer>(_ => new EasyNetQ.Serialization.NewtonsoftJson.NewtonsoftJsonSerializer()));
             await bus.PubSub.PublishAsync(mappedEntity);
 
@@ -245,6 +247,11 @@ namespace CampingNeretva.Service
 
             var relatedVehicles = await _context.ReservationVehicles.Where(x => x.ReservationId == id).ToListAsync();
             _context.ReservationVehicles.RemoveRange(relatedVehicles);
+
+            var relatedPayment = await _context.Payments.Where(x => x.ReservationId == id).ToListAsync();
+            _context.Payments.RemoveRange(relatedPayment);
+
+            _context.Database.ExecuteSqlRaw("DELETE FROM ReservationActivities WHERE ReservationId = {0}", id);
 
             _context.Reservations.Remove(item);
             await _context.SaveChangesAsync();

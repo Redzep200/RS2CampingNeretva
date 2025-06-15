@@ -134,7 +134,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   Text(
-                    "${price.toStringAsFixed(2)} KM",
+                    "${price.toStringAsFixed(2)} €",
                     style: const TextStyle(fontSize: 12, color: Colors.black54),
                   ),
                 ],

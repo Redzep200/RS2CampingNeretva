@@ -338,14 +338,6 @@ class _ReviewPageState extends State<ReviewPage> {
                                       ),
                                     ],
                                   ),
-                                  trailing:
-                                      isUserReview
-                                          ? IconButton(
-                                            icon: const Icon(Icons.edit),
-                                            onPressed:
-                                                () => _editReview(review),
-                                          )
-                                          : null,
                                 ),
                               );
                             },

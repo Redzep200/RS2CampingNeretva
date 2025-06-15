@@ -1,12 +1,17 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/worker_model.dart';
+import '../services/auth_service.dart';
 
 class WorkerService {
   static const String baseUrl = "http://10.0.2.2:5205";
 
   static Future<List<Worker>> getAll() async {
-    final response = await http.get(Uri.parse('$baseUrl/Worker'));
+    final headers = await AuthService.getAuthHeaders();
+    final response = await http.get(
+      Uri.parse('$baseUrl/Worker'),
+      headers: headers,
+    );
 
     if (response.statusCode == 200) {
       final body = json.decode(response.body);

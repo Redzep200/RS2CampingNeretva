@@ -12,6 +12,7 @@ class ReviewService {
     int page = 0,
     int pageSize = 4,
   }) async {
+    final headers = await AuthService.getAuthHeaders();
     try {
       final queryParameters = {
         if (workerId != null) 'WorkerId': '$workerId',
@@ -28,7 +29,7 @@ class ReviewService {
       ).replace(queryParameters: queryParameters);
       print('Request URL: $uri');
 
-      final response = await http.get(uri);
+      final response = await http.get(uri, headers: headers);
 
       if (response.statusCode == 200) {
         final bodyRaw = response.body;

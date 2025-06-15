@@ -5,7 +5,6 @@ using CampingNeretva.Model.SearchObjects;
 using CampingNeretva.Service.Database;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using System.Text;
 using System.Text.Json;
 
@@ -13,20 +12,18 @@ namespace CampingNeretva.Service
 {
     public class PaymentService : BaseCRUDService<PaymentModel, BaseSearchObject, Payment, PaymentInsertRequest, PaymentUpdateRequest>, IPaymentService
     {
-        private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
         private readonly string _paypalBaseUrl;
         private readonly string _clientId;
         private readonly string _clientSecret;
 
-        public PaymentService(_200012Context context, IMapper mapper, IConfiguration configuration, HttpClient httpClient)
+        public PaymentService(_200012Context context, IMapper mapper, HttpClient httpClient)
             : base(context, mapper)
         {
-            _configuration = configuration;
             _httpClient = httpClient;
-            _paypalBaseUrl = _configuration["PayPal:BaseUrl"] ?? "https://api-m.sandbox.paypal.com";
-            _clientId = _configuration["PayPal:ClientId"] ?? "";
-            _clientSecret = _configuration["PayPal:Secret"] ?? "";
+            _paypalBaseUrl = Environment.GetEnvironmentVariable("PAYPAL_BASE_URL") ?? throw new InvalidOperationException("PAYPAL_BASE_URL is not set.");
+            _clientId = Environment.GetEnvironmentVariable("PAYPAL_CLIENT_ID") ?? throw new InvalidOperationException("PAYPAL_CLIENT_ID is not set.");
+            _clientSecret = Environment.GetEnvironmentVariable("PAYPAL_SECRET") ?? throw new InvalidOperationException("PAYPAL_SECRET is not set.");
         }
 
         public async Task<PayPalOrderResponse> CreatePayPalOrder(CreatePayPalOrderRequest request)

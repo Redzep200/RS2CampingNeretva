@@ -8,7 +8,7 @@ namespace CampingNeretva.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    [Authorize(Roles = "Admin")]
+    [Authorize]
     public class BaseController<TModel, TSearch> : ControllerBase where TSearch : BaseSearchObject
     {
         protected IService<TModel, TSearch> _service;

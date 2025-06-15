@@ -11,7 +11,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import '../services/auth_service.dart';
-import 'login_page.dart'; // Adjust import based on your project structure
+import 'login_page.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -470,7 +470,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                   .map((e) => e.value)
                                   .reduce((a, b) => a > b ? a : b) *
                               1.2)
-                          .toDouble(), // Add 20% padding above max value
+                          .toDouble(),
                   barGroups:
                       topActivities.asMap().entries.map((entry) {
                         final i = entry.key;
@@ -489,7 +489,7 @@ class _DashboardPageState extends State<DashboardPage> {
                               ),
                             ),
                           ],
-                          showingTooltipIndicators: [0], // Show tooltip
+                          showingTooltipIndicators: [0],
                         );
                       }).toList(),
                   titlesData: FlTitlesData(
@@ -514,7 +514,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     bottomTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
-                        reservedSize: 60, // Increased for rotated labels
+                        reservedSize: 60,
                         getTitlesWidget: (value, meta) {
                           final index = value.toInt();
                           if (index >= 0 && index < topActivities.length) {
@@ -733,7 +733,6 @@ class _DashboardPageState extends State<DashboardPage> {
               ],
             ),
             _buildBarChart(),
-            // _buildHorizontalBarChart(), // Uncomment to use horizontal bar chart
             const SizedBox(height: 24),
 
             Row(

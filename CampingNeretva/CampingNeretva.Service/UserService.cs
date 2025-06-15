@@ -1,5 +1,6 @@
-﻿using CampingNeretva.Model;
+﻿using CampingNeretva.Model.Requests;
 using CampingNeretva.Model.SearchObjects;
+using CampingNeretva.Model;
 using CampingNeretva.Service.Database;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
@@ -8,7 +9,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CampingNeretva.Model.Requests;
 using System.Security.Cryptography;
 using Microsoft.ML;
 using Microsoft.ML.Data;
@@ -18,16 +18,18 @@ namespace CampingNeretva.Service
     public class UserService : BaseCRUDService<UserModel, UserSearchObject, User, UserInsertRequest, UserUpdateRequest>, IUserService
     {
         private readonly IUserPreferenceService _userPreferenceService;
+        private readonly IReservationService _reservationService;
         private static readonly MLContext _mlContext = new MLContext(seed: 42);
         private static ITransformer _parcelModel;
         private static ITransformer _activityModel;
         private static ITransformer _rentableItemModel;
         private static readonly object _lock = new object();
 
-        public UserService(_200012Context context, IMapper mapper, IUserPreferenceService userPreferenceService)
+        public UserService(_200012Context context, IMapper mapper, IUserPreferenceService userPreferenceService, IReservationService reservationService)
             : base(context, mapper)
         {
             _userPreferenceService = userPreferenceService;
+            _reservationService = reservationService;
         }
 
         public override async Task<UserModel> Insert(UserInsertRequest request)
@@ -152,20 +154,47 @@ namespace CampingNeretva.Service
 
         public override async Task Delete(int id)
         {
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
+            using (var transaction = await _context.Database.BeginTransactionAsync())
             {
-                throw new Exception("User not found");
+                try
+                {
+                    var user = await _context.Users.FindAsync(id);
+                    if (user == null)
+                    {
+                        throw new Exception("User not found");
+                    }
+
+                    var relatedReservations = await _context.Reservations
+                        .Where(x => x.UserId == id)
+                        .ToListAsync();
+                    foreach (var reservation in relatedReservations)
+                    {
+                        await _reservationService.Delete(reservation.ReservationId);
+                    }
+
+                    var relatedReviews = await _context.Reviews.Where(x => x.UserId == id).ToListAsync();
+                    _context.Reviews.RemoveRange(relatedReviews);
+
+                    var relatedRecommendations = await _context.UserRecommendations.Where(x => x.UserId == id).ToListAsync();
+                    _context.UserRecommendations.RemoveRange(relatedRecommendations);
+
+                    var relatedPreferences = await _context.UserPreferences.Where(x => x.UserId == id).ToListAsync();
+                    _context.UserPreferences.RemoveRange(relatedPreferences);
+
+                    var relatedPayments = await _context.Payments.Where(x => x.UserId == id).ToListAsync();
+                    _context.Payments.RemoveRange(relatedPayments);
+
+                    _context.Users.Remove(user);
+                    await _context.SaveChangesAsync();
+
+                    await transaction.CommitAsync();
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    throw new Exception($"Failed to delete user: {ex.Message}", ex);
+                }
             }
-
-            var relatedReservations = await _context.Reservations.Where(x => x.UserId == id).ToListAsync();
-            _context.Reservations.RemoveRange(relatedReservations);
-
-            var relatedReviews = await _context.Reviews.Where(x => x.UserId == id).ToListAsync();
-            _context.Reviews.RemoveRange(relatedReviews);
-
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
         }
 
         public async Task<UserModel> UpdateOwnProfile(string username, UserUpdateRequest request)
@@ -256,7 +285,7 @@ namespace CampingNeretva.Service
                     }).Score
                 })
                 .OrderByDescending(x => x.Score)
-                .Where(x => x.Score > 0) 
+                .Where(x => x.Score > 0)
                 .Take(3)
                 .Select(x => x.ItemId)
                 .DefaultIfEmpty()
