@@ -2,9 +2,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/reservation_model.dart';
 import 'package:campingneretva_desktop/services/auth_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ReservationService {
-  static const String _baseUrl = 'http://localhost:5205';
+  static final String _baseUrl = dotenv.env['API_URL']!;
 
   static Future<List<Reservation>> fetchAll({
     DateTime? from,
@@ -37,7 +38,9 @@ class ReservationService {
       if (date != null) 'CheckInDate': date.toIso8601String(),
     };
 
-    final uri = Uri.http('localhost:5205', '/Reservation', queryParams);
+    final uri = Uri.parse(
+      '$_baseUrl/Reservation',
+    ).replace(queryParameters: queryParams);
 
     final response = await http.get(uri, headers: headers);
     if (response.statusCode == 200) {
@@ -62,15 +65,17 @@ class ReservationService {
   static Future<List<Reservation>> getByUserId(int userId) async {
     final headers = await AuthService.getAuthHeaders();
 
-    final uri = Uri.http('localhost:5205', '/Reservation', {
-      'UserId': userId.toString(),
-      'IsPersonsIncluded': 'true',
-      'IsVehicleIncluded': 'true',
-      'IsAccommodationIncluded': 'true',
-      'IsRentableItemsIncluded': 'true',
-      'IsActivitiesIncluded': 'true',
-      'IsParcelIncluded': 'true',
-    });
+    final uri = Uri.parse('$_baseUrl/Reservation').replace(
+      queryParameters: {
+        'UserId': userId.toString(),
+        'IsPersonsIncluded': 'true',
+        'IsVehicleIncluded': 'true',
+        'IsAccommodationIncluded': 'true',
+        'IsRentableItemsIncluded': 'true',
+        'IsActivitiesIncluded': 'true',
+        'IsParcelIncluded': 'true',
+      },
+    );
 
     final response = await http.get(uri, headers: headers);
 

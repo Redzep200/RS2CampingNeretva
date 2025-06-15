@@ -2,9 +2,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class UserService {
-  static const String _baseUrl = 'http://localhost:5205';
+  static final String _baseUrl = dotenv.env['API_URL']!;
 
   Future<User> getById(int id) async {
     final headers = await AuthService.getAuthHeaders();

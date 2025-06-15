@@ -4,6 +4,7 @@ import 'package:campingneretva_mobile/models/rentable_item_model.dart';
 import 'package:campingneretva_mobile/models/activity_model.dart';
 import '../services/rentable_item_service.dart';
 import '../services/activity_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ActivitiesRentablesPage extends StatefulWidget {
   const ActivitiesRentablesPage({super.key});
@@ -172,7 +173,7 @@ class _ActivitiesRentablesPageState extends State<ActivitiesRentablesPage> {
     }
     if (imageUrl.startsWith('/')) {
       return Image.network(
-        "http://10.0.2.2:5205$imageUrl",
+        "${dotenv.env['API_URL']!}$imageUrl",
         width: width,
         height: height,
         fit: BoxFit.cover,

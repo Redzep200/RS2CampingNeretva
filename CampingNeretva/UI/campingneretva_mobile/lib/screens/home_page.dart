@@ -6,10 +6,10 @@ import '../services/acommodation_service.dart';
 import '../services/vehicle_service.dart';
 import '../services/person_service.dart';
 import '../widgets/app_scaffold.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
-  static const String baseUrl = "http://10.0.2.2:5205";
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -91,7 +91,7 @@ class _HomePageState extends State<HomePage> {
       image = item.imageUrl;
     }
 
-    final String fullImageUrl = "${HomePage.baseUrl}$image";
+    final String fullImageUrl = "${dotenv.env['API_URL']!}$image";
 
     return Container(
       width: 140,

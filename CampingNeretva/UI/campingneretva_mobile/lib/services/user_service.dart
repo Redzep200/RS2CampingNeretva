@@ -2,9 +2,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class UserService {
-  static const String baseUrl = 'http://10.0.2.2:5205';
+  static String get baseUrl => dotenv.env['API_URL']!;
 
   Future<User> getById(int id) async {
     final response = await http.get(Uri.parse('$baseUrl/User/$id'));
@@ -51,14 +52,10 @@ class UserService {
     final response = await http.put(
       Uri.parse('$baseUrl/User/me'),
       headers: headers,
-      body: jsonEncode(
-        body.isNotEmpty ? body : {'dummy': 'update'},
-      ), // Ensure non-empty body
+      body: jsonEncode(body.isNotEmpty ? body : {'dummy': 'update'}),
     );
 
-    print(
-      'Update response: ${response.statusCode} - ${response.body}',
-    ); // Debug log
+    print('Update response: ${response.statusCode} - ${response.body}');
 
     if (response.statusCode == 200) {
       try {

@@ -10,10 +10,10 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import '../widgets/navbar.dart';
 import '../widgets/app_theme.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class PricePage extends StatefulWidget {
   const PricePage({super.key});
-  static const String baseUrl = "http://localhost:5205";
 
   @override
   State<PricePage> createState() => _PricePageState();
@@ -137,7 +137,7 @@ class _PricePageState extends State<PricePage> {
                           Padding(
                             padding: const EdgeInsets.only(top: 8.0),
                             child: Image.network(
-                              "${PricePage.baseUrl}$uploadedImageUrl",
+                              "${dotenv.env['API_URL']!}$uploadedImageUrl",
                               width: 100,
                               height: 100,
                               fit: BoxFit.cover,
@@ -241,7 +241,7 @@ class _PricePageState extends State<PricePage> {
           itemCount: filteredItems.length,
           itemBuilder: (_, index) {
             final item = filteredItems[index] as dynamic;
-            final imageUrl = "${PricePage.baseUrl}${item.imageUrl}";
+            final imageUrl = "${dotenv.env['API_URL']!}${item.imageUrl}";
 
             return Card(
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -9,9 +10,9 @@ import '../models/image_model.dart';
 import 'dart:typed_data';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:file_picker/file_picker.dart';
-import 'dart:io';
 import '../services/auth_service.dart';
 import 'login_page.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -346,7 +347,7 @@ class _DashboardPageState extends State<DashboardPage> {
                             children: [
                               Positioned.fill(
                                 child: Image.network(
-                                  'http://localhost:5205/${img.path}',
+                                  '${dotenv.env['API_URL']!}${img.path}',
                                   fit: BoxFit.cover,
                                   errorBuilder:
                                       (context, _, __) =>
@@ -480,10 +481,10 @@ class _DashboardPageState extends State<DashboardPage> {
                           barRods: [
                             BarChartRodData(
                               toY: data.value.toDouble(),
-                              width: 30, // Thicker bars
+                              width: 30,
                               color:
                                   [Colors.blue, Colors.green, Colors.orange][i %
-                                      3], // Distinct colors
+                                      3],
                               borderRadius: const BorderRadius.vertical(
                                 top: Radius.circular(4),
                               ),
@@ -520,7 +521,7 @@ class _DashboardPageState extends State<DashboardPage> {
                           if (index >= 0 && index < topActivities.length) {
                             return SideTitleWidget(
                               axisSide: meta.axisSide,
-                              angle: 0.5, // Rotate labels slightly for fit
+                              angle: 0.5,
                               child: Text(
                                 topActivities[index].key,
                                 style: const TextStyle(

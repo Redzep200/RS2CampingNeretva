@@ -11,9 +11,11 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:campingneretva_desktop/screens/parcel_page.dart';
 import 'package:campingneretva_desktop/screens/dashboard_page.dart';
 import 'package:campingneretva_desktop/widgets/app_theme.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   await Hive.initFlutter();
   await Hive.openBox('authBox');
   runApp(AdminDesktopApp());

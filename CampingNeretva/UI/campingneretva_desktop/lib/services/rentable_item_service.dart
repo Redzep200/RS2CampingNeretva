@@ -2,9 +2,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:campingneretva_desktop/models/rentable_item_model.dart';
 import '../services/auth_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class RentableItemService {
-  static const String _baseUrl = "http://localhost:5205";
+  static final String _baseUrl = dotenv.env['API_URL']!;
 
   static Future<List<RentableItem>> getAvailable(
     String? from,

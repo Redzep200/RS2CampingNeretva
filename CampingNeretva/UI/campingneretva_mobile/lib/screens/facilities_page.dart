@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../widgets/app_scaffold.dart';
 import '../models/facility_model.dart';
 import '../services/facility_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class FacilitiesPage extends StatefulWidget {
   const FacilitiesPage({super.key});
@@ -47,7 +48,7 @@ class _FacilitiesPageState extends State<FacilitiesPage> {
                   final facility = facilities[index];
                   final imageUrl =
                       facility.imageUrl.startsWith('/')
-                          ? "http://10.0.2.2:5205${facility.imageUrl}"
+                          ? "${dotenv.env['API_URL']!}${facility.imageUrl}"
                           : facility.imageUrl;
 
                   return Card(

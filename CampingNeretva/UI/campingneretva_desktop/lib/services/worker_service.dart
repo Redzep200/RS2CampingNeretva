@@ -2,9 +2,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/worker_model.dart';
 import 'package:campingneretva_desktop/services/auth_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class WorkerService {
-  static const String _baseUrl = 'http://localhost:5205';
+  static final String _baseUrl = dotenv.env['API_URL']!;
 
   static Future<List<Worker>> fetchAll() async {
     final res = await http.get(Uri.parse('$_baseUrl/Worker'));
@@ -63,7 +64,7 @@ class WorkerService {
         .join('&');
 
     final response = await http.get(
-      Uri.parse('http://localhost:5205/Worker?$queryString'),
+      Uri.parse('$_baseUrl/Worker?$queryString'),
       headers: headers,
     );
 

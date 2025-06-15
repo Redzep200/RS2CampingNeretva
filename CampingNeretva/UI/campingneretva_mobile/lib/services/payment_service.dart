@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:campingneretva_mobile/services/auth_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class PaymentService {
-  static const String baseUrl = 'http://10.0.2.2:5205';
+  static String get baseUrl => dotenv.env['API_URL']!;
 
   static Future<Map<String, dynamic>> createPayPalOrder({
     required int reservationId,

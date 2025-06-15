@@ -11,10 +11,10 @@ import '../services/parcel_accommodation_service.dart';
 import '../services/image_service.dart';
 import '../widgets/navbar.dart';
 import '../widgets/app_theme.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ParcelPage extends StatefulWidget {
   const ParcelPage({super.key});
-  static const String baseUrl = "http://localhost:5205";
 
   @override
   State<ParcelPage> createState() => _ParcelPageState();
@@ -255,7 +255,7 @@ class _ParcelPageState extends State<ParcelPage> {
                           Padding(
                             padding: const EdgeInsets.only(top: 8.0),
                             child: Image.network(
-                              "${ParcelPage.baseUrl}$imageUrl",
+                              "${dotenv.env['API_URL']!}$imageUrl",
                               width: 150,
                               height: 150,
                               fit: BoxFit.cover,
@@ -364,7 +364,6 @@ class _ParcelPageState extends State<ParcelPage> {
                 width: 600,
                 child: Row(
                   children: [
-                    // Parcel Types
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -774,7 +773,7 @@ class _ParcelPageState extends State<ParcelPage> {
                                   itemBuilder: (_, index) {
                                     final parcel = paginatedParcels[index];
                                     final imageUrl =
-                                        "${ParcelPage.baseUrl}${parcel.imageUrl}";
+                                        "${dotenv.env['API_URL']!}${parcel.imageUrl}";
 
                                     return Card(
                                       color:

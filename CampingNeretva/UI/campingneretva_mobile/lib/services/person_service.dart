@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/person_model.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class PersonService {
-  static String baseUrl = 'http://10.0.2.2:5205/Person';
+  static String get baseUrl => '${dotenv.env['API_URL']!}/Person';
 
   static Future<List<PersonType>> getPersons() async {
     final response = await http.get(Uri.parse(baseUrl));

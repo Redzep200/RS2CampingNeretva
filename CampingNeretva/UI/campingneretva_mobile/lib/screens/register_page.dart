@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -42,7 +43,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
         if (user != null) {
           final prefResponse = await http.post(
-            Uri.parse('http://10.0.2.2:5205/UserPreference'),
+            Uri.parse('${dotenv.env['API_URL']!}/UserPreference'),
             headers: await AuthService.getAuthHeaders(),
             body: jsonEncode({
               'numberOfPeople': int.parse(_numberOfPeople.text),

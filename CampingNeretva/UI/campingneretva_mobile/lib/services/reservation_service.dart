@@ -2,9 +2,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/reservation_model.dart';
 import '../services/auth_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ReservationService {
-  static const String baseUrl = "http://10.0.2.2:5205";
+  static String get baseUrl => dotenv.env['API_URL']!;
 
   static Future<List<Reservation>> getAll() async {
     final uri = Uri.parse('$baseUrl/Reservation?includeRelated=true');
@@ -65,7 +66,9 @@ class ReservationService {
       queryParams['CheckInDate'] = checkInDate.toIso8601String().split('T')[0];
     }
 
-    final uri = Uri.http('10.0.2.2:5205', '/Reservation', queryParams);
+    final uri = Uri.parse(
+      '$baseUrl/Reservation',
+    ).replace(queryParameters: queryParams);
     print('Request URL: $uri');
     print('Headers: $headers');
     print('Pagination: Page=$page, PageSize=$pageSize');

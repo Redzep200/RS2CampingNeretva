@@ -2,9 +2,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/user_type_model.dart';
 import '../services/auth_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class UserTypeService {
-  static const String baseUrl = "http://localhost:5205";
+  static final String baseUrl = dotenv.env['API_URL']!;
 
   Future<List<UserType>> getUserTypes() async {
     final headers = await AuthService.getAuthHeaders();

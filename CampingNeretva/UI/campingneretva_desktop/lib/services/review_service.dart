@@ -2,9 +2,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/review_model.dart';
 import '../services/auth_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ReviewService {
-  static const String baseUrl = "http://localhost:5205";
+  static final String baseUrl = dotenv.env['API_URL']!;
 
   static Future<List<Review>> getAll({int? workerId, int? userId}) async {
     try {
@@ -49,7 +50,7 @@ class ReviewService {
         .join('&');
 
     final response = await http.get(
-      Uri.parse('http://localhost:5205/Review?$queryString'),
+      Uri.parse('$baseUrl/Review?$queryString'),
       headers: headers,
     );
     if (response.statusCode == 200) {

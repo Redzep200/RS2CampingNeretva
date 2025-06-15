@@ -8,6 +8,7 @@ import '../widgets/navbar.dart';
 import '../models/facility_model.dart';
 import '../services/facility_service.dart';
 import '../widgets/app_theme.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ActivityPage extends StatefulWidget {
   const ActivityPage({super.key});
@@ -206,7 +207,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                   maxWidth: 300,
                                 ),
                                 child: Image.network(
-                                  'http://localhost:5205$uploadedImageUrl',
+                                  '${dotenv.env['API_URL']!}$uploadedImageUrl',
                                   height: 100,
                                   fit: BoxFit.cover,
                                   errorBuilder:
@@ -391,7 +392,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                       maxWidth: 300,
                                     ),
                                     child: Image.network(
-                                      'http://localhost:5205${activity.imageUrl}',
+                                      '${dotenv.env['API_URL']!}${activity.imageUrl}',
                                       height: 100,
                                       fit: BoxFit.cover,
                                       errorBuilder:
@@ -469,7 +470,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                             maxWidth: 300,
                                           ),
                                           child: Image.network(
-                                            'http://localhost:5205$newImageUrl',
+                                            '${dotenv.env['API_URL']!}$newImageUrl',
                                             height: 100,
                                             fit: BoxFit.cover,
                                             errorBuilder:
@@ -552,7 +553,7 @@ class _ActivityPageState extends State<ActivityPage> {
   }
 
   Widget _buildActivityCard(Activity activity) {
-    final imageUrl = 'http://localhost:5205${activity.imageUrl}';
+    final imageUrl = '${dotenv.env['API_URL']!}${activity.imageUrl}';
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

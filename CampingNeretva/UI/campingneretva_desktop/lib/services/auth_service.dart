@@ -2,12 +2,13 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:campingneretva_desktop/models/user_model.dart';
 import 'package:hive/hive.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class AuthService {
   static User? currentUser;
   static String? _password;
   static final Box _box = Hive.box('authBox');
-  static const String baseUrl = 'http://localhost:5205';
+  static final String baseUrl = dotenv.env['API_URL']!;
 
   static Future<User?> login(String username, String password) async {
     try {

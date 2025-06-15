@@ -3,9 +3,10 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../models/image_model.dart';
 import 'package:campingneretva_desktop/services/auth_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ImageService {
-  static const String _baseUrl = 'http://localhost:5205';
+  static final String _baseUrl = dotenv.env['API_URL']!;
 
   static Future<List<ImageModel>> fetchAll() async {
     final headers = await AuthService.getAuthHeaders();

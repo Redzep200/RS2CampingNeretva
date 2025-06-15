@@ -3,6 +3,7 @@ import '../services/auth_service.dart';
 import '../services/user_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -39,7 +40,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> _loadPreferences() async {
     try {
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:5205/UserPreference'),
+        Uri.parse('${dotenv.env['API_URL']!}/UserPreference'),
         headers: await AuthService.getAuthHeaders(),
       );
       if (response.statusCode == 200) {
@@ -85,7 +86,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
         if (updated != null) {
           final prefResponse = await http.put(
-            Uri.parse('http://10.0.2.2:5205/UserPreference'),
+            Uri.parse('${dotenv.env['API_URL']!}/UserPreference'),
             headers: await AuthService.getAuthHeaders(),
             body: jsonEncode({
               'numberOfPeople': int.parse(_numberOfPeople.text),

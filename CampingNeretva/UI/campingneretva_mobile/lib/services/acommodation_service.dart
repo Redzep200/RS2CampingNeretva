@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/acommodation_model.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class AccommodationService {
-  static String baseUrl = 'http://10.0.2.2:5205/Accommodation';
+  static String get baseUrl => '${dotenv.env['API_URL']!}/Accommodation';
 
   static Future<List<Accommodation>> getAccommodations() async {
     final response = await http.get(Uri.parse(baseUrl));

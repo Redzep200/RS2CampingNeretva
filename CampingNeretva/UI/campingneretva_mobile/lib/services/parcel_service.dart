@@ -2,9 +2,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/parcel_model.dart';
 import '../services/auth_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ParcelService {
-  static const String baseUrl = "http://10.0.2.2:5205";
+  static String get baseUrl => dotenv.env['API_URL']!;
 
   static Future<List<Parcel>> getParcels({
     DateTime? from,

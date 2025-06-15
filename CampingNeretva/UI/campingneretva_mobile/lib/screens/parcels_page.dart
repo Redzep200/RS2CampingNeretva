@@ -7,6 +7,7 @@ import 'package:campingneretva_mobile/services/parcel_accommodation_service.dart
 import 'package:campingneretva_mobile/services/parcel_type_service.dart';
 import 'package:campingneretva_mobile/models/parcel_accommodation_model.dart';
 import 'package:campingneretva_mobile/models/parcel_type_model.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ParcelsPage extends StatefulWidget {
   const ParcelsPage({super.key});
@@ -295,7 +296,7 @@ class _ParcelsPageState extends State<ParcelsPage> {
                                   final imageUrl =
                                       parcel.imageUrl != null &&
                                               parcel.imageUrl!.startsWith('/')
-                                          ? "http://10.0.2.2:5205${parcel.imageUrl}"
+                                          ? "${dotenv.env['API_URL']!}${parcel.imageUrl}"
                                           : parcel.imageUrl ?? '';
 
                                   return Card(

@@ -6,10 +6,11 @@ import '../services/facility_service.dart';
 import '../services/image_service.dart';
 import '../widgets/navbar.dart';
 import '../widgets/app_theme.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class FacilityPage extends StatefulWidget {
   const FacilityPage({super.key});
-  static const String baseUrl = "http://localhost:5205";
+  static final String baseUrl = dotenv.env['API_URL']!;
 
   @override
   State<FacilityPage> createState() => _FacilityPageState();

@@ -7,10 +7,11 @@ import '../services/rentable_item_service.dart';
 import '../services/image_service.dart';
 import '../widgets/navbar.dart';
 import '../widgets/app_theme.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class RentableItemsPage extends StatefulWidget {
   const RentableItemsPage({super.key});
-  static const String baseUrl = "http://localhost:5205";
+  static final String baseUrl = dotenv.env['API_URL']!;
 
   @override
   State<RentableItemsPage> createState() => _RentableItemsPageState();
