@@ -16,9 +16,9 @@ PAYPAL_SECRET=EOxBGRtTuRSdRKgBgnBTmSGvS6AVQ05VNAdAgxwzsh7h-bbk305LRRd_JAGSKeCVuc
 PAYPAL_BASE_URL=https://api-m.sandbox.paypal.com
 
 BUSINESS PAYPAL:
-EMAIL: buyer@neretva.com
+EMAIL: seller@neretva.com
 PASSWORD: neretva2024
 
 BUYER PAYPAL:
-EMAIL: seller@neretva.com
+EMAIL: buyer@neretva.com
 PASSWORD: neretva2024
