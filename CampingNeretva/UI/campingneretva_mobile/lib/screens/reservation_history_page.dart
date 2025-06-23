@@ -90,7 +90,7 @@ class _ReservationHistoryPageState extends State<ReservationHistoryPage> {
                     controller: _dateController,
                     decoration: const InputDecoration(
                       labelText: 'Search by Check-in Date',
-                      suffixIcon: Icon(Icons.calendar_today),
+                      prefixIcon: Icon(Icons.calendar_today),
                       border: OutlineInputBorder(),
                     ),
                     readOnly: true,
@@ -124,6 +124,8 @@ class _ReservationHistoryPageState extends State<ReservationHistoryPage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        const Icon(Icons.error, color: Colors.red, size: 40),
+                        const SizedBox(height: 16),
                         Text('Error: ${snapshot.error}'),
                         const SizedBox(height: 16),
                         ElevatedButton(
@@ -139,7 +141,16 @@ class _ReservationHistoryPageState extends State<ReservationHistoryPage> {
                   print(
                     'No reservations found for page: $_currentPage, date: $_selectedDate',
                   );
-                  return const Center(child: Text('No reservations found.'));
+                  return const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.inbox, color: Colors.grey, size: 40),
+                        SizedBox(height: 16),
+                        Text('No reservations found.'),
+                      ],
+                    ),
+                  );
                 }
 
                 final reservations = snapshot.data!;
@@ -151,7 +162,7 @@ class _ReservationHistoryPageState extends State<ReservationHistoryPage> {
                       child: ListView.separated(
                         padding: const EdgeInsets.all(16),
                         itemCount: reservations.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 12),
+                        separatorBuilder: (_, __) => const Divider(height: 1),
                         itemBuilder: (context, index) {
                           final r = reservations[index];
                           final isExpanded = _expandedReservations.contains(
@@ -161,113 +172,78 @@ class _ReservationHistoryPageState extends State<ReservationHistoryPage> {
 
                           return Card(
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            elevation: 4,
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                            elevation: 3,
+                            child: Theme(
+                              data: Theme.of(
+                                context,
+                              ).copyWith(dividerColor: Colors.transparent),
+                              child: ExpansionTile(
+                                leading: const Icon(
+                                  Icons.history,
+                                  color: Colors.blue,
+                                ),
+                                title: Text(
+                                  'Reservation #${r.reservationId}',
+                                  style:
+                                      Theme.of(context).textTheme.titleMedium,
+                                ),
+                                subtitle: Text(
+                                  '${r.startDate.toLocal().toString().split(' ')[0]} → ${r.endDate.toLocal().toString().split(' ')[0]}',
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                                childrenPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
+                                ),
                                 children: [
-                                  Text(
-                                    'Parcel: ${r.parcel.number}',
-                                    style: const TextStyle(
-                                      fontFamily: 'MochiyPop',
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                  _infoRow(
+                                    const Icon(Icons.landscape, size: 20),
+                                    'Parcel',
+                                    r.parcel.number.toString(),
                                   ),
-                                  Text(
-                                    'Accommodation: ${r.accommodation.type}',
-                                    style: const TextStyle(
-                                      fontFamily: 'MochiyPop',
-                                      fontSize: 14,
-                                    ),
+                                  _infoRow(
+                                    const Icon(Icons.hotel, size: 20),
+                                    'Accommodation',
+                                    r.accommodation.type,
                                   ),
-                                  Text(
-                                    'From: ${r.startDate.toLocal().toString().split(' ')[0]}',
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      fontFamily: 'MochiyPop',
+                                  if (r.persons.isNotEmpty)
+                                    _infoRow(
+                                      const Icon(Icons.people, size: 20),
+                                      'Persons',
+                                      r.persons.map((p) => p.type).join(', '),
                                     ),
-                                  ),
-                                  Text(
-                                    'To: ${r.endDate.toLocal().toString().split(' ')[0]}',
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      fontFamily: 'MochiyPop',
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'Total Price: ${totalPrice.toStringAsFixed(2)} €',
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      fontFamily: 'MochiyPop',
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.green,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  TextButton.icon(
-                                    onPressed: () {
-                                      setState(() {
-                                        if (isExpanded) {
-                                          _expandedReservations.remove(
-                                            r.reservationId,
-                                          );
-                                        } else {
-                                          _expandedReservations.add(
-                                            r.reservationId,
-                                          );
-                                        }
-                                      });
-                                    },
-                                    icon: Icon(
-                                      isExpanded
-                                          ? Icons.keyboard_arrow_up
-                                          : Icons.keyboard_arrow_down,
-                                    ),
-                                    label: Text(
-                                      isExpanded
-                                          ? 'Hide Add-ons'
-                                          : 'Show Add-ons',
-                                    ),
-                                  ),
-                                  if (isExpanded) ...[
-                                    if (r.persons.isNotEmpty)
-                                      Text(
-                                        'Persons: ${r.persons.map((p) => p.type).join(', ')}',
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          fontFamily: 'MochiyPop',
-                                        ),
+                                  if (r.vehicles.isNotEmpty)
+                                    _infoRow(
+                                      const Icon(
+                                        Icons.directions_car,
+                                        size: 20,
                                       ),
-                                    if (r.vehicles.isNotEmpty)
-                                      Text(
-                                        'Vehicles: ${r.vehicles.map((v) => v.type).join(', ')}',
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          fontFamily: 'MochiyPop',
-                                        ),
-                                      ),
-                                    if (r.rentableItems.isNotEmpty)
-                                      Text(
-                                        'Items: ${r.rentableItems.map((i) => i.name).join(', ')}',
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          fontFamily: 'MochiyPop',
-                                        ),
-                                      ),
-                                    if (r.activities.isNotEmpty)
-                                      Text(
-                                        'Activities: ${r.activities.map((a) => a.name).join(', ')}',
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          fontFamily: 'MochiyPop',
-                                        ),
-                                      ),
-                                  ],
+                                      'Vehicles',
+                                      r.vehicles.map((v) => v.type).join(', '),
+                                    ),
+                                  if (r.rentableItems.isNotEmpty)
+                                    _infoRow(
+                                      const Icon(Icons.shopping_bag, size: 20),
+                                      'Items',
+                                      r.rentableItems
+                                          .map((i) => i.name)
+                                          .join(', '),
+                                    ),
+                                  if (r.activities.isNotEmpty)
+                                    _infoRow(
+                                      const Icon(Icons.event, size: 20),
+                                      'Activities',
+                                      r.activities
+                                          .map((a) => a.name)
+                                          .join(', '),
+                                    ),
+                                  _infoRow(
+                                    const Icon(Icons.attach_money, size: 20),
+                                    'Total Price',
+                                    '${totalPrice.toStringAsFixed(2)} €',
+                                  ),
                                 ],
                               ),
                             ),
@@ -280,7 +256,9 @@ class _ReservationHistoryPageState extends State<ReservationHistoryPage> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          ElevatedButton(
+                          ElevatedButton.icon(
+                            icon: const Icon(Icons.arrow_back),
+                            label: const Text('Previous'),
                             onPressed:
                                 _currentPage > 0
                                     ? () {
@@ -292,10 +270,22 @@ class _ReservationHistoryPageState extends State<ReservationHistoryPage> {
                                       });
                                     }
                                     : null,
-                            child: const Text('Previous'),
+                            style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              backgroundColor: Colors.blue,
+                              disabledForegroundColor: Colors.grey,
+                            ),
                           ),
-                          Text('Page ${_currentPage + 1}'),
-                          ElevatedButton(
+                          Text(
+                            'Page ${_currentPage + 1}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          ElevatedButton.icon(
+                            icon: const Icon(Icons.arrow_forward),
+                            label: const Text('Next'),
                             onPressed:
                                 reservations.length == _pageSize
                                     ? () {
@@ -307,7 +297,11 @@ class _ReservationHistoryPageState extends State<ReservationHistoryPage> {
                                       });
                                     }
                                     : null,
-                            child: const Text('Next'),
+                            style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              backgroundColor: Colors.blue,
+                              disabledForegroundColor: Colors.grey,
+                            ),
                           ),
                         ],
                       ),
@@ -319,6 +313,61 @@ class _ReservationHistoryPageState extends State<ReservationHistoryPage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _infoRow(Widget icon, String label, String content) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          icon,
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 120, // Fixed width ensures alignment
+            child: Text(
+              label,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              content,
+              style: Theme.of(context).textTheme.bodyMedium,
+              textAlign: TextAlign.right,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteConfirmationDialog(BuildContext context, Reservation r) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Confirm Deletion'),
+            content: const Text(
+              'Are you sure you want to delete this reservation? This action cannot be undone.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () {
+                  // Add deletion logic here
+                  Navigator.pop(context);
+                },
+                child: const Text('Delete'),
+              ),
+            ],
+          ),
     );
   }
 }

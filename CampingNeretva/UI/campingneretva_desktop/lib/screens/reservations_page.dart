@@ -83,6 +83,10 @@ class _ReservationsPageState extends State<ReservationsPage> {
     return filtered;
   }
 
+  int _calculateNights(Reservation r) {
+    return r.endDate.difference(r.startDate).inDays;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -97,7 +101,7 @@ class _ReservationsPageState extends State<ReservationsPage> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 } else if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
+                  return Center(child: Text('Greška: ${snapshot.error}'));
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return const Center(
                     child: Text('Nije pronađena ni jedna rezervacija.'),
@@ -134,8 +138,9 @@ class _ReservationsPageState extends State<ReservationsPage> {
                         padding: const EdgeInsets.all(16),
                         children:
                             sorted.entries.expand<Widget>((entry) {
-                              if (entry.value.isEmpty)
+                              if (entry.value.isEmpty) {
                                 return const Iterable<Widget>.empty();
+                              }
                               return [
                                 Text(
                                   entry.key,
@@ -174,6 +179,7 @@ class _ReservationsPageState extends State<ReservationsPage> {
             child: TextField(
               decoration: const InputDecoration(
                 labelText: 'Pretraga po korisničkom imenu',
+                prefixIcon: Icon(Icons.person),
               ),
               onChanged: (value) {
                 setState(() {
@@ -186,7 +192,10 @@ class _ReservationsPageState extends State<ReservationsPage> {
           SizedBox(
             width: 200,
             child: TextField(
-              decoration: const InputDecoration(labelText: 'Broj rezervacije'),
+              decoration: const InputDecoration(
+                labelText: 'Broj rezervacije',
+                prefixIcon: Icon(Icons.confirmation_number),
+              ),
               keyboardType: TextInputType.number,
               onChanged: (value) {
                 setState(() {
@@ -201,10 +210,10 @@ class _ReservationsPageState extends State<ReservationsPage> {
             child: DropdownButtonFormField<String>(
               value: _vehicleTypeFilter,
               items: const [
-                DropdownMenuItem(value: null, child: Text('All Vehicles')),
-                DropdownMenuItem(value: 'car', child: Text('Car')),
-                DropdownMenuItem(value: 'motorbike', child: Text('Motorbike')),
-                DropdownMenuItem(value: 'van', child: Text('Van')),
+                DropdownMenuItem(value: null, child: Text('Sva vozila')),
+                DropdownMenuItem(value: 'car', child: Text('Auto')),
+                DropdownMenuItem(value: 'motorbike', child: Text('Motocikl')),
+                DropdownMenuItem(value: 'van', child: Text('Kombi')),
               ],
               onChanged: (value) {
                 setState(() {
@@ -212,7 +221,10 @@ class _ReservationsPageState extends State<ReservationsPage> {
                   _currentPage = 0;
                 });
               },
-              decoration: const InputDecoration(labelText: 'Tip vozila'),
+              decoration: const InputDecoration(
+                labelText: 'Tip vozila',
+                prefixIcon: Icon(Icons.directions_car),
+              ),
               style: const TextStyle(color: Colors.black87),
               dropdownColor: Colors.white,
             ),
@@ -221,7 +233,7 @@ class _ReservationsPageState extends State<ReservationsPage> {
             width: 200,
             child: OutlinedButton.icon(
               style: Theme.of(context).outlinedButtonTheme.style,
-              icon: const Icon(Icons.date_range),
+              icon: const Icon(Icons.calendar_today),
               label: Text(
                 _selectedDate == null
                     ? 'Datum rezervacije'
@@ -253,7 +265,7 @@ class _ReservationsPageState extends State<ReservationsPage> {
                 });
               },
               icon: const Icon(Icons.clear),
-              label: const Text("Ukloni datum"),
+              label: const Text('Ukloni datum'),
             ),
         ],
       ),
@@ -262,79 +274,140 @@ class _ReservationsPageState extends State<ReservationsPage> {
 
   Widget _buildReservationCard(Reservation r) {
     return Card(
-      elevation: 4,
+      elevation: 2,
       margin: const EdgeInsets.symmetric(vertical: 8),
-      shape: Theme.of(context).cardTheme.shape,
-      child: ExpansionTile(
-        tilePadding: const EdgeInsets.symmetric(horizontal: 16),
-        title: Text(
-          'Rezervacija #${r.reservationId} - ${r.user.firstName} ${r.user.lastName}',
-          style: Theme.of(context).textTheme.titleMedium,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16),
+          leading: const Icon(Icons.local_activity, color: Colors.blue),
+          title: Text(
+            'Rezervacija #${r.reservationId} - ${r.user.firstName} ${r.user.lastName}',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          subtitle: Text(
+            '${_dateFormat.format(r.startDate)} → ${_dateFormat.format(r.endDate)}',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          trailing: IconButton(
+            icon: const Icon(Icons.close, size: 20),
+            onPressed: () {
+              _showDeleteConfirmationDialog(context, r);
+            },
+          ),
+          childrenPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 8,
+          ),
+          children: [
+            if (r.accommodations.isNotEmpty)
+              _infoRow(
+                const Icon(Icons.hotel, size: 20),
+                'Smještaj',
+                r.accommodations
+                    .map((a) => '${a.accommodation.type} x${a.quantity}')
+                    .join(', '),
+              ),
+            if (r.persons.isNotEmpty)
+              _infoRow(
+                const Icon(Icons.people, size: 20),
+                'Osobe',
+                r.persons
+                    .map((p) => '${p.person.type} x${p.quantity}')
+                    .join(', '),
+              ),
+            if (r.vehicles.isNotEmpty)
+              _infoRow(
+                const Icon(Icons.directions_car, size: 20),
+                'Vozila',
+                r.vehicles
+                    .map((v) => '${v.vehicle.type} x${v.quantity}')
+                    .join(', '),
+              ),
+            if (r.rentableItems != null && r.rentableItems!.isNotEmpty)
+              _infoRow(
+                const Icon(Icons.shopping_bag, size: 20),
+                'Iznajmljive stavke',
+                r.rentableItems!
+                    .map((i) => '${i.item.name} x${i.quantity}')
+                    .join(', '),
+              ),
+            if (r.activities != null && r.activities!.isNotEmpty)
+              _infoRow(
+                const Icon(Icons.event, size: 20),
+                'Aktivnosti',
+                r.activities!.map((a) => a.name).join(', '),
+              ),
+            _infoRow(
+              const Icon(Icons.nights_stay, size: 20),
+              'Broj noći',
+              _calculateNights(r).toString(),
+            ),
+            _infoRow(
+              const Icon(Icons.attach_money, size: 20),
+              'Cijena',
+              '${r.totalPrice.toStringAsFixed(2)} €',
+            ),
+          ],
         ),
-        subtitle: Text(
-          '${_dateFormat.format(r.startDate)} → ${_dateFormat.format(r.endDate)}',
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-        childrenPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 8,
-        ),
-        children: [
-          _infoRow('Parcela', r.parcel.number.toString()),
-          if (r.accommodations.isNotEmpty)
-            _infoRow(
-              'Smjestaj',
-              r.accommodations
-                  .map((a) => '${a.accommodation.type} x${a.quantity}')
-                  .join(', '),
-            ),
-          if (r.persons.isNotEmpty)
-            _infoRow(
-              'Osobe',
-              r.persons
-                  .map((p) => '${p.person.type} x${p.quantity}')
-                  .join(', '),
-            ),
-          if (r.vehicles.isNotEmpty)
-            _infoRow(
-              'Vozila',
-              r.vehicles
-                  .map((v) => '${v.vehicle.type} x${v.quantity}')
-                  .join(', '),
-            ),
-          if (r.rentableItems != null && r.rentableItems!.isNotEmpty)
-            _infoRow(
-              'Rentane stavke',
-              r.rentableItems!
-                  .map((i) => '${i.item.name} x${i.quantity}')
-                  .join(', '),
-            ),
-          if (r.activities != null && r.activities!.isNotEmpty)
-            _infoRow('Aktivnosti', r.activities!.map((a) => a.name).join(', ')),
-          _infoRow('Cijena', '${r.totalPrice.toStringAsFixed(2)} €'),
-          _infoRow('Status', r.paymentStatus),
-        ],
       ),
     );
   }
 
-  Widget _infoRow(String label, String content) {
+  Widget _infoRow(Widget icon, String label, String content) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '$label: ',
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+          icon,
+          const SizedBox(width: 8),
+          Expanded(
+            flex: 1,
+            child: Text(
+              label,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
           ),
           Expanded(
-            child: Text(content, style: Theme.of(context).textTheme.bodyMedium),
+            flex: 2,
+            child: Text(
+              content,
+              style: Theme.of(context).textTheme.bodyMedium,
+              textAlign: TextAlign.right,
+            ),
           ),
         ],
       ),
+    );
+  }
+
+  void _showDeleteConfirmationDialog(BuildContext context, Reservation r) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Potvrdi brisanje'),
+            content: const Text(
+              'Jeste li sigurni da želite obrisati ovu rezervaciju? Ova akcija se ne može poništiti.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Odustani'),
+              ),
+              TextButton(
+                onPressed: () {
+                  // Add deletion logic here
+                  Navigator.pop(context);
+                },
+                child: const Text('Obriši'),
+              ),
+            ],
+          ),
     );
   }
 

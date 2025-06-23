@@ -5,6 +5,8 @@ import 'package:campingneretva_mobile/models/activity_model.dart';
 import '../services/rentable_item_service.dart';
 import '../services/activity_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:campingneretva_mobile/widgets/rentable_item_details_dialog.dart';
+import 'package:campingneretva_mobile/widgets/activity_details_dialog.dart';
 
 class ActivitiesRentablesPage extends StatefulWidget {
   const ActivitiesRentablesPage({super.key});
@@ -130,36 +132,43 @@ class _ActivitiesRentablesPageState extends State<ActivitiesRentablesPage> {
     required String subtitle,
     bool isRecommended = false,
     bool isThreeLine = false,
+    required VoidCallback onTap,
   }) {
-    return ListTile(
-      tileColor: isRecommended ? Colors.green[50] : null,
-      leading: _buildImage(imageUrl, width: 60, height: 60),
-      title: Row(
-        children: [
-          Text(name),
-          if (isRecommended)
-            Padding(
-              padding: const EdgeInsets.only(left: 8),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.green,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: const Text(
-                  "Recommended",
-                  style: TextStyle(color: Colors.white, fontSize: 12),
+    return InkWell(
+      onTap: onTap,
+      child: ListTile(
+        tileColor: isRecommended ? Colors.green[50] : null,
+        leading: _buildImage(imageUrl, width: 60, height: 60),
+        title: Row(
+          children: [
+            Text(name),
+            if (isRecommended)
+              Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.green,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Text(
+                    "Recommended",
+                    style: TextStyle(color: Colors.white, fontSize: 12),
+                  ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
+        subtitle: Text(
+          subtitle,
+          maxLines: isThreeLine ? 3 : 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        isThreeLine: isThreeLine,
       ),
-      subtitle: Text(
-        subtitle,
-        maxLines: isThreeLine ? 3 : 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      isThreeLine: isThreeLine,
     );
   }
 
@@ -248,6 +257,15 @@ class _ActivitiesRentablesPageState extends State<ActivitiesRentablesPage> {
                                 isRecommended: recommendedRentableItems.any(
                                   (ri) => ri.id == item.id,
                                 ),
+                                onTap: () {
+                                  showDialog(
+                                    context: context,
+                                    builder:
+                                        (context) => RentableItemDetailsDialog(
+                                          item: item,
+                                        ),
+                                  );
+                                },
                               ),
                             ),
                             const SizedBox(height: 24),
@@ -271,6 +289,14 @@ class _ActivitiesRentablesPageState extends State<ActivitiesRentablesPage> {
                                   (ra) => ra.id == a.id,
                                 ),
                                 isThreeLine: true,
+                                onTap: () {
+                                  showDialog(
+                                    context: context,
+                                    builder:
+                                        (context) =>
+                                            ActivityDetailsDialog(activity: a),
+                                  );
+                                },
                               ),
                             ),
                           ],

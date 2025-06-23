@@ -8,6 +8,7 @@ import 'package:campingneretva_mobile/services/parcel_type_service.dart';
 import 'package:campingneretva_mobile/models/parcel_accommodation_model.dart';
 import 'package:campingneretva_mobile/models/parcel_type_model.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:campingneretva_mobile/widgets/parcel_details_dialog.dart';
 
 class ParcelsPage extends StatefulWidget {
   const ParcelsPage({super.key});
@@ -299,87 +300,101 @@ class _ParcelsPageState extends State<ParcelsPage> {
                                           ? "${dotenv.env['API_URL']!}${parcel.imageUrl}"
                                           : parcel.imageUrl ?? '';
 
-                                  return Card(
-                                    elevation: 3,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                      side:
-                                          isRecommended
-                                              ? const BorderSide(
-                                                color: Colors.green,
-                                                width: 2,
-                                              )
-                                              : BorderSide.none,
-                                    ),
-                                    child: Stack(
-                                      children: [
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.stretch,
-                                          children: [
-                                            Expanded(
-                                              child: ClipRRect(
-                                                borderRadius:
-                                                    const BorderRadius.vertical(
-                                                      top: Radius.circular(16),
-                                                    ),
-                                                child:
-                                                    imageUrl.isNotEmpty
-                                                        ? Image.network(
-                                                          imageUrl,
-                                                          fit: BoxFit.cover,
-                                                          errorBuilder:
-                                                              (
-                                                                _,
-                                                                __,
-                                                                ___,
-                                                              ) => const Icon(
-                                                                Icons
-                                                                    .broken_image,
-                                                              ),
-                                                        )
-                                                        : const Icon(
-                                                          Icons
-                                                              .image_not_supported,
+                                  return InkWell(
+                                    onTap: () {
+                                      showDialog(
+                                        context: context,
+                                        builder:
+                                            (context) => ParcelDetailsDialog(
+                                              parcel: parcel,
+                                            ),
+                                      );
+                                    },
+                                    child: Card(
+                                      elevation: 3,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                        side:
+                                            isRecommended
+                                                ? const BorderSide(
+                                                  color: Colors.green,
+                                                  width: 2,
+                                                )
+                                                : BorderSide.none,
+                                      ),
+                                      child: Stack(
+                                        children: [
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.stretch,
+                                            children: [
+                                              Expanded(
+                                                child: ClipRRect(
+                                                  borderRadius:
+                                                      const BorderRadius.vertical(
+                                                        top: Radius.circular(
+                                                          16,
                                                         ),
+                                                      ),
+                                                  child:
+                                                      imageUrl.isNotEmpty
+                                                          ? Image.network(
+                                                            imageUrl,
+                                                            fit: BoxFit.cover,
+                                                            errorBuilder:
+                                                                (
+                                                                  _,
+                                                                  __,
+                                                                  ___,
+                                                                ) => const Icon(
+                                                                  Icons
+                                                                      .broken_image,
+                                                                ),
+                                                          )
+                                                          : const Icon(
+                                                            Icons
+                                                                .image_not_supported,
+                                                          ),
+                                                ),
                                               ),
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.all(
-                                                8.0,
-                                              ),
-                                              child: Center(
-                                                child: Text(
-                                                  "Parcel #${parcel.number}",
-                                                  style: const TextStyle(
-                                                    fontWeight: FontWeight.bold,
+                                              Padding(
+                                                padding: const EdgeInsets.all(
+                                                  8.0,
+                                                ),
+                                                child: Center(
+                                                  child: Text(
+                                                    "Parcel #${parcel.number}",
+                                                    style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
                                                   ),
                                                 ),
                                               ),
-                                            ),
-                                          ],
-                                        ),
-                                        if (isRecommended)
-                                          Positioned(
-                                            top: 8,
-                                            left: 8,
-                                            child: Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 8,
-                                                    vertical: 4,
-                                                  ),
-                                              color: Colors.green,
-                                              child: const Text(
-                                                "Recommended",
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 12,
-                                                ),
-                                              ),
-                                            ),
+                                            ],
                                           ),
-                                      ],
+                                          if (isRecommended)
+                                            Positioned(
+                                              top: 8,
+                                              left: 8,
+                                              child: Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 4,
+                                                    ),
+                                                color: Colors.green,
+                                                child: const Text(
+                                                  "Recommended",
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
                                     ),
                                   );
                                 },
