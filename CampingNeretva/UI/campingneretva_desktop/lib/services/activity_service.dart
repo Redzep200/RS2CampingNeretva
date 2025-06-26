@@ -8,7 +8,9 @@ class ActivityService {
   static final String _baseUrl = dotenv.env['API_URL']!;
 
   static Future<List<Activity>> fetchAll() async {
-    final res = await http.get(Uri.parse('$_baseUrl/Activity'));
+    final res = await http.get(
+      Uri.parse('$_baseUrl/Activity?isFacilityTypeIncluded=true'),
+    );
     final jsonList = json.decode(res.body)['resultList'];
     return List<Activity>.from(jsonList.map((x) => Activity.fromJson(x)));
   }

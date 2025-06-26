@@ -325,7 +325,7 @@ class _ReservationHistoryPageState extends State<ReservationHistoryPage> {
           icon,
           const SizedBox(width: 8),
           SizedBox(
-            width: 120, // Fixed width ensures alignment
+            width: 120,
             child: Text(
               label,
               style: Theme.of(
@@ -361,7 +361,6 @@ class _ReservationHistoryPageState extends State<ReservationHistoryPage> {
               ),
               TextButton(
                 onPressed: () {
-                  // Add deletion logic here
                   Navigator.pop(context);
                 },
                 child: const Text('Delete'),

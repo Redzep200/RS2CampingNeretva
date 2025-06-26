@@ -70,7 +70,6 @@ class AppScaffold extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
 
-                  // Drawer items
                   Expanded(
                     child: ListView(
                       children: [

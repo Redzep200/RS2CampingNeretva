@@ -21,11 +21,8 @@ class CustomNavbar extends StatelessWidget implements PreferredSizeWidget {
     };
 
     return AppBar(
-      backgroundColor:
-          Theme.of(context).primaryColor, // Use theme's primaryColor (green)
-      iconTheme: const IconThemeData(
-        color: Colors.white,
-      ), // Set back button arrow to white
+      backgroundColor: Theme.of(context).primaryColor,
+      iconTheme: const IconThemeData(color: Colors.white),
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children:

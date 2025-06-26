@@ -100,14 +100,12 @@ class _ReservationPageState extends State<ReservationPage> {
       'activities': selectedActivities.map((id) => {'activityId': id}).toList(),
     };
 
-    // Log the constructed payload
     print('Submitting Reservation Payload: ${jsonEncode(payload)}');
 
     try {
       final reservation = await ReservationService.insert(payload);
       final reservationId = reservation['id'] ?? reservation['reservationId'];
 
-      // Log the successful response
       print(
         'Reservation Created Successfully: ID=$reservationId, Response=$reservation',
       );
@@ -124,7 +122,6 @@ class _ReservationPageState extends State<ReservationPage> {
         throw Exception('Failed to get reservation ID');
       }
     } catch (e) {
-      // Log the error details
       print('Reservation Creation Failed: Error=$e');
       setState(() {
         _isLoading = false;

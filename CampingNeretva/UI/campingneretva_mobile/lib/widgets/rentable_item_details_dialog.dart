@@ -24,7 +24,6 @@ class RentableItemDetailsDialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Image Header
             ClipRRect(
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(16),
@@ -49,7 +48,6 @@ class RentableItemDetailsDialog extends StatelessWidget {
                         child: const Icon(Icons.image_not_supported, size: 50),
                       ),
             ),
-            // Content
             Flexible(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
@@ -57,14 +55,12 @@ class RentableItemDetailsDialog extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Title
                     Text(
                       item.name,
                       style: Theme.of(context).textTheme.headlineSmall
                           ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
-                    // Status
                     Chip(
                       label: Text(
                         item.availableQuantity > 0
@@ -78,7 +74,6 @@ class RentableItemDetailsDialog extends StatelessWidget {
                               : Colors.red,
                     ),
                     const SizedBox(height: 16),
-                    // Details
                     _buildDetailRow(
                       'Available Quantity',
                       '${item.availableQuantity}',
@@ -103,7 +98,6 @@ class RentableItemDetailsDialog extends StatelessWidget {
                 ),
               ),
             ),
-            // Close Button
             Padding(
               padding: const EdgeInsets.all(16),
               child: ElevatedButton(

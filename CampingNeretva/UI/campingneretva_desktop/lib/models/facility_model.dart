@@ -22,10 +22,11 @@ class Facility {
       extractedImageUrl = firstImage['path'] ?? 'assets/default_image.png';
       extractedImageId = firstImage['imageId'];
     }
+
     return Facility(
       id: json['facilityId'],
       facilityType: json['facilityType'],
-      description: json['description'],
+      description: json['description'] ?? '',
       imageUrl: extractedImageUrl,
       imageId: extractedImageId,
     );
@@ -49,5 +50,10 @@ class Facility {
       'description': description,
       'imageId': imageId,
     };
+  }
+
+  @override
+  String toString() {
+    return facilityType;
   }
 }

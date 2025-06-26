@@ -36,6 +36,9 @@ class _ActivityPageState extends State<ActivityPage> {
       _activities = activities;
       _applyFilters();
     });
+    print(
+      _activities.map((a) => '${a.name}: ${a.facility?.facilityType}').toList(),
+    );
   }
 
   void _applyFilters() {
@@ -281,7 +284,13 @@ class _ActivityPageState extends State<ActivityPage> {
 
   Future<void> _showEditActivityDialog(Activity activity) async {
     final facilities = await FacilityService.fetchAll();
-    Facility? selectedFacility = activity.facility;
+    Facility? selectedFacility =
+        activity.facility != null
+            ? facilities.firstWhere(
+              (f) => f.id == activity.facility!.id,
+              orElse: () => activity.facility!,
+            )
+            : null;
     final nameController = TextEditingController(text: activity.name);
     final descController = TextEditingController(text: activity.description);
     final priceController = TextEditingController(
@@ -366,7 +375,7 @@ class _ActivityPageState extends State<ActivityPage> {
                           isExpanded: true,
                           items:
                               facilities.map((f) {
-                                return DropdownMenuItem(
+                                return DropdownMenuItem<Facility>(
                                   value: f,
                                   child: Text(f.facilityType),
                                 );

@@ -27,7 +27,6 @@ class AuthService {
       if (response.statusCode == 200) {
         currentUser = User.fromJson(jsonDecode(response.body));
 
-        // Store credentials
         await _box.put('username', username);
         await _box.put('password', password);
         _password = password;

@@ -401,7 +401,6 @@ class _ReservationsPageState extends State<ReservationsPage> {
               ),
               TextButton(
                 onPressed: () {
-                  // Add deletion logic here
                   Navigator.pop(context);
                 },
                 child: const Text('Obriši'),

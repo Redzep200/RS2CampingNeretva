@@ -12,7 +12,7 @@ namespace CampingNeretva.Model
         public string? Description { get; set; }
         public DateTime Date { get; set; }
         public decimal Price { get; set; }
-        public FacilityModel Facility { get; set; }
+        public FacilityModel? Facility { get; set; }
         public List<ImageModel> Images { get; set; } = new List<ImageModel>();
     }
 }

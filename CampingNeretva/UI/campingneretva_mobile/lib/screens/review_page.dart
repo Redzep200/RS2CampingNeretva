@@ -278,7 +278,6 @@ class _ReviewPageState extends State<ReviewPage> {
                       const SizedBox(height: 16),
                     ],
 
-                    // Reviews
                     if (reviews.isEmpty)
                       const Center(child: Text('No reviews yet'))
                     else
