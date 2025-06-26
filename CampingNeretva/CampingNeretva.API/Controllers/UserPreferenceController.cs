@@ -173,6 +173,21 @@ namespace CampingNeretva.API.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+        [HttpGet("{userId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetByUserId(int userId)
+        {
+            try
+            {
+                var response = await _service.GetByUserId(userId);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 
     public class NotFoundException : Exception

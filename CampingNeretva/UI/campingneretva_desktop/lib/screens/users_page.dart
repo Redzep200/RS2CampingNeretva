@@ -1,6 +1,10 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import '../models/user_model.dart';
 import '../services/user_service.dart';
+import '../services/user_preference_service.dart';
+import '../widgets/user_preference_dialog.dart';
 import '../widgets/navbar.dart';
 import '../widgets/new_admin_dialog.dart';
 
@@ -13,6 +17,7 @@ class UsersPage extends StatefulWidget {
 
 class _UserPageState extends State<UsersPage> {
   final UserService _userService = UserService();
+  final UserPreferenceService _preferenceService = UserPreferenceService();
 
   Map<String, List<User>> _groupedUsers = {};
   bool _isLoading = false;
@@ -29,18 +34,11 @@ class _UserPageState extends State<UsersPage> {
     _fetchUsers();
   }
 
-  void _showAdminDialog() {
-    showDialog(
-      context: context,
-      builder: (_) => NewAdminDialog(onUserCreated: _fetchUsers),
-    );
-  }
-
   Future<void> _fetchUsers() async {
     setState(() => _isLoading = true);
     try {
       final users = await _userService.getAllPaginated(
-        page: _currentPage + 1,
+        page: _currentPage,
         pageSize: _pageSize,
         username: _firstNameController.text,
       );
@@ -81,6 +79,13 @@ class _UserPageState extends State<UsersPage> {
     _fetchUsers();
   }
 
+  void _showAdminDialog() {
+    showDialog(
+      context: context,
+      builder: (_) => NewAdminDialog(onUserCreated: _fetchUsers),
+    );
+  }
+
   void _confirmDelete(User user) {
     showDialog(
       context: context,
@@ -119,15 +124,27 @@ class _UserPageState extends State<UsersPage> {
     }
   }
 
+  Future<void> _showPreferencesDialog(int userId) async {
+    try {
+      final preference = await _preferenceService.getByUserId(userId);
+      showDialog(
+        context: context,
+        builder: (_) => UserPreferenceDialog(preference: preference),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to load preferences: $e')));
+    }
+  }
+
   Widget _buildSearchBar() {
     return TextField(
       controller: _firstNameController,
       decoration: const InputDecoration(
         labelText: 'Pretraga po korisničkom imenu',
       ),
-      onChanged: (_) {
-        _applyFilters();
-      },
+      onChanged: (_) => _applyFilters(),
     );
   }
 
@@ -140,6 +157,12 @@ class _UserPageState extends State<UsersPage> {
         children: [
           Text(user.username),
           const SizedBox(width: 10),
+          if (user.userType.typeName == "Guest")
+            IconButton(
+              icon: const Icon(Icons.info_outline, color: Colors.blue),
+              tooltip: 'View Preferences',
+              onPressed: () => _showPreferencesDialog(user.id),
+            ),
           IconButton(
             icon: const Icon(Icons.delete, color: Colors.red),
             onPressed: () => _confirmDelete(user),
@@ -150,9 +173,7 @@ class _UserPageState extends State<UsersPage> {
   }
 
   Widget _buildUserList() {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
+    if (_isLoading) return const Center(child: CircularProgressIndicator());
 
     if (_groupedUsers.isEmpty) {
       return const Center(child: Text('No users found.'));
