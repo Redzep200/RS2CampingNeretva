@@ -19,13 +19,13 @@ class ActivityDetailsDialog extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.8,
-          maxWidth: MediaQuery.of(context).size.width * 0.9,
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
+          maxWidth: MediaQuery.of(context).size.width * 0.95,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Image Header
+            // Header Image
             ClipRRect(
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(16),
@@ -37,26 +37,20 @@ class ActivityDetailsDialog extends StatelessWidget {
                         height: 200,
                         width: double.infinity,
                         fit: BoxFit.cover,
-                        errorBuilder:
-                            (_, __, ___) => Container(
-                              height: 200,
-                              color: Colors.grey[300],
-                              child: const Icon(Icons.broken_image, size: 50),
-                            ),
+                        errorBuilder: (_, __, ___) => _placeholderImage(),
                       )
-                      : Container(
-                        height: 200,
-                        color: Colors.grey[300],
-                        child: const Icon(Icons.image_not_supported, size: 50),
-                      ),
+                      : _placeholderImage(),
             ),
+
             // Content
             Flexible(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
                   children: [
                     // Title
                     Text(
@@ -65,6 +59,7 @@ class ActivityDetailsDialog extends StatelessWidget {
                           ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
+
                     // Status
                     Chip(
                       label: const Text(
@@ -74,22 +69,27 @@ class ActivityDetailsDialog extends StatelessWidget {
                       backgroundColor: Colors.green,
                     ),
                     const SizedBox(height: 16),
-                    // Details
-                    _buildDetailRow(
+
+                    // Aligned Detail Rows
+                    _buildIconDetailRow(
+                      Icons.calendar_today,
                       'Date',
                       DateFormat('dd.MM.yyyy').format(activity.date),
                     ),
-                    _buildDetailRow(
+                    _buildIconDetailRow(
+                      Icons.attach_money,
                       'Price',
                       '\$${activity.price.toStringAsFixed(2)}',
                     ),
+
                     if (activity.description.isNotEmpty) ...[
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 24),
                       Text(
                         'Description',
-                        style: Theme.of(context).textTheme.titleMedium,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w600),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 8),
                       Text(
                         activity.description,
                         style: Theme.of(context).textTheme.bodyMedium,
@@ -99,6 +99,7 @@ class ActivityDetailsDialog extends StatelessWidget {
                 ),
               ),
             ),
+
             // Close Button
             Padding(
               padding: const EdgeInsets.all(16),
@@ -116,14 +117,42 @@ class ActivityDetailsDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
+  Widget _placeholderImage() {
+    return Container(
+      height: 200,
+      color: Colors.grey[300],
+      child: const Icon(Icons.broken_image, size: 50),
+    );
+  }
+
+  Widget _buildIconDetailRow(IconData icon, String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
-          Text(value),
+          Icon(icon, size: 20, color: Colors.grey[700]),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: const TextStyle(fontSize: 14, color: Colors.black54),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

@@ -34,10 +34,14 @@ class Parcel {
       electricity: json['electricity'],
       description: json['description'],
       isAvailable: json['availabilityStatus'],
-      parcelAccommodation: ParcelAccommodation.fromJson(
-        json['parcelAccommodation'],
-      ),
-      parcelType: ParcelType.fromJson(json['parcelType']),
+      parcelAccommodation:
+          json['parcelAccommodation'] != null
+              ? ParcelAccommodation.fromJson(json['parcelAccommodation'])
+              : ParcelAccommodation(id: 0, name: 'Unknown'),
+      parcelType:
+          json['parcelType'] != null
+              ? ParcelType.fromJson(json['parcelType'])
+              : ParcelType(id: 0, name: 'Unknown'),
       imageUrl:
           (json['images'] as List).isNotEmpty
               ? json['images'][0]['path']

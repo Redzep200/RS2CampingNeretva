@@ -18,12 +18,13 @@ class RentableItemDetailsDialog extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.8,
-          maxWidth: MediaQuery.of(context).size.width * 0.9,
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
+          maxWidth: MediaQuery.of(context).size.width * 0.95,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Image
             ClipRRect(
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(16),
@@ -35,32 +36,30 @@ class RentableItemDetailsDialog extends StatelessWidget {
                         height: 200,
                         width: double.infinity,
                         fit: BoxFit.cover,
-                        errorBuilder:
-                            (_, __, ___) => Container(
-                              height: 200,
-                              color: Colors.grey[300],
-                              child: const Icon(Icons.broken_image, size: 50),
-                            ),
+                        errorBuilder: (_, __, ___) => _placeholderImage(),
                       )
-                      : Container(
-                        height: 200,
-                        color: Colors.grey[300],
-                        child: const Icon(Icons.image_not_supported, size: 50),
-                      ),
+                      : _placeholderImage(),
             ),
+
+            // Content
             Flexible(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
                   children: [
+                    // Title
                     Text(
                       item.name,
                       style: Theme.of(context).textTheme.headlineSmall
                           ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
+
+                    // Availability Chip
                     Chip(
                       label: Text(
                         item.availableQuantity > 0
@@ -74,21 +73,28 @@ class RentableItemDetailsDialog extends StatelessWidget {
                               : Colors.red,
                     ),
                     const SizedBox(height: 16),
-                    _buildDetailRow(
+
+                    // Detail Rows with Icons
+                    _buildIconDetailRow(
+                      Icons.inventory,
                       'Available Quantity',
                       '${item.availableQuantity}',
                     ),
-                    _buildDetailRow(
+                    _buildIconDetailRow(
+                      Icons.attach_money,
                       'Price per Day',
                       '\$${item.pricePerDay.toStringAsFixed(2)}',
                     ),
+
+                    // Description
                     if (item.description.isNotEmpty) ...[
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 24),
                       Text(
                         'Description',
-                        style: Theme.of(context).textTheme.titleMedium,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w600),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 8),
                       Text(
                         item.description,
                         style: Theme.of(context).textTheme.bodyMedium,
@@ -98,6 +104,8 @@ class RentableItemDetailsDialog extends StatelessWidget {
                 ),
               ),
             ),
+
+            // Close Button
             Padding(
               padding: const EdgeInsets.all(16),
               child: ElevatedButton(
@@ -114,14 +122,42 @@ class RentableItemDetailsDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
+  Widget _placeholderImage() {
+    return Container(
+      height: 200,
+      color: Colors.grey[300],
+      child: const Icon(Icons.image_not_supported, size: 50),
+    );
+  }
+
+  Widget _buildIconDetailRow(IconData icon, String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
-          Text(value),
+          Icon(icon, size: 20, color: Colors.grey[700]),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: const TextStyle(fontSize: 14, color: Colors.black54),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

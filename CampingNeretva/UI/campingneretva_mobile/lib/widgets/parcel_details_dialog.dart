@@ -18,12 +18,13 @@ class ParcelDetailsDialog extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.8,
-          maxWidth: MediaQuery.of(context).size.width * 0.9,
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
+          maxWidth: MediaQuery.of(context).size.width * 0.95,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Image
             ClipRRect(
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(16),
@@ -35,32 +36,30 @@ class ParcelDetailsDialog extends StatelessWidget {
                         height: 200,
                         width: double.infinity,
                         fit: BoxFit.cover,
-                        errorBuilder:
-                            (_, __, ___) => Container(
-                              height: 200,
-                              color: Colors.grey[300],
-                              child: const Icon(Icons.broken_image, size: 50),
-                            ),
+                        errorBuilder: (_, __, ___) => _placeholderImage(),
                       )
-                      : Container(
-                        height: 200,
-                        color: Colors.grey[300],
-                        child: const Icon(Icons.image_not_supported, size: 50),
-                      ),
+                      : _placeholderImage(),
             ),
+
+            // Content
             Flexible(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
                   children: [
+                    // Title
                     Text(
                       'Parcel #${parcel.number}',
                       style: Theme.of(context).textTheme.headlineSmall
                           ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
+
+                    // Availability
                     Chip(
                       label: Text(
                         parcel.isAvailable ? 'Available' : 'Not Available',
@@ -70,24 +69,38 @@ class ParcelDetailsDialog extends StatelessWidget {
                           parcel.isAvailable ? Colors.green : Colors.red,
                     ),
                     const SizedBox(height: 16),
-                    _buildDetailRow('Type', parcel.parcelType),
-                    _buildDetailRow(
+
+                    // Parcel Details
+                    _buildIconDetailRow(
+                      Icons.category,
+                      'Type',
+                      parcel.parcelType,
+                    ),
+                    _buildIconDetailRow(
+                      Icons.king_bed,
                       'Accommodation',
                       parcel.parcelAccommodation,
                     ),
-                    _buildDetailRow('Shade', parcel.shade ? 'Yes' : 'No'),
-                    _buildDetailRow(
+                    _buildIconDetailRow(
+                      Icons.park,
+                      'Shade',
+                      parcel.shade ? 'Yes' : 'No',
+                    ),
+                    _buildIconDetailRow(
+                      Icons.flash_on,
                       'Electricity',
                       parcel.electricity ? 'Yes' : 'No',
                     ),
+
                     if (parcel.description != null &&
                         parcel.description!.isNotEmpty) ...[
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 24),
                       Text(
                         'Description',
-                        style: Theme.of(context).textTheme.titleMedium,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w600),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 8),
                       Text(
                         parcel.description!,
                         style: Theme.of(context).textTheme.bodyMedium,
@@ -97,6 +110,8 @@ class ParcelDetailsDialog extends StatelessWidget {
                 ),
               ),
             ),
+
+            // Close Button
             Padding(
               padding: const EdgeInsets.all(16),
               child: ElevatedButton(
@@ -113,14 +128,42 @@ class ParcelDetailsDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
+  Widget _placeholderImage() {
+    return Container(
+      height: 200,
+      color: Colors.grey[300],
+      child: const Icon(Icons.image_not_supported, size: 50),
+    );
+  }
+
+  Widget _buildIconDetailRow(IconData icon, String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
-          Text(value),
+          Icon(icon, size: 20, color: Colors.grey[700]),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: const TextStyle(fontSize: 14, color: Colors.black54),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

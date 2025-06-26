@@ -63,7 +63,7 @@ class _ParcelPageState extends State<ParcelPage> {
         accommodation: selectedAccommodation?.name,
         type: selectedType?.name,
         page: 0,
-        pageSize: 10000,
+        pageSize: 100,
       );
     });
   }
@@ -74,13 +74,12 @@ class _ParcelPageState extends State<ParcelPage> {
         startDate!,
         endDate!,
       );
-
-      for (var parcel in _allParcels) {
-        parcel.isAvailable = !unavailableIds.contains(parcel.id);
-      }
+      setState(() {
+        for (var parcel in _allParcels) {
+          parcel.isAvailable = !unavailableIds.contains(parcel.id);
+        }
+      });
     }
-
-    setState(() {});
   }
 
   List<Parcel> _applyFilters(List<Parcel> parcels) {

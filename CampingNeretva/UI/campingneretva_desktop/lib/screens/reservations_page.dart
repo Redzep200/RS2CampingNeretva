@@ -290,12 +290,6 @@ class _ReservationsPageState extends State<ReservationsPage> {
             '${_dateFormat.format(r.startDate)} → ${_dateFormat.format(r.endDate)}',
             style: Theme.of(context).textTheme.bodyMedium,
           ),
-          trailing: IconButton(
-            icon: const Icon(Icons.close, size: 20),
-            onPressed: () {
-              _showDeleteConfirmationDialog(context, r);
-            },
-          ),
           childrenPadding: const EdgeInsets.symmetric(
             horizontal: 16,
             vertical: 8,
@@ -363,8 +357,8 @@ class _ReservationsPageState extends State<ReservationsPage> {
         children: [
           icon,
           const SizedBox(width: 8),
-          Expanded(
-            flex: 1,
+          SizedBox(
+            width: 120, // fixed width for label column
             child: Text(
               label,
               style: Theme.of(
@@ -373,40 +367,14 @@ class _ReservationsPageState extends State<ReservationsPage> {
             ),
           ),
           Expanded(
-            flex: 2,
             child: Text(
               content,
               style: Theme.of(context).textTheme.bodyMedium,
-              textAlign: TextAlign.right,
+              textAlign: TextAlign.left,
             ),
           ),
         ],
       ),
-    );
-  }
-
-  void _showDeleteConfirmationDialog(BuildContext context, Reservation r) {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text('Potvrdi brisanje'),
-            content: const Text(
-              'Jeste li sigurni da želite obrisati ovu rezervaciju? Ova akcija se ne može poništiti.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Odustani'),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: const Text('Obriši'),
-              ),
-            ],
-          ),
     );
   }
 
