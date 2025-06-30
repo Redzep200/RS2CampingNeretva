@@ -16,6 +16,7 @@ class _ReservationHistoryPageState extends State<ReservationHistoryPage> {
   final Set<int> _expandedReservations = {};
   int _currentPage = 0;
   final int _pageSize = 4;
+  bool _hasNextPage = false;
   DateTime? _selectedDate;
   final TextEditingController _dateController = TextEditingController();
 
@@ -25,14 +26,24 @@ class _ReservationHistoryPageState extends State<ReservationHistoryPage> {
     _loadReservations();
   }
 
-  void _loadReservations({DateTime? checkInDate}) {
+  void _loadReservations({DateTime? checkInDate}) async {
+    final currentReservations = await ReservationService.getByUserId(
+      AuthService.currentUser!.id,
+      page: _currentPage,
+      pageSize: _pageSize,
+      checkInDate: checkInDate,
+    );
+
+    final nextPageReservations = await ReservationService.getByUserId(
+      AuthService.currentUser!.id,
+      page: _currentPage + 1,
+      pageSize: _pageSize,
+      checkInDate: checkInDate,
+    );
+
     setState(() {
-      _reservationsFuture = ReservationService.getByUserId(
-        AuthService.currentUser!.id,
-        page: _currentPage,
-        pageSize: _pageSize,
-        checkInDate: checkInDate,
-      );
+      _reservationsFuture = Future.value(currentReservations);
+      _hasNextPage = nextPageReservations.isNotEmpty;
     });
   }
 
@@ -119,7 +130,6 @@ class _ReservationHistoryPageState extends State<ReservationHistoryPage> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 } else if (snapshot.hasError) {
-                  print('Error fetching reservations: ${snapshot.error}');
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -138,9 +148,6 @@ class _ReservationHistoryPageState extends State<ReservationHistoryPage> {
                     ),
                   );
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  print(
-                    'No reservations found for page: $_currentPage, date: $_selectedDate',
-                  );
                   return const Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -154,7 +161,6 @@ class _ReservationHistoryPageState extends State<ReservationHistoryPage> {
                 }
 
                 final reservations = snapshot.data!;
-                print('Reservations loaded: ${reservations.length}');
 
                 return Column(
                   children: [
@@ -287,7 +293,7 @@ class _ReservationHistoryPageState extends State<ReservationHistoryPage> {
                             icon: const Icon(Icons.arrow_forward),
                             label: const Text('Next'),
                             onPressed:
-                                reservations.length == _pageSize
+                                _hasNextPage
                                     ? () {
                                       setState(() {
                                         _currentPage++;
@@ -342,31 +348,6 @@ class _ReservationHistoryPageState extends State<ReservationHistoryPage> {
           ),
         ],
       ),
-    );
-  }
-
-  void _showDeleteConfirmationDialog(BuildContext context, Reservation r) {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text('Confirm Deletion'),
-            content: const Text(
-              'Are you sure you want to delete this reservation? This action cannot be undone.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: const Text('Delete'),
-              ),
-            ],
-          ),
     );
   }
 }

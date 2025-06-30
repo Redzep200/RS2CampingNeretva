@@ -27,6 +27,8 @@ class _ReservationsPageState extends State<ReservationsPage> {
   String? _vehicleTypeFilter;
   DateTime? _selectedDate;
 
+  Set<String> _vehicleTypes = {};
+
   @override
   void initState() {
     super.initState();
@@ -38,7 +40,11 @@ class _ReservationsPageState extends State<ReservationsPage> {
       _reservationsFuture = ReservationService.fetchAll(
         page: 0,
         pageSize: 10000,
-      );
+      ).then((data) {
+        _vehicleTypes =
+            data.expand((r) => r.vehicles.map((v) => v.vehicle.type)).toSet();
+        return data;
+      });
     });
   }
 
@@ -78,6 +84,7 @@ class _ReservationsPageState extends State<ReservationsPage> {
               vehicleMatch &&
               dateMatch;
         }).toList();
+
     _filteredReservations = filtered;
     _totalItems = filtered.length;
     return filtered;
@@ -209,11 +216,14 @@ class _ReservationsPageState extends State<ReservationsPage> {
             width: 200,
             child: DropdownButtonFormField<String>(
               value: _vehicleTypeFilter,
-              items: const [
-                DropdownMenuItem(value: null, child: Text('Sva vozila')),
-                DropdownMenuItem(value: 'car', child: Text('Auto')),
-                DropdownMenuItem(value: 'motorbike', child: Text('Motocikl')),
-                DropdownMenuItem(value: 'van', child: Text('Kombi')),
+              items: [
+                const DropdownMenuItem(value: null, child: Text('Sva vozila')),
+                ..._vehicleTypes.map(
+                  (type) => DropdownMenuItem(
+                    value: type,
+                    child: Text(type[0].toUpperCase() + type.substring(1)),
+                  ),
+                ),
               ],
               onChanged: (value) {
                 setState(() {
@@ -225,8 +235,6 @@ class _ReservationsPageState extends State<ReservationsPage> {
                 labelText: 'Tip vozila',
                 prefixIcon: Icon(Icons.directions_car),
               ),
-              style: const TextStyle(color: Colors.black87),
-              dropdownColor: Colors.white,
             ),
           ),
           SizedBox(
@@ -358,7 +366,7 @@ class _ReservationsPageState extends State<ReservationsPage> {
           icon,
           const SizedBox(width: 8),
           SizedBox(
-            width: 120, // fixed width for label column
+            width: 120,
             child: Text(
               label,
               style: Theme.of(
