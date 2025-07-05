@@ -119,7 +119,7 @@ class _WorkersPageState extends State<WorkersPage> {
                             decoration: const InputDecoration(labelText: 'Ime'),
                             validator:
                                 (val) =>
-                                    val == null || val.isEmpty
+                                    val == null || val.trim().isEmpty
                                         ? 'Unesite ime'
                                         : null,
                           ),
@@ -130,7 +130,7 @@ class _WorkersPageState extends State<WorkersPage> {
                             ),
                             validator:
                                 (val) =>
-                                    val == null || val.isEmpty
+                                    val == null || val.trim().isEmpty
                                         ? 'Unesite prezime'
                                         : null,
                           ),
@@ -139,22 +139,39 @@ class _WorkersPageState extends State<WorkersPage> {
                             decoration: const InputDecoration(
                               labelText: 'Telefon',
                             ),
-                            validator:
-                                (val) =>
-                                    val == null || val.isEmpty
-                                        ? 'Unesite broj telefona'
-                                        : null,
+                            keyboardType: TextInputType.phone,
+                            validator: (val) {
+                              if (val == null || val.trim().isEmpty) {
+                                return 'Unesite broj telefona';
+                              }
+                              final digitsOnly = val.replaceAll(
+                                RegExp(r'\D'),
+                                '',
+                              );
+                              if (digitsOnly.length < 8) {
+                                return 'Telefon mora imati barem 8 znamenki';
+                              }
+                              return null;
+                            },
                           ),
                           TextFormField(
                             controller: emailCtrl,
                             decoration: const InputDecoration(
                               labelText: 'Email',
                             ),
-                            validator:
-                                (val) =>
-                                    val == null || !val.contains('@')
-                                        ? 'Unesite ispravan email'
-                                        : null,
+                            keyboardType: TextInputType.emailAddress,
+                            validator: (val) {
+                              if (val == null || val.trim().isEmpty) {
+                                return 'Unesite email';
+                              }
+                              final emailRegex = RegExp(
+                                r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                              );
+                              if (!emailRegex.hasMatch(val.trim())) {
+                                return 'Unesite ispravan email';
+                              }
+                              return null;
+                            },
                           ),
                           const SizedBox(height: 12),
                           Wrap(
@@ -190,15 +207,24 @@ class _WorkersPageState extends State<WorkersPage> {
                     ElevatedButton(
                       onPressed: () async {
                         if (!formKey.currentState!.validate()) return;
-                        await WorkerService.create({
-                          'firstName': firstNameCtrl.text,
-                          'lastName': lastNameCtrl.text,
-                          'phoneNumber': phoneCtrl.text,
-                          'email': emailCtrl.text,
-                          'roles': selectedRoles.map((r) => r.id).toList(),
-                        });
-                        Navigator.pop(context);
-                        _loadData();
+                        try {
+                          await WorkerService.create({
+                            'firstName': firstNameCtrl.text.trim(),
+                            'lastName': lastNameCtrl.text.trim(),
+                            'phoneNumber': phoneCtrl.text.trim(),
+                            'email': emailCtrl.text.trim(),
+                            'roles': selectedRoles.map((r) => r.id).toList(),
+                          });
+                          Navigator.pop(context);
+                          _loadData();
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Greška pri dodavanju radnika: $e'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
                       },
                       child: const Text('Spremi'),
                     ),

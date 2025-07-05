@@ -271,13 +271,33 @@ class _ParcelPageState extends State<ParcelPage> {
                     ),
                     ElevatedButton(
                       onPressed: () async {
-                        final number = int.tryParse(
-                          numberController.text.trim(),
-                        );
-                        if (number == null ||
+                        final numberText = numberController.text.trim();
+                        final number = int.tryParse(numberText);
+
+                        // Validation checks
+                        if (number == null) {
+                          _showError('Molimo unesite validan broj parcele.');
+                          return;
+                        }
+                        if (numberText.isEmpty ||
                             typeValue == null ||
                             accValue == null) {
                           _showError('Molimo unesite sve obavezne podatke.');
+                          return;
+                        }
+
+                        // Check if the parcel number is already taken
+                        final existingParcels = await ParcelService.fetchAll(
+                          page: 0,
+                          pageSize:
+                              1000, // Fetch all parcels to check for duplicates
+                        );
+                        if (existingParcels.any(
+                          (p) =>
+                              p.number == number &&
+                              (!isEditing || p.id != parcel!.id),
+                        )) {
+                          _showError('Broj parcele $number je već zauzet.');
                           return;
                         }
 

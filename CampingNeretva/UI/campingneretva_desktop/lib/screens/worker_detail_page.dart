@@ -217,6 +217,14 @@ class _WorkerDetailPageState extends State<WorkerDetailPage> {
               'Prosječna ocjena: ${w.averageRating?.toStringAsFixed(1) ?? 'N/A'}',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
+            Text(
+              'Telefon: ${w.phoneNumber ?? 'Nije naveden'}',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            Text(
+              'Email: ${w.email ?? 'Nije naveden'}',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
             const SizedBox(height: 16),
             Row(
               children: [
