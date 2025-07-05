@@ -1,6 +1,6 @@
 ﻿using CampingNeretva.Model.Requests;
 using CampingNeretva.Model.SearchObjects;
-using CampingNeretva.Service;
+using CampingNeretva.Service.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

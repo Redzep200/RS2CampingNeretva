@@ -1,5 +1,4 @@
-﻿using CampingNeretva.Model;
-using CampingNeretva.Service.Database;
+﻿using CampingNeretva.Service.Database;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -9,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EasyNetQ.DI;
 using EasyNetQ.Serialization.NewtonsoftJson;
+using CampingNeretva.Model.Models;
 
 namespace CampingNeretva.Service.NotificationService
 {

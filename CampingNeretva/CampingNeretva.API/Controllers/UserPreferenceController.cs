@@ -2,11 +2,11 @@
 using Microsoft.AspNetCore.Mvc;
 using CampingNeretva.Model;
 using CampingNeretva.Model.Requests;
-using CampingNeretva.Service;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using System.Security.Claims;
 using CampingNeretva.Service.Database;
+using CampingNeretva.Service.Interfaces;
 
 namespace CampingNeretva.API.Controllers
 {

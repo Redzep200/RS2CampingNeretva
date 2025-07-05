@@ -1,5 +1,5 @@
-﻿using CampingNeretva.Service;
-using CampingNeretva.Service.Database;
+﻿using CampingNeretva.Service.Database;
+using CampingNeretva.Service.Interfaces;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;

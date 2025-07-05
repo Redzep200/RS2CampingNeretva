@@ -24,7 +24,6 @@ class RentableItemDetailsDialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Image
             ClipRRect(
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(16),
@@ -41,7 +40,6 @@ class RentableItemDetailsDialog extends StatelessWidget {
                       : _placeholderImage(),
             ),
 
-            // Content
             Flexible(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(
@@ -51,7 +49,6 @@ class RentableItemDetailsDialog extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Title
                     Text(
                       item.name,
                       style: Theme.of(context).textTheme.headlineSmall
@@ -59,7 +56,6 @@ class RentableItemDetailsDialog extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
 
-                    // Availability Chip
                     Chip(
                       label: Text(
                         item.availableQuantity > 0
@@ -74,7 +70,6 @@ class RentableItemDetailsDialog extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
 
-                    // Detail Rows with Icons
                     _buildIconDetailRow(
                       Icons.inventory,
                       'Available Quantity',
@@ -86,7 +81,6 @@ class RentableItemDetailsDialog extends StatelessWidget {
                       '\$${item.pricePerDay.toStringAsFixed(2)}',
                     ),
 
-                    // Description
                     if (item.description.isNotEmpty) ...[
                       const SizedBox(height: 24),
                       Text(
@@ -105,7 +99,6 @@ class RentableItemDetailsDialog extends StatelessWidget {
               ),
             ),
 
-            // Close Button
             Padding(
               padding: const EdgeInsets.all(16),
               child: ElevatedButton(

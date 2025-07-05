@@ -1,5 +1,4 @@
-﻿using CampingNeretva.Model;
-using CampingNeretva.Model.emailHelpers;
+﻿using CampingNeretva.Model.emailHelpers;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Options;
@@ -7,6 +6,7 @@ using MimeKit;
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using CampingNeretva.Model.Models;
 
 namespace CampingNeretva.Service.NotificationService
 {

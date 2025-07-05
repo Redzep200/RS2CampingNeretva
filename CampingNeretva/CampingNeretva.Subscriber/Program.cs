@@ -1,4 +1,4 @@
-﻿using CampingNeretva.Model;
+﻿using CampingNeretva.Model.Models;
 using EasyNetQ;
 using EasyNetQ.DI;
 using System;

@@ -24,7 +24,6 @@ class ParcelDetailsDialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Image
             ClipRRect(
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(16),
@@ -41,7 +40,6 @@ class ParcelDetailsDialog extends StatelessWidget {
                       : _placeholderImage(),
             ),
 
-            // Content
             Flexible(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(
@@ -51,7 +49,6 @@ class ParcelDetailsDialog extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Title
                     Text(
                       'Parcel #${parcel.number}',
                       style: Theme.of(context).textTheme.headlineSmall
@@ -59,7 +56,6 @@ class ParcelDetailsDialog extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
 
-                    // Availability
                     Chip(
                       label: Text(
                         parcel.isAvailable ? 'Available' : 'Not Available',
@@ -70,7 +66,6 @@ class ParcelDetailsDialog extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
 
-                    // Parcel Details
                     _buildIconDetailRow(
                       Icons.category,
                       'Type',
@@ -111,7 +106,6 @@ class ParcelDetailsDialog extends StatelessWidget {
               ),
             ),
 
-            // Close Button
             Padding(
               padding: const EdgeInsets.all(16),
               child: ElevatedButton(

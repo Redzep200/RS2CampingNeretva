@@ -25,7 +25,6 @@ class ActivityDetailsDialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Header Image
             ClipRRect(
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(16),
@@ -42,7 +41,6 @@ class ActivityDetailsDialog extends StatelessWidget {
                       : _placeholderImage(),
             ),
 
-            // Content
             Flexible(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(
@@ -52,7 +50,6 @@ class ActivityDetailsDialog extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Title
                     Text(
                       activity.name,
                       style: Theme.of(context).textTheme.headlineSmall
@@ -60,7 +57,6 @@ class ActivityDetailsDialog extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
 
-                    // Status
                     Chip(
                       label: const Text(
                         'Available',
@@ -70,7 +66,6 @@ class ActivityDetailsDialog extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
 
-                    // Aligned Detail Rows
                     _buildIconDetailRow(
                       Icons.calendar_today,
                       'Date',
@@ -100,7 +95,6 @@ class ActivityDetailsDialog extends StatelessWidget {
               ),
             ),
 
-            // Close Button
             Padding(
               padding: const EdgeInsets.all(16),
               child: ElevatedButton(

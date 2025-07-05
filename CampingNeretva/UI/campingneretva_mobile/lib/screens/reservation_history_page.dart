@@ -326,12 +326,12 @@ class _ReservationHistoryPageState extends State<ReservationHistoryPage> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           icon,
           const SizedBox(width: 8),
           SizedBox(
-            width: 120,
+            width: 120, // Fixed width for label column
             child: Text(
               label,
               style: Theme.of(
@@ -340,11 +340,7 @@ class _ReservationHistoryPageState extends State<ReservationHistoryPage> {
             ),
           ),
           Expanded(
-            child: Text(
-              content,
-              style: Theme.of(context).textTheme.bodyMedium,
-              textAlign: TextAlign.right,
-            ),
+            child: Text(content, style: Theme.of(context).textTheme.bodyMedium),
           ),
         ],
       ),
