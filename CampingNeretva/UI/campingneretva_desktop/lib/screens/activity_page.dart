@@ -9,6 +9,7 @@ import '../models/facility_model.dart';
 import '../services/facility_service.dart';
 import '../widgets/app_theme.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../widgets/activity_reviews_dialog.dart';
 
 class ActivityPage extends StatefulWidget {
   const ActivityPage({super.key});
@@ -621,6 +622,21 @@ class _ActivityPageState extends State<ActivityPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
+                  IconButton(
+                    style: AppTheme.greenIconButtonStyle,
+                    icon: const Icon(Icons.rate_review),
+                    tooltip: 'View Reviews',
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder:
+                            (context) => ActivityReviewsDialog(
+                              activityId: activity.id,
+                              activityName: activity.name,
+                            ),
+                      );
+                    },
+                  ),
                   IconButton(
                     style: AppTheme.greenIconButtonStyle,
                     icon: const Icon(Icons.edit),
