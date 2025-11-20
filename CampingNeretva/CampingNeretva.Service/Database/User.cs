@@ -34,4 +34,6 @@ public partial class User
     public virtual ICollection<UserRecommendation> UserRecommendations { get; set; } = new List<UserRecommendation>();
 
     public virtual UserType UserType { get; set; } = null!;
+    public virtual ICollection<ActivityComment> ActivityComments { get; set; } = new List<ActivityComment>();
+
 }

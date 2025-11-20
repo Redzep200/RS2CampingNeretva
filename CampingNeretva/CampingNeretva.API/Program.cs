@@ -76,6 +76,7 @@ try
     builder.Services.AddHostedService<ReservationNotificationSubscriber>();
     builder.Services.AddScoped<IUserPreferenceService, UserPreferenceService>();
     builder.Services.AddHostedService<RecommendationInitializer>();
+    builder.Services.AddTransient<IActivityCommentService, ActivityCommentService>();
 
     builder.Services.AddHttpClient();
 

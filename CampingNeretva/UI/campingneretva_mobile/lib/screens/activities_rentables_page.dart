@@ -7,6 +7,7 @@ import '../services/activity_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:campingneretva_mobile/widgets/rentable_item_details_dialog.dart';
 import 'package:campingneretva_mobile/widgets/activity_details_dialog.dart';
+import 'package:campingneretva_mobile/widgets/activity_review_dialog.dart';
 
 class ActivitiesRentablesPage extends StatefulWidget {
   const ActivitiesRentablesPage({super.key});
@@ -280,23 +281,57 @@ class _ActivitiesRentablesPageState extends State<ActivitiesRentablesPage> {
                             ),
                             const SizedBox(height: 8),
                             ...sortedActivities.map(
-                              (a) => _buildItemTile(
-                                name: a.name,
-                                imageUrl: a.imageUrl,
-                                subtitle:
-                                    "${a.description ?? 'No description'}\n${DateFormat('dd.MM.yyyy').format(a.date)}",
-                                isRecommended: recommendedActivities.any(
-                                  (ra) => ra.id == a.id,
-                                ),
-                                isThreeLine: true,
-                                onTap: () {
-                                  showDialog(
-                                    context: context,
-                                    builder:
-                                        (context) =>
-                                            ActivityDetailsDialog(activity: a),
-                                  );
-                                },
+                              (a) => Stack(
+                                children: [
+                                  _buildItemTile(
+                                    name: a.name,
+                                    imageUrl: a.imageUrl,
+                                    subtitle:
+                                        "${a.description ?? 'No description'}\n${DateFormat('dd.MM.yyyy').format(a.date)}",
+                                    isRecommended: recommendedActivities.any(
+                                      (ra) => ra.id == a.id,
+                                    ),
+                                    isThreeLine: true,
+                                    onTap: () {
+                                      showDialog(
+                                        context: context,
+                                        builder:
+                                            (context) => ActivityDetailsDialog(
+                                              activity: a,
+                                            ),
+                                      );
+                                    },
+                                  ),
+                                  Positioned(
+                                    right: 10,
+                                    top: 10,
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 6,
+                                        ),
+                                        backgroundColor: Colors.blue,
+                                      ),
+                                      onPressed: () {
+                                        showDialog(
+                                          context: context,
+                                          builder:
+                                              (context) => ActivityReviewDialog(
+                                                activityId: a.id,
+                                              ),
+                                        );
+                                      },
+                                      child: const Text(
+                                        "Review",
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],

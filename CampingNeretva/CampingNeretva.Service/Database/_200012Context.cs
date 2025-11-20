@@ -20,6 +20,7 @@ public partial class _200012Context : DbContext
     public virtual DbSet<AccommodationImage> AccommodationImages { get; set; }
 
     public virtual DbSet<Activity> Activities { get; set; }
+    public virtual DbSet<ActivityComment> ActivityComments { get; set; }
 
     public virtual DbSet<ActivityImage> ActivityImages { get; set; }
 
@@ -425,6 +426,34 @@ public partial class _200012Context : DbContext
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_UserPreference_User");
+        });
+
+        modelBuilder.Entity<ActivityComment>(entity =>
+        {
+            entity.HasKey(e => e.ActivityCommentId)
+                .HasName("PK_ActivityComments");
+
+            entity.Property(e => e.CommentText)
+                .IsRequired()
+                .HasMaxLength(2000);
+
+            entity.Property(e => e.DatePosted)
+                .HasColumnType("datetime");
+
+            entity.Property(e => e.Rating)
+                .IsRequired();
+
+            entity.HasOne(d => d.Activity)
+                .WithMany(p => p.ActivityComments)
+                .HasForeignKey(d => d.ActivityId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ActivityComments_Activities");
+
+            entity.HasOne(d => d.User)
+                .WithMany(p => p.ActivityComments)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ActivityComments_Users");
         });
 
         modelBuilder.Entity<UserRecommendation>(entity =>
