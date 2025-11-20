@@ -8,6 +8,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:campingneretva_mobile/widgets/rentable_item_details_dialog.dart';
 import 'package:campingneretva_mobile/widgets/activity_details_dialog.dart';
 import 'package:campingneretva_mobile/widgets/activity_review_dialog.dart';
+import 'package:campingneretva_mobile/services/auth_service.dart';
 
 class ActivitiesRentablesPage extends StatefulWidget {
   const ActivitiesRentablesPage({super.key});
@@ -302,35 +303,37 @@ class _ActivitiesRentablesPageState extends State<ActivitiesRentablesPage> {
                                       );
                                     },
                                   ),
-                                  Positioned(
-                                    right: 10,
-                                    top: 10,
-                                    child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 10,
-                                          vertical: 6,
+                                  if (AuthService.isLoggedIn())
+                                    Positioned(
+                                      right: 10,
+                                      top: 10,
+                                      child: ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                            vertical: 6,
+                                          ),
+                                          backgroundColor: Colors.blue,
                                         ),
-                                        backgroundColor: Colors.blue,
-                                      ),
-                                      onPressed: () {
-                                        showDialog(
-                                          context: context,
-                                          builder:
-                                              (context) => ActivityReviewDialog(
-                                                activityId: a.id,
-                                              ),
-                                        );
-                                      },
-                                      child: const Text(
-                                        "Review",
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.white,
+                                        onPressed: () {
+                                          showDialog(
+                                            context: context,
+                                            builder:
+                                                (context) =>
+                                                    ActivityReviewDialog(
+                                                      activityId: a.id,
+                                                    ),
+                                          );
+                                        },
+                                        child: const Text(
+                                          "Review",
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.white,
+                                          ),
                                         ),
                                       ),
                                     ),
-                                  ),
                                 ],
                               ),
                             ),

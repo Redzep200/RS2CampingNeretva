@@ -11,7 +11,7 @@ class ActivityCommentService {
     final headers = await AuthService.getAuthHeaders();
 
     final uri = Uri.parse(
-      '$_baseUrl/ActivityComment',
+      '$_baseUrl/ActivityComments',
     ).replace(queryParameters: {'ActivityId': activityId.toString()});
 
     final response = await http.get(uri, headers: headers);
@@ -75,6 +75,82 @@ class ActivityCommentService {
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
       print('Error adding comment: $e');
+      return false;
+    }
+  }
+
+  static Future<bool> hasUserReviewed({
+    required int activityId,
+    required int userId,
+  }) async {
+    try {
+      final headers = await AuthService.getAuthHeaders();
+      final uri = Uri.parse('$_baseUrl/ActivityComments').replace(
+        queryParameters: {
+          'ActivityId': activityId.toString(),
+          'UserId': userId.toString(),
+        },
+      );
+
+      final response = await http.get(uri, headers: headers);
+
+      if (response.statusCode == 200) {
+        final body = json.decode(response.body);
+        final List data = body['resultList'];
+        return data.isNotEmpty;
+      }
+      return false;
+    } catch (e) {
+      print('Error checking user review: $e');
+      return false;
+    }
+  }
+
+  static Future<ActivityComment?> getUserReview({
+    required int activityId,
+    required int userId,
+  }) async {
+    try {
+      final headers = await AuthService.getAuthHeaders();
+      final uri = Uri.parse('$_baseUrl/ActivityComments').replace(
+        queryParameters: {
+          'ActivityId': activityId.toString(),
+          'UserId': userId.toString(),
+        },
+      );
+
+      final response = await http.get(uri, headers: headers);
+
+      if (response.statusCode == 200) {
+        final body = json.decode(response.body);
+        final List data = body['resultList'];
+        if (data.isNotEmpty) {
+          return ActivityComment.fromJson(data.first);
+        }
+      }
+      return null;
+    } catch (e) {
+      print('Error getting user review: $e');
+      return null;
+    }
+  }
+
+  static Future<bool> updateComment({
+    required int commentId,
+    required String commentText,
+    required int rating,
+  }) async {
+    try {
+      final headers = await AuthService.getAuthHeaders();
+      final url = Uri.parse("$_baseUrl/ActivityComments/$commentId");
+
+      final body = jsonEncode({"commentText": commentText, "rating": rating});
+
+      final response = await http.put(url, headers: headers, body: body);
+
+      return response.statusCode == 200 || response.statusCode == 204;
+    } catch (e) {
+      print('Error updating comment: $e');
       return false;
     }
   }
