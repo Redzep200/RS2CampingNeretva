@@ -25,5 +25,5 @@ public partial class Activity
 
     public virtual ICollection<Worker> Workers { get; set; } = new List<Worker>();
     public virtual ICollection<ActivityComment> ActivityComments { get; set; } = new List<ActivityComment>();
-
+    public virtual ICollection<ActivityCommentNotification> ActivityCommentNotifications { get; set; } = new List<ActivityCommentNotification>();
 }

@@ -35,5 +35,5 @@ public partial class User
 
     public virtual UserType UserType { get; set; } = null!;
     public virtual ICollection<ActivityComment> ActivityComments { get; set; } = new List<ActivityComment>();
-
+    public virtual ICollection<ActivityCommentNotification> ActivityCommentNotificationReviewedByNavigations { get; set; } = new List<ActivityCommentNotification>();
 }

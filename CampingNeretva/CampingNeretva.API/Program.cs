@@ -77,6 +77,8 @@ try
     builder.Services.AddScoped<IUserPreferenceService, UserPreferenceService>();
     builder.Services.AddHostedService<RecommendationInitializer>();
     builder.Services.AddTransient<IActivityCommentService, ActivityCommentService>();
+    builder.Services.AddTransient<IActivityCommentAnalysisService, ActivityCommentAnalysisService>();
+    builder.Services.AddHostedService<CommentAnalysisBackgroundService>();
 
     builder.Services.AddHttpClient();
 

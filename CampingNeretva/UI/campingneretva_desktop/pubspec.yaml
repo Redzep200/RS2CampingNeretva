@@ -46,6 +46,8 @@ dependencies:
   url_launcher: ^6.3.0
   universal_html: ^2.2.4
   flutter_dotenv: ^5.1.0 
+  dart_amqp: ^0.3.1       # ← ADD THIS LINE
+  flutter_local_notifications: ^17.0.0   # ← ADD THIS (for popups)
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

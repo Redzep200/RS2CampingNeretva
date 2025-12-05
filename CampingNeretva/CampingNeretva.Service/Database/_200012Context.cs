@@ -6,10 +6,6 @@ namespace CampingNeretva.Service.Database;
 
 public partial class _200012Context : DbContext
 {
-    public _200012Context()
-    {
-    }
-
     public _200012Context(DbContextOptions<_200012Context> options)
         : base(options)
     {
@@ -20,7 +16,10 @@ public partial class _200012Context : DbContext
     public virtual DbSet<AccommodationImage> AccommodationImages { get; set; }
 
     public virtual DbSet<Activity> Activities { get; set; }
+
     public virtual DbSet<ActivityComment> ActivityComments { get; set; }
+
+    public virtual DbSet<ActivityCommentNotification> ActivityCommentNotifications { get; set; }
 
     public virtual DbSet<ActivityImage> ActivityImages { get; set; }
 
@@ -76,10 +75,6 @@ public partial class _200012Context : DbContext
 
     public virtual DbSet<Worker> Workers { get; set; }
 
-    //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-//        => optionsBuilder.UseSqlServer("Data Source=host.docker.internal;Initial Catalog=200012;Integrated Security=True;TrustServerCertificate=True");
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Accommodation>(entity =>
@@ -91,7 +86,7 @@ public partial class _200012Context : DbContext
 
         modelBuilder.Entity<AccommodationImage>(entity =>
         {
-            entity.HasKey(e => e.AccommodationImageId).HasName("PK__Accommod__C93E544944E1227E");
+            entity.HasKey(e => e.AccommodationImageId).HasName("PK__Accommod__C93E5449AC8F812F");
 
             entity.HasOne(d => d.Accommodation).WithMany(p => p.AccommodationImages)
                 .HasForeignKey(d => d.AccommodationId)
@@ -133,9 +128,48 @@ public partial class _200012Context : DbContext
                     });
         });
 
+        modelBuilder.Entity<ActivityComment>(entity =>
+        {
+            entity.HasKey(e => e.ActivityCommentId);
+            entity.Property(e => e.DatePosted).HasColumnType("datetime");
+            entity.HasOne(d => d.Activity)
+        .WithMany(p => p.ActivityComments)
+        .HasForeignKey(d => d.ActivityId)
+        .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.User)
+                .WithMany(p => p.ActivityComments)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        modelBuilder.Entity<ActivityCommentNotification>(entity =>
+        {
+            entity.HasKey(e => e.NotificationId);
+
+            entity.Property(e => e.Category).HasMaxLength(50);
+            entity.Property(e => e.DateCreated)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.DateReviewed).HasColumnType("datetime");
+            entity.Property(e => e.Sentiment).HasMaxLength(20);
+            entity.Property(e => e.Status)
+                .HasMaxLength(20)
+                .HasDefaultValue("Pending");
+            entity.HasOne(d => d.Activity)
+        .WithMany(p => p.ActivityCommentNotifications)
+        .HasForeignKey(d => d.ActivityId)
+        .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.ReviewedByNavigation)
+                .WithMany(p => p.ActivityCommentNotificationReviewedByNavigations)
+                .HasForeignKey(d => d.ReviewedBy)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
         modelBuilder.Entity<ActivityImage>(entity =>
         {
-            entity.HasKey(e => e.ActivityImageId).HasName("PK__Activity__F511D3C54A24A2BD");
+            entity.HasKey(e => e.ActivityImageId).HasName("PK__Activity__F511D3C514F4EE3D");
 
             entity.HasOne(d => d.Activity).WithMany(p => p.ActivityImages)
                 .HasForeignKey(d => d.ActivityId)
@@ -155,7 +189,7 @@ public partial class _200012Context : DbContext
 
         modelBuilder.Entity<FacilityImage>(entity =>
         {
-            entity.HasKey(e => e.FacilityImageId).HasName("PK__Facility__60B5120291DCFC9F");
+            entity.HasKey(e => e.FacilityImageId).HasName("PK__Facility__60B512028DCDDC5B");
 
             entity.HasOne(d => d.Facility).WithMany(p => p.FacilityImages)
                 .HasForeignKey(d => d.FacilityId)
@@ -170,7 +204,7 @@ public partial class _200012Context : DbContext
 
         modelBuilder.Entity<Image>(entity =>
         {
-            entity.HasKey(e => e.ImageId).HasName("PK__Image__7516F70CAAD18A26");
+            entity.HasKey(e => e.ImageId).HasName("PK__Images__7516F70CDE20DDC4");
 
             entity.Property(e => e.DateCreated).HasDefaultValueSql("(getdate())");
         });
@@ -181,23 +215,23 @@ public partial class _200012Context : DbContext
 
             entity.HasOne(d => d.ParcelAccommodation).WithMany(p => p.Parcels)
                 .HasForeignKey(d => d.ParcelAccommodationId)
-                .HasConstraintName("FK__Parcels__ParcelA__47A6A41B");
+                .HasConstraintName("FK__Parcels__ParcelA__0D7A0286");
 
             entity.HasOne(d => d.ParcelType).WithMany(p => p.Parcels)
                 .HasForeignKey(d => d.ParcelTypeId)
-                .HasConstraintName("FK__Parcels__ParcelT__489AC854");
+                .HasConstraintName("FK__Parcels__ParcelT__0F624AF8");
         });
 
         modelBuilder.Entity<ParcelAccommodation>(entity =>
         {
-            entity.HasKey(e => e.ParcelAccommodationId).HasName("PK__ParcelAc__3346C8F7BD6911D5");
+            entity.HasKey(e => e.ParcelAccommodationId).HasName("PK__ParcelAc__3346C8F72F1A7A7E");
 
             entity.Property(e => e.ParcelAccommodation1).HasColumnName("ParcelAccommodation");
         });
 
         modelBuilder.Entity<ParcelImage>(entity =>
         {
-            entity.HasKey(e => e.ParcelImageId).HasName("PK__ParcelIm__19D83D7B1D281425");
+            entity.HasKey(e => e.ParcelImageId).HasName("PK__ParcelIm__19D83D7B6B483544");
 
             entity.HasOne(d => d.Image).WithMany(p => p.ParcelImages)
                 .HasForeignKey(d => d.ImageId)
@@ -212,7 +246,7 @@ public partial class _200012Context : DbContext
 
         modelBuilder.Entity<ParcelType>(entity =>
         {
-            entity.HasKey(e => e.ParcelTypeId).HasName("PK__ParcelTy__995A234B2A3F6A4F");
+            entity.HasKey(e => e.ParcelTypeId).HasName("PK__ParcelTy__995A234BAC296591");
 
             entity.Property(e => e.ParcelType1).HasColumnName("ParcelType");
         });
@@ -249,7 +283,7 @@ public partial class _200012Context : DbContext
 
         modelBuilder.Entity<PersonImage>(entity =>
         {
-            entity.HasKey(e => e.PersonImageId).HasName("PK__PersonIm__262987ED5BDF96AD");
+            entity.HasKey(e => e.PersonImageId).HasName("PK__PersonIm__262987EDAE1D297D");
 
             entity.HasOne(d => d.Image).WithMany(p => p.PersonImages)
                 .HasForeignKey(d => d.ImageId)
@@ -271,7 +305,7 @@ public partial class _200012Context : DbContext
 
         modelBuilder.Entity<RentableItemImage>(entity =>
         {
-            entity.HasKey(e => e.RentableItemImageId).HasName("PK__Rentable__47D86384B5D52FCC");
+            entity.HasKey(e => e.RentableItemImageId).HasName("PK__Rentable__47D863842907A491");
 
             entity.HasOne(d => d.Image).WithMany(p => p.RentableItemImages)
                 .HasForeignKey(d => d.ImageId)
@@ -416,7 +450,7 @@ public partial class _200012Context : DbContext
 
         modelBuilder.Entity<UserPreference>(entity =>
         {
-            entity.HasKey(e => e.UserPreferenceId).HasName("PK__UserPref__25771DD8E0E3763F");
+            entity.HasKey(e => e.UserPreferenceId).HasName("PK__UserPref__25771DD8CE38FBB6");
 
             entity.ToTable("UserPreference");
 
@@ -428,42 +462,14 @@ public partial class _200012Context : DbContext
                 .HasConstraintName("FK_UserPreference_User");
         });
 
-        modelBuilder.Entity<ActivityComment>(entity =>
-        {
-            entity.HasKey(e => e.ActivityCommentId)
-                .HasName("PK_ActivityComments");
-
-            entity.Property(e => e.CommentText)
-                .IsRequired()
-                .HasMaxLength(2000);
-
-            entity.Property(e => e.DatePosted)
-                .HasColumnType("datetime");
-
-            entity.Property(e => e.Rating)
-                .IsRequired();
-
-            entity.HasOne(d => d.Activity)
-                .WithMany(p => p.ActivityComments)
-                .HasForeignKey(d => d.ActivityId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_ActivityComments_Activities");
-
-            entity.HasOne(d => d.User)
-                .WithMany(p => p.ActivityComments)
-                .HasForeignKey(d => d.UserId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_ActivityComments_Users");
-        });
-
         modelBuilder.Entity<UserRecommendation>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__UserReco__3214EC0709CF0DA9");
+            entity.HasKey(e => e.Id).HasName("PK__UserReco__3214EC071485A2D9");
 
             entity.HasOne(d => d.User).WithMany(p => p.UserRecommendations)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__UserRecom__UserI__625A9A57");
+                .HasConstraintName("FK__UserRecom__UserI__25518C17");
         });
 
         modelBuilder.Entity<UserType>(entity =>
@@ -482,7 +488,7 @@ public partial class _200012Context : DbContext
 
         modelBuilder.Entity<VehicleImage>(entity =>
         {
-            entity.HasKey(e => e.VehicleImageId).HasName("PK__VehicleI__BDB4646AC8521541");
+            entity.HasKey(e => e.VehicleImageId).HasName("PK__VehicleI__BDB4646AE3AE3CF6");
 
             entity.HasOne(d => d.Image).WithMany(p => p.VehicleImages)
                 .HasForeignKey(d => d.ImageId)
