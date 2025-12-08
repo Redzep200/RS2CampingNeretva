@@ -1,12 +1,13 @@
-// widgets/navbar.dart
 import 'package:flutter/material.dart';
 import '../services/activity_analysis_service.dart';
 import 'dart:async';
 
 class CustomNavbar extends StatefulWidget implements PreferredSizeWidget {
   const CustomNavbar({super.key});
+
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+
   @override
   State<CustomNavbar> createState() => _CustomNavbarState();
 }
@@ -15,13 +16,16 @@ class _CustomNavbarState extends State<CustomNavbar> {
   int _notificationCount = 0;
   Timer? _refreshTimer;
   bool _isLoading = false;
+  bool _hasVisitedNotifications = false;
 
   @override
   void initState() {
     super.initState();
     _loadNotificationCount();
     _refreshTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
-      _loadNotificationCount();
+      if (!_hasVisitedNotifications) {
+        _loadNotificationCount();
+      }
     });
   }
 
@@ -33,14 +37,14 @@ class _CustomNavbarState extends State<CustomNavbar> {
 
   Future<void> _loadNotificationCount() async {
     if (_isLoading) return;
+
     setState(() => _isLoading = true);
+
     try {
-      // CHANGED: now uses getNotifications() → returns list → count length
-      final notifications = await ActivityAnalysisService.getNotifications();
+      final count = await ActivityAnalysisService.getNotificationCount();
       if (mounted) {
         setState(() {
-          _notificationCount =
-              notifications.length; // ← this is the only real change
+          _notificationCount = count;
           _isLoading = false;
         });
       }
@@ -83,13 +87,21 @@ class _CustomNavbarState extends State<CustomNavbar> {
                     onPressed:
                         route != null
                             ? () async {
-                              Navigator.pushNamed(context, route);
                               if (isNotifications) {
-                                // Badge disappears immediately when you click it
-                                setState(() => _notificationCount = 0);
-                                // Then refresh real count after page loads
+                                setState(() {
+                                  _hasVisitedNotifications = true;
+                                  _notificationCount = 0;
+                                });
+                              }
+
+                              await Navigator.pushNamed(context, route);
+
+                              if (isNotifications) {
+                                setState(
+                                  () => _hasVisitedNotifications = false,
+                                );
                                 await Future.delayed(
-                                  const Duration(seconds: 1),
+                                  const Duration(milliseconds: 500),
                                 );
                                 _loadNotificationCount();
                               }
@@ -104,7 +116,9 @@ class _CustomNavbarState extends State<CustomNavbar> {
                           const TextStyle(color: Colors.white),
                     ),
                   ),
-                  if (isNotifications && _notificationCount > 0)
+                  if (isNotifications &&
+                      _notificationCount > 0 &&
+                      !_hasVisitedNotifications)
                     Positioned(
                       right: -8,
                       top: -8,

@@ -1,7 +1,4 @@
 ﻿using CampingNeretva.Service.Database;
-using EasyNetQ;
-using EasyNetQ.DI;
-using EasyNetQ.Serialization.NewtonsoftJson;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.ML;
 using Microsoft.ML.Data;
@@ -9,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Json;
-using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace CampingNeretva.Service.Services
 {
@@ -19,7 +16,7 @@ namespace CampingNeretva.Service.Services
         public string CommentText { get; set; }
 
         [LoadColumn(1)]
-        public string Category { get; set; } 
+        public string Category { get; set; }
     }
 
     public class CommentPrediction
@@ -38,12 +35,14 @@ namespace CampingNeretva.Service.Services
 
     public class CommentAnalysisResult
     {
+        public int NotificationId { get; set; }
         public int ActivityId { get; set; }
         public string ActivityName { get; set; }
         public string Category { get; set; }
         public string Sentiment { get; set; }
         public List<ActivityComment> RelatedComments { get; set; }
         public string AISummary { get; set; }
+        public DateTime DateCreated { get; set; }
     }
 
     public class ActivityCommentAnalysisService : IActivityCommentAnalysisService
@@ -66,68 +65,85 @@ namespace CampingNeretva.Service.Services
                 if (_model == null)
                 {
                     var trainingData = new List<CommentData>
-            {
-                new CommentData { CommentText = "too expensive", Category = "Price" },
-                new CommentData { CommentText = "great value for money", Category = "Price" },
-                new CommentData { CommentText = "overpriced", Category = "Price" },
-                new CommentData { CommentText = "cheap", Category = "Price" },
-                new CommentData { CommentText = "cost", Category = "Price" },
+                    {
+                        new CommentData { CommentText = "too expensive", Category = "Price" },
+                        new CommentData { CommentText = "great value for money", Category = "Price" },
+                        new CommentData { CommentText = "overpriced", Category = "Price" },
+                        new CommentData { CommentText = "cheap", Category = "Price" },
+                        new CommentData { CommentText = "cost", Category = "Price" },
 
-                new CommentData { CommentText = "staff was rude", Category = "Staff" },
-                new CommentData { CommentText = "friendly workers", Category = "Staff" },
-                new CommentData { CommentText = "guide was helpful", Category = "Staff" },
-                new CommentData { CommentText = "unprofessional", Category = "Staff" },
+                        new CommentData { CommentText = "staff was rude", Category = "Staff" },
+                        new CommentData { CommentText = "friendly workers", Category = "Staff" },
+                        new CommentData { CommentText = "guide was helpful", Category = "Staff" },
+                        new CommentData { CommentText = "unprofessional", Category = "Staff" },
 
-                new CommentData { CommentText = "too short", Category = "Time" },
-                new CommentData { CommentText = "lasted too long", Category = "Time" },
-                new CommentData { CommentText = "perfect duration", Category = "Time" },
-                new CommentData { CommentText = "late start", Category = "Time" },
+                        new CommentData { CommentText = "too short", Category = "Time" },
+                        new CommentData { CommentText = "lasted too long", Category = "Time" },
+                        new CommentData { CommentText = "perfect duration", Category = "Time" },
+                        new CommentData { CommentText = "late start", Category = "Time" },
 
-                new CommentData { CommentText = "amazing experience", Category = "Quality" },
-                new CommentData { CommentText = "boring", Category = "Quality" },
-                new CommentData { CommentText = "well organized", Category = "Quality" },
-                new CommentData { CommentText = "poor quality", Category = "Quality" },
+                        new CommentData { CommentText = "amazing experience", Category = "Quality" },
+                        new CommentData { CommentText = "boring", Category = "Quality" },
+                        new CommentData { CommentText = "well organized", Category = "Quality" },
+                        new CommentData { CommentText = "poor quality", Category = "Quality" },
 
-                new CommentData { CommentText = "felt unsafe", Category = "Safety" },
-                new CommentData { CommentText = "dangerous equipment", Category = "Safety" },
-                new CommentData { CommentText = "no safety briefing", Category = "Safety" },
-                new CommentData { CommentText = "safe and secure", Category = "Safety" },
-            };
+                        new CommentData { CommentText = "felt unsafe", Category = "Safety" },
+                        new CommentData { CommentText = "dangerous equipment", Category = "Safety" },
+                        new CommentData { CommentText = "no safety briefing", Category = "Safety" },
+                        new CommentData { CommentText = "safe and secure", Category = "Safety" },
+                    };
 
                     var dataView = _mlContext.Data.LoadFromEnumerable(trainingData);
 
                     var pipeline = _mlContext.Transforms.Text
                         .FeaturizeText("Features", nameof(CommentData.CommentText))
-
-                        .Append(_mlContext.Transforms.Conversion.MapValueToKey(
-                            "Label",
-                            nameof(CommentData.Category)
-                        ))
-
-                        .Append(_mlContext.MulticlassClassification.Trainers
-                            .SdcaMaximumEntropy("Label", "Features"))
-
-                        .Append(_mlContext.Transforms.Conversion.MapKeyToValue(
-                            "PredictedLabel",
-                            "Label"
-                        ));
+                        .Append(_mlContext.Transforms.Conversion.MapValueToKey("Label", nameof(CommentData.Category)))
+                        .Append(_mlContext.MulticlassClassification.Trainers.SdcaMaximumEntropy("Label", "Features"))
+                        .Append(_mlContext.Transforms.Conversion.MapKeyToValue("PredictedLabel", "Label"));
 
                     _model = pipeline.Fit(dataView);
                 }
             }
         }
 
-
         public async Task AnalyzeNewComments()
         {
             var sevenDaysAgo = DateTime.Now.AddDays(-7);
+
+            // Get all comment IDs that are already in notifications
+            var usedCommentIds = await _context.ActivityCommentNotifications
+                .Select(n => n.RelatedCommentIds)
+                .ToListAsync();
+
+            var allUsedCommentIds = new HashSet<int>();
+            foreach (var commentIdsString in usedCommentIds)
+            {
+                var ids = commentIdsString
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(id => int.Parse(id.Trim()));
+
+                foreach (var id in ids)
+                {
+                    allUsedCommentIds.Add(id);
+                }
+            }
+
+            Console.WriteLine($"Found {allUsedCommentIds.Count} comments already used in notifications");
+
+            // Get recent comments that haven't been used in any notification yet
             var recentComments = await _context.ActivityComments
-                .Where(c => c.DatePosted >= sevenDaysAgo)
+                .Where(c => c.DatePosted >= sevenDaysAgo && !allUsedCommentIds.Contains(c.ActivityCommentId))
                 .Include(c => c.Activity)
                 .Include(c => c.User)
                 .ToListAsync();
 
-            if (!recentComments.Any()) return;
+            Console.WriteLine($"Found {recentComments.Count} new comments to analyze (not in existing notifications)");
+
+            if (!recentComments.Any())
+            {
+                Console.WriteLine("No new comments to analyze");
+                return;
+            }
 
             var predictionEngine = _mlContext.Model.CreatePredictionEngine<CommentData, CommentPrediction>(_model);
 
@@ -139,8 +155,10 @@ namespace CampingNeretva.Service.Services
                     Sentiment = DetermineSentiment(c.CommentText, c.Rating)
                 })
                 .GroupBy(x => new { x.Comment.ActivityId, x.Prediction.Category })
-                .Where(g => g.Count() >= 3) 
+                .Where(g => g.Count() >= 3)
                 .ToList();
+
+            Console.WriteLine($"Found {groupedAnalysis.Count} groups with 3+ comments in same category");
 
             foreach (var group in groupedAnalysis)
             {
@@ -148,18 +166,33 @@ namespace CampingNeretva.Service.Services
 
                 if (negativeComments.Count >= 2)
                 {
-                    await CreateAINotification(
-                        group.Key.ActivityId,
-                        group.Key.Category,
-                        negativeComments.Select(x => x.Comment).ToList()
-                    );
+                    Console.WriteLine($"Processing group: Activity {group.Key.ActivityId}, Category {group.Key.Category}, {negativeComments.Count} negative comments");
+
+                    // Check if a notification for this activity + category already exists
+                    var existingNotification = await _context.ActivityCommentNotifications
+                        .FirstOrDefaultAsync(n =>
+                            n.ActivityId == group.Key.ActivityId &&
+                            n.Category == group.Key.Category &&
+                            n.Status == "Pending");
+
+                    if (existingNotification == null)
+                    {
+                        await CreateAINotification(
+                            group.Key.ActivityId,
+                            group.Key.Category,
+                            negativeComments.Select(x => x.Comment).ToList()
+                        );
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Skipping - notification already exists for Activity {group.Key.ActivityId}, Category {group.Key.Category}");
+                    }
                 }
             }
         }
 
         private string DetermineSentiment(string commentText, int rating)
         {
-            // Simple sentiment based on rating and keywords
             if (rating <= 2) return "Negative";
             if (rating >= 4) return "Positive";
 
@@ -175,7 +208,6 @@ namespace CampingNeretva.Service.Services
 
         private async Task CreateAINotification(int activityId, string category, List<ActivityComment> comments)
         {
-            // Use Claude API for AI summary
             var aiSummary = await GenerateAISummary(activityId, category, comments);
 
             var notification = new ActivityCommentNotification
@@ -192,8 +224,7 @@ namespace CampingNeretva.Service.Services
             _context.ActivityCommentNotifications.Add(notification);
             await _context.SaveChangesAsync();
 
-            // Send via RabbitMQ
-            await SendNotificationViaRabbitMQ(notification);
+            Console.WriteLine($"Created notification {notification.NotificationId} for Activity {activityId}, Category {category}");
         }
 
         private async Task<string> GenerateAISummary(int activityId, string category, List<ActivityComment> comments)
@@ -223,12 +254,12 @@ Keep the response concise and focused on actionable insights.";
 
                 var body = new
                 {
-                    model = "claude-3-sonnet-20240229",
+                    model = "claude-3-5-sonnet-20241022",
                     max_tokens = 500,
                     messages = new[]
                     {
-                new { role = "user", content = prompt }
-            }
+                        new { role = "user", content = prompt }
+                    }
                 };
 
                 var response = await httpClient.PostAsJsonAsync(
@@ -236,9 +267,14 @@ Keep the response concise and focused on actionable insights.";
                     body
                 );
 
-                var json = await response.Content.ReadAsStringAsync();
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"API Error: {response.StatusCode} - {errorContent}");
+                    return $"Analysis failed (API error). Manual review recommended for {comments.Count} negative comments in {category} category.";
+                }
 
-                // Use Newtonsoft.Json instead
+                var json = await response.Content.ReadAsStringAsync();
                 var parsed = Newtonsoft.Json.Linq.JObject.Parse(json);
                 var contentArray = parsed["content"] as Newtonsoft.Json.Linq.JArray;
 
@@ -246,29 +282,19 @@ Keep the response concise and focused on actionable insights.";
                 {
                     var firstItem = contentArray[0] as Newtonsoft.Json.Linq.JObject;
                     var text = firstItem?["text"]?.ToString();
-                    return text ?? "AI analysis unavailable";
+
+                    if (!string.IsNullOrEmpty(text))
+                    {
+                        return text;
+                    }
                 }
 
-                return "AI analysis unavailable - no content returned";
+                return $"AI analysis unavailable - empty response. Manual review recommended for {comments.Count} negative comments in {category} category.";
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Exception generating AI summary: {ex.Message}");
                 return $"Analysis failed: {ex.Message}. Manual review recommended for {comments.Count} negative comments in {category} category.";
-            }
-        }
-
-        private async Task SendNotificationViaRabbitMQ(ActivityCommentNotification notification)
-        {
-            try
-            {
-                using var bus = RabbitHutch.CreateBus("host=rabbitmq", x =>
-                    x.Register<ISerializer>(_ => new NewtonsoftJsonSerializer()));
-
-                await bus.PubSub.PublishAsync(notification, "activity_comment_notifications");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"RabbitMQ notification failed: {ex.Message}");
             }
         }
 
@@ -277,13 +303,13 @@ Keep the response concise and focused on actionable insights.";
             var notifications = await _context.ActivityCommentNotifications
                 .Where(n => n.Status == "Pending")
                 .Include(n => n.Activity)
+                .OrderByDescending(n => n.DateCreated)
                 .ToListAsync();
 
             var results = new List<CommentAnalysisResult>();
 
             foreach (var notif in notifications)
             {
-                // Parse comment IDs from string
                 var commentIds = notif.RelatedCommentIds
                     .Split(',', StringSplitOptions.RemoveEmptyEntries)
                     .Select(id => int.Parse(id))
@@ -301,19 +327,20 @@ Keep the response concise and focused on actionable insights.";
                     CommentText = c.CommentText,
                     Rating = c.Rating,
                     DatePosted = c.DatePosted,
-
                     Activity = null,
                     User = null
                 }).ToList();
 
                 results.Add(new CommentAnalysisResult
                 {
+                    NotificationId = notif.NotificationId,
                     ActivityId = notif.ActivityId,
                     ActivityName = notif.Activity?.Name ?? "Unknown",
                     Category = notif.Category,
                     Sentiment = notif.Sentiment,
                     AISummary = notif.Summary,
-                    RelatedComments = sanitizedComments
+                    RelatedComments = sanitizedComments,
+                    DateCreated = notif.DateCreated
                 });
             }
 

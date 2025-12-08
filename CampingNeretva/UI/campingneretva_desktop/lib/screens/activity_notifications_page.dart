@@ -32,35 +32,43 @@ class _ActivityNotificationsPageState extends State<ActivityNotificationsPage> {
 
     try {
       final notifications = await ActivityAnalysisService.getNotifications();
-      setState(() {
-        _notifications = notifications;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _notifications = notifications;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _errorMessage = e.toString();
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString();
+          _isLoading = false;
+        });
+      }
     }
   }
 
   Future<void> _triggerAnalysis() async {
     try {
       await ActivityAnalysisService.triggerAnalysis();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Analysis triggered successfully'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Analysis triggered successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
       await _loadNotifications();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to trigger analysis: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to trigger analysis: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -95,6 +103,38 @@ class _ActivityNotificationsPageState extends State<ActivityNotificationsPage> {
         return Icons.security;
       default:
         return Icons.info;
+    }
+  }
+
+  Future<void> _markAsReadAndClose(CommentAnalysisResult notification) async {
+    try {
+      await ActivityAnalysisService.markAsRead(notification.notificationId);
+
+      if (mounted) {
+        // Remove from local list immediately
+        setState(() {
+          _notifications.removeWhere(
+            (n) => n.notificationId == notification.notificationId,
+          );
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Marked as read'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to mark as read: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -215,7 +255,6 @@ class _ActivityNotificationsPageState extends State<ActivityNotificationsPage> {
                       ElevatedButton.icon(
                         onPressed: () {
                           Navigator.pop(context);
-                          // Navigate to activity edit page
                           Navigator.pushNamed(
                             context,
                             '/activities',
@@ -225,20 +264,14 @@ class _ActivityNotificationsPageState extends State<ActivityNotificationsPage> {
                         icon: const Icon(Icons.edit),
                         label: const Text('Edit Activity'),
                       ),
+                      const SizedBox(width: 8),
                       ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                        ),
                         onPressed: () async {
-                          try {
-                            await ActivityAnalysisService.markAsRead(
-                              notification.activityId,
-                            ); // Pass actual notification ID
-                            Navigator.pop(context);
-                            _loadNotifications(); // Refresh list
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Marked as read')),
-                            );
-                          } catch (e) {
-                            // Handle error
-                          }
+                          Navigator.pop(context); // Close dialog first
+                          await _markAsReadAndClose(notification);
                         },
                         icon: const Icon(Icons.check),
                         label: const Text('Mark as Read'),
@@ -287,12 +320,25 @@ class _ActivityNotificationsPageState extends State<ActivityNotificationsPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      notification.activityName,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            notification.activityName,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          DateFormat('MMM dd').format(notification.dateCreated),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 4),
                     Text(

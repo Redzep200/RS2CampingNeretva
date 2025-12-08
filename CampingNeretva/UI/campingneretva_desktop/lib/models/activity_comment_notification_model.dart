@@ -52,24 +52,29 @@ class ActivityCommentNotification {
 }
 
 class CommentAnalysisResult {
+  final int notificationId;
   final int activityId;
   final String activityName;
   final String category;
   final String sentiment;
   final List<ActivityComment> relatedComments;
   final String aiSummary;
+  final DateTime dateCreated;
 
   CommentAnalysisResult({
+    required this.notificationId,
     required this.activityId,
     required this.activityName,
     required this.category,
     required this.sentiment,
     required this.relatedComments,
     required this.aiSummary,
+    required this.dateCreated,
   });
 
   factory CommentAnalysisResult.fromJson(Map<String, dynamic> json) {
     return CommentAnalysisResult(
+      notificationId: json['notificationId'],
       activityId: json['activityId'],
       activityName: json['activityName'],
       category: json['category'],
@@ -79,6 +84,7 @@ class CommentAnalysisResult {
               .map((e) => ActivityComment.fromJson(e))
               .toList(),
       aiSummary: json['aiSummary'],
+      dateCreated: DateTime.parse(json['dateCreated']),
     );
   }
 }

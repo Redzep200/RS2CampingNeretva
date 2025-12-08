@@ -164,7 +164,8 @@ public partial class _200012Context : DbContext
             entity.HasOne(d => d.ReviewedByNavigation)
                 .WithMany(p => p.ActivityCommentNotificationReviewedByNavigations)
                 .HasForeignKey(d => d.ReviewedBy)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .IsRequired(false);
         });
 
         modelBuilder.Entity<ActivityImage>(entity =>
