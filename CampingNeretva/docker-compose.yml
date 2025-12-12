@@ -43,6 +43,7 @@ services:
       - SMTP_PORT=${SMTP_PORT}
       - SMTP_USERNAME=${SMTP_USERNAME}
       - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
       - ASPNETCORE_ENVIRONMENT=Development
     ports:
       - "5205:5205"

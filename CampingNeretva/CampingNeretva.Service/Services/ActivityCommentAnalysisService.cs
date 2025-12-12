@@ -1,5 +1,6 @@
 ﻿using CampingNeretva.Service.Database;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.ML;
 using Microsoft.ML.Data;
 using System;
@@ -51,10 +52,12 @@ namespace CampingNeretva.Service.Services
         private static readonly MLContext _mlContext = new MLContext(seed: 1);
         private static ITransformer _model;
         private static readonly object _lock = new object();
+        private readonly IConfiguration _configuration;
 
-        public ActivityCommentAnalysisService(_200012Context context)
+        public ActivityCommentAnalysisService(_200012Context context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
             InitializeModel();
         }
 
@@ -248,53 +251,99 @@ Keep the response concise and focused on actionable insights.";
 
             try
             {
-                using var httpClient = new HttpClient();
-                httpClient.DefaultRequestHeaders.Add("x-api-key", Environment.GetEnvironmentVariable("ANTHROPIC_API_KEY"));
-                httpClient.DefaultRequestHeaders.Add("anthropic-version", "2023-06-01");
+                var apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
 
-                var body = new
+                if (string.IsNullOrEmpty(apiKey))
                 {
-                    model = "claude-3-5-sonnet-20241022",
-                    max_tokens = 500,
+                    Console.WriteLine("❌ ERROR: OPENAI_API_KEY not configured!");
+                    return $"AI analysis unavailable - API key not configured. Manual review recommended for {comments.Count} negative comments in {category} category.";
+                }
+
+                Console.WriteLine($"🔍 Making API call to OpenAI for Activity {activityId}...");
+                Console.WriteLine($"🔑 API Key available: {!string.IsNullOrEmpty(apiKey)}");
+
+                using var httpClient = new HttpClient();
+                httpClient.Timeout = TimeSpan.FromSeconds(120);
+                httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+
+                var apiUrl = "https://api.openai.com/v1/chat/completions";
+
+                var requestBody = new
+                {
+                    model = "gpt-3.5-turbo",
                     messages = new[]
                     {
-                        new { role = "user", content = prompt }
-                    }
+                        new
+                        {
+                            role = "system",
+                            content = "You are an expert at analyzing customer feedback for camping activities. Provide concise, actionable insights."
+                        },
+                        new
+                        {
+                            role = "user",
+                            content = prompt
+                        }
+                    },
+                    max_tokens = 300,
+                    temperature = 0.7
                 };
 
-                var response = await httpClient.PostAsJsonAsync(
-                    "https://api.anthropic.com/v1/messages",
-                    body
-                );
+                Console.WriteLine($"📤 Sending request to OpenAI API...");
+
+                var response = await httpClient.PostAsJsonAsync(apiUrl, requestBody);
+
+                Console.WriteLine($"📊 Response status: {response.StatusCode}");
 
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"API Error: {response.StatusCode} - {errorContent}");
-                    return $"Analysis failed (API error). Manual review recommended for {comments.Count} negative comments in {category} category.";
-                }
+                    Console.WriteLine($"❌ API Error Response: {errorContent}");
 
-                var json = await response.Content.ReadAsStringAsync();
-                var parsed = Newtonsoft.Json.Linq.JObject.Parse(json);
-                var contentArray = parsed["content"] as Newtonsoft.Json.Linq.JArray;
-
-                if (contentArray != null && contentArray.Count > 0)
-                {
-                    var firstItem = contentArray[0] as Newtonsoft.Json.Linq.JObject;
-                    var text = firstItem?["text"]?.ToString();
-
-                    if (!string.IsNullOrEmpty(text))
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
-                        return text;
+                        return $"AI analysis failed - Invalid API key. Manual review recommended for {comments.Count} negative comments in {category} category.";
+                    }
+                    else if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+                    {
+                        return $"AI analysis failed - Rate limit exceeded. Manual review recommended for {comments.Count} negative comments in {category} category.";
+                    }
+                    else
+                    {
+                        return $"AI analysis failed (HTTP {response.StatusCode}). Manual review recommended for {comments.Count} negative comments in {category} category.";
                     }
                 }
 
+                var json = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"📥 Response size: {json.Length} bytes");
+
+                // Parse OpenAI response
+                var parsedResponse = Newtonsoft.Json.Linq.JObject.Parse(json);
+                var generatedText = parsedResponse["choices"]?[0]?["message"]?["content"]?.ToString();
+
+                if (!string.IsNullOrEmpty(generatedText))
+                {
+                    Console.WriteLine($"✅ Successfully generated AI summary ({generatedText.Length} characters)");
+                    return generatedText.Trim();
+                }
+
+                Console.WriteLine("⚠️ API response had no content");
                 return $"AI analysis unavailable - empty response. Manual review recommended for {comments.Count} negative comments in {category} category.";
+            }
+            catch (HttpRequestException httpEx)
+            {
+                Console.WriteLine($"❌ HTTP Request Error: {httpEx.Message}");
+                return $"AI analysis failed - Network error. Manual review recommended for {comments.Count} negative comments in {category} category.";
+            }
+            catch (TaskCanceledException timeoutEx)
+            {
+                Console.WriteLine($"❌ Request Timeout: {timeoutEx.Message}");
+                return $"AI analysis failed - Request timeout. Manual review recommended for {comments.Count} negative comments in {category} category.";
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Exception generating AI summary: {ex.Message}");
-                return $"Analysis failed: {ex.Message}. Manual review recommended for {comments.Count} negative comments in {category} category.";
+                Console.WriteLine($"❌ Exception generating AI summary: {ex.GetType().Name} - {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                return $"AI analysis failed. Manual review recommended for {comments.Count} negative comments in {category} category.";
             }
         }
 

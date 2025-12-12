@@ -17,8 +17,11 @@ namespace CampingNeretva.Service.Services
             ActivityCommentUpdateRequest>,
         IActivityCommentService
     {
-        public ActivityCommentService(_200012Context context, IMapper mapper)
-            : base(context, mapper) { }
+        private readonly IActivityCommentAnalysisService _analysisService;
+        public ActivityCommentService(_200012Context context, IMapper mapper, IActivityCommentAnalysisService analysisService)
+            : base(context, mapper) {
+            _analysisService = analysisService;
+        }
 
         public override IQueryable<ActivityComment> AddFilter(ActivityCommentSearchObject search, IQueryable<ActivityComment> query)
         {
@@ -40,6 +43,15 @@ namespace CampingNeretva.Service.Services
         public override void beforeInsert(ActivityCommentInsertRequest request, ActivityComment entity)
         {
             entity.DatePosted = DateTime.Now;
+        }
+
+        public override async Task<ActivityCommentModel> Insert(ActivityCommentInsertRequest request)
+        {
+            var result = await base.Insert(request);
+
+            await _analysisService.AnalyzeNewComments();
+
+            return result;
         }
     }
 }

@@ -13,7 +13,11 @@ using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Logging;
 using CampingNeretva.Service.Services;
 using CampingNeretva.Service.Interfaces;
+using CampingNeretva.Service.Config;
 
+// ============================================
+// LOAD ENVIRONMENT VARIABLES FIRST
+// ============================================
 var currentDir = Directory.GetCurrentDirectory();
 var envPath = Path.Combine(currentDir, ".env");
 Console.WriteLine($"Current directory: {currentDir}");
@@ -25,17 +29,29 @@ if (File.Exists(envPath))
     try
     {
         Env.Load(envPath);
-        Console.WriteLine(".env file loaded successfully");
+        Console.WriteLine("? .env file loaded successfully");
+
+        // Verify critical environment variables
+        var huggingfaceKey = Environment.GetEnvironmentVariable("HUGGINGFACE_API_KEY");
+        var smtpServer = Environment.GetEnvironmentVariable("SMTP_SERVER");
+        var sqlConnection = Environment.GetEnvironmentVariable("SQL_CONNECTION_STRING");
+
+        Console.WriteLine($"HUGGINGFACE_API_KEY: {(string.IsNullOrEmpty(huggingfaceKey) ? "? NOT SET" : $"? SET (length: {huggingfaceKey.Length})")}");
+        Console.WriteLine($"SMTP_SERVER: {(string.IsNullOrEmpty(smtpServer) ? "? NOT SET" : $"? SET ({smtpServer})")}");
+        Console.WriteLine($"SQL_CONNECTION_STRING: {(string.IsNullOrEmpty(sqlConnection) ? "? NOT SET" : "? SET")}");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"Failed to load .env file: {ex.Message}");
+        Console.WriteLine($"? Failed to load .env file: {ex.Message}");
     }
 }
 else
 {
-    Console.WriteLine("Warning: .env file not found. Using default environment variables.");
+    Console.WriteLine("?? Warning: .env file not found. Using system environment variables.");
 }
+
+var openAiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+Console.WriteLine($"OPENAI_API_KEY loaded: {(!string.IsNullOrEmpty(openAiKey) ? "YES" : "NO")}");
 
 try
 {
@@ -77,7 +93,11 @@ try
     builder.Services.AddScoped<IUserPreferenceService, UserPreferenceService>();
     builder.Services.AddHostedService<RecommendationInitializer>();
     builder.Services.AddTransient<IActivityCommentService, ActivityCommentService>();
-    builder.Services.AddTransient<IActivityCommentAnalysisService, ActivityCommentAnalysisService>();
+    builder.Services.AddTransient<IActivityCommentAnalysisService>(sp =>
+    new ActivityCommentAnalysisService(
+        sp.GetRequiredService<_200012Context>(),
+        sp.GetRequiredService<IConfiguration>()
+    ));
     builder.Services.AddHostedService<CommentAnalysisBackgroundService>();
 
     builder.Services.AddHttpClient();
@@ -130,7 +150,15 @@ try
         });
     });
 
+    // Add environment variables to configuration
     builder.Configuration.AddEnvironmentVariables();
+
+    builder.Services.Configure<OpenAiSettings>(options =>
+    {
+        options.ApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+    });
+
+    // Configure email settings from environment variables
     builder.Services.Configure<CampingNeretva.Model.emailHelpers.EmailSettings>(options =>
     {
         options.SmtpHost = Environment.GetEnvironmentVariable("SMTP_SERVER") ?? "smtp.gmail.com";
@@ -153,7 +181,14 @@ try
     app.MapControllers();
     app.UseStaticFiles();
 
-    Console.WriteLine("Starting application...");
+    Console.WriteLine("======================================");
+    Console.WriteLine("Starting Camping Neretva API...");
+    Console.WriteLine("======================================");
+
+    // Final check of environment variables before starting
+    var finalHfKey = Environment.GetEnvironmentVariable("HUGGINGFACE_API_KEY");
+    Console.WriteLine($"?? HUGGINGFACE_API_KEY at startup: {(string.IsNullOrEmpty(finalHfKey) ? "? NOT AVAILABLE" : "? AVAILABLE")}");
+
     app.Run();
 }
 catch (Exception ex)

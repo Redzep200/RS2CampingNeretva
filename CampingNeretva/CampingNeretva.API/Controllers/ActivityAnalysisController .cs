@@ -178,5 +178,24 @@ namespace CampingNeretva.API.Controllers
                 allClaims = User.Claims.Select(c => new { c.Type, c.Value }).ToList()
             });
         }
+
+        // Test endpoint to check if OpenAI API key is available
+        [HttpGet("test-api-key")]
+        public IActionResult TestApiKey()
+        {
+            var openaiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+
+            return Ok(new
+            {
+                openaiKeyAvailable = !string.IsNullOrEmpty(openaiKey),
+                openaiKeyLength = openaiKey?.Length ?? 0,
+                openaiKeyPrefix = openaiKey?.Substring(0, Math.Min(7, openaiKey.Length)) ?? "N/A",
+                environmentVariables = new
+                {
+                    smtp_server = Environment.GetEnvironmentVariable("SMTP_SERVER"),
+                    rabbitmq_host = Environment.GetEnvironmentVariable("RABBITMQ_HOST")
+                }
+            });
+        }
     }
 }
