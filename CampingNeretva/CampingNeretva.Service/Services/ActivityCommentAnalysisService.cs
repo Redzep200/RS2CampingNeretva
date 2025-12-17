@@ -70,30 +70,43 @@ namespace CampingNeretva.Service.Services
                     var trainingData = new List<CommentData>
                     {
                         new CommentData { CommentText = "too expensive", Category = "Price" },
-                        new CommentData { CommentText = "great value for money", Category = "Price" },
-                        new CommentData { CommentText = "overpriced", Category = "Price" },
-                        new CommentData { CommentText = "cheap", Category = "Price" },
-                        new CommentData { CommentText = "cost", Category = "Price" },
+                        new CommentData { CommentText = "cost too much", Category = "Price" },
+                        new CommentData { CommentText = "overpriced for what you get", Category = "Price" },
+                        new CommentData { CommentText = "poor value", Category = "Price" },
+                        new CommentData { CommentText = "not worth the money", Category = "Price" },
+                        new CommentData { CommentText = "super affordable", Category = "Price" },
+                        new CommentData { CommentText = "great value", Category = "Price" },
 
+    // STAFF issues
                         new CommentData { CommentText = "staff was rude", Category = "Staff" },
-                        new CommentData { CommentText = "friendly workers", Category = "Staff" },
-                        new CommentData { CommentText = "guide was helpful", Category = "Staff" },
-                        new CommentData { CommentText = "unprofessional", Category = "Staff" },
+                        new CommentData { CommentText = "unfriendly workers", Category = "Staff" },
+                        new CommentData { CommentText = "guide had bad attitude", Category = "Staff" },
+                        new CommentData { CommentText = "not helpful", Category = "Staff" },
+                        new CommentData { CommentText = "super friendly staff", Category = "Staff" },
+                        new CommentData { CommentText = "polite and kind", Category = "Staff" },
 
+    // TIME issues
                         new CommentData { CommentText = "too short", Category = "Time" },
-                        new CommentData { CommentText = "lasted too long", Category = "Time" },
-                        new CommentData { CommentText = "perfect duration", Category = "Time" },
-                        new CommentData { CommentText = "late start", Category = "Time" },
+                        new CommentData { CommentText = "too long", Category = "Time" },
+                        new CommentData { CommentText = "we waited forever", Category = "Time" },
+                        new CommentData { CommentText = "delayed start", Category = "Time" },
+                        new CommentData { CommentText = "perfect timing", Category = "Time" },
 
+    // QUALITY issues
+                        new CommentData { CommentText = "boring activity", Category = "Quality" },
                         new CommentData { CommentText = "amazing experience", Category = "Quality" },
-                        new CommentData { CommentText = "boring", Category = "Quality" },
-                        new CommentData { CommentText = "well organized", Category = "Quality" },
-                        new CommentData { CommentText = "poor quality", Category = "Quality" },
+                        new CommentData { CommentText = "poor quality equipment", Category = "Quality" },
+                        new CommentData { CommentText = "badly organized", Category = "Quality" },
+                        new CommentData { CommentText = "very fun and engaging", Category = "Quality" },
+                        new CommentData { CommentText = "low quality service", Category = "Quality" },
 
+    // SAFETY issues
                         new CommentData { CommentText = "felt unsafe", Category = "Safety" },
-                        new CommentData { CommentText = "dangerous equipment", Category = "Safety" },
-                        new CommentData { CommentText = "no safety briefing", Category = "Safety" },
+                        new CommentData { CommentText = "instructor ignored safety rules", Category = "Safety" },
+                        new CommentData { CommentText = "equipment dangerous", Category = "Safety" },
+                        new CommentData { CommentText = "we almost got hurt", Category = "Safety" },
                         new CommentData { CommentText = "safe and secure", Category = "Safety" },
+                        new CommentData { CommentText = "clear safety instructions", Category = "Safety" },
                     };
 
                     var dataView = _mlContext.Data.LoadFromEnumerable(trainingData);
@@ -199,8 +212,17 @@ namespace CampingNeretva.Service.Services
             if (rating <= 2) return "Negative";
             if (rating >= 4) return "Positive";
 
-            var negativeKeywords = new[] { "bad", "poor", "terrible", "awful", "disappointed",
-                                          "rude", "expensive", "overpriced", "unsafe" };
+            var negativeKeywords = new[] { "bad", "poor", "terrible", "awful", "disappointed", "disappointing",
+    "rude", "unfriendly", "hostile", "unprofessional",
+    "expensive", "overpriced", "pricey", "cost too much",
+    "unsafe", "dangerous", "risk", "not safe",
+    "dirty", "filthy", "unclean", "messy",
+    "boring", "waste of time", "not worth", "regret",
+    "late", "delay", "slow", "took too long",
+    "broken", "malfunction", "damaged",
+    "crowded", "too many people", "overcrowded",
+    "noisy", "loud",
+    "poor quality", "low quality", "cheap materials" };
             var lowerText = commentText.ToLower();
 
             if (negativeKeywords.Any(keyword => lowerText.Contains(keyword)))
